@@ -1,0 +1,1053 @@
+{
+  "persona": "environment",
+  "version_pre": 0,
+  "version_post": 1,
+  "pre_text_len": 909,
+  "post_text_len": 1085,
+  "pre_token_count": 166,
+  "post_token_count": 198,
+  "diff": {
+    "post_events": [
+      {
+        "idx": 0,
+        "token": "The",
+        "status": "keep"
+      },
+      {
+        "idx": 1,
+        "token": "piece",
+        "status": "keep"
+      },
+      {
+        "idx": 2,
+        "token": "Migration",
+        "status": "keep"
+      },
+      {
+        "idx": 3,
+        "token": "is",
+        "status": "keep"
+      },
+      {
+        "idx": 4,
+        "token": "inspired",
+        "status": "keep"
+      },
+      {
+        "idx": 5,
+        "token": "by",
+        "status": "keep"
+      },
+      {
+        "idx": 6,
+        "token": "the",
+        "status": "keep"
+      },
+      {
+        "idx": 7,
+        "token": "Platte",
+        "status": "keep"
+      },
+      {
+        "idx": 8,
+        "token": "River",
+        "status": "keep"
+      },
+      {
+        "idx": 9,
+        "token": "in",
+        "status": "keep"
+      },
+      {
+        "idx": 10,
+        "token": "Nebraska",
+        "status": "keep"
+      },
+      {
+        "idx": 11,
+        "token": ",",
+        "status": "keep"
+      },
+      {
+        "idx": 12,
+        "token": "a",
+        "status": "keep"
+      },
+      {
+        "idx": 13,
+        "token": "major",
+        "status": "keep"
+      },
+      {
+        "idx": 14,
+        "token": "migration",
+        "status": "keep"
+      },
+      {
+        "idx": 15,
+        "token": "stopover",
+        "status": "keep"
+      },
+      {
+        "idx": 16,
+        "token": "for",
+        "status": "keep"
+      },
+      {
+        "idx": 17,
+        "token": "the",
+        "status": "keep"
+      },
+      {
+        "idx": 18,
+        "token": "greater",
+        "status": "keep"
+      },
+      {
+        "idx": 19,
+        "token": "sandhill",
+        "status": "keep"
+      },
+      {
+        "idx": 20,
+        "token": "crane",
+        "status": "keep"
+      },
+      {
+        "idx": 21,
+        "token": ".",
+        "status": "keep"
+      },
+      {
+        "idx": 22,
+        "token": "Every",
+        "status": "keep"
+      },
+      {
+        "idx": 23,
+        "token": "year",
+        "status": "keep"
+      },
+      {
+        "idx": 24,
+        "token": "from",
+        "status": "keep"
+      },
+      {
+        "idx": 25,
+        "token": "March",
+        "status": "keep"
+      },
+      {
+        "idx": 26,
+        "token": "to",
+        "status": "keep"
+      },
+      {
+        "idx": 27,
+        "token": "April",
+        "status": "keep"
+      },
+      {
+        "idx": 28,
+        "token": ",",
+        "status": "keep"
+      },
+      {
+        "idx": 29,
+        "token": "over",
+        "status": "keep"
+      },
+      {
+        "idx": 30,
+        "token": "500",
+        "status": "keep"
+      },
+      {
+        "idx": 31,
+        "token": ",",
+        "status": "keep"
+      },
+      {
+        "idx": 32,
+        "token": "000",
+        "status": "keep"
+      },
+      {
+        "idx": 33,
+        "token": "cranes",
+        "status": "keep"
+      },
+      {
+        "idx": 34,
+        "token": "—",
+        "status": "keep"
+      },
+      {
+        "idx": 35,
+        "token": "around",
+        "status": "keep"
+      },
+      {
+        "idx": 36,
+        "token": "80",
+        "status": "keep"
+      },
+      {
+        "idx": 37,
+        "token": "%",
+        "status": "keep"
+      },
+      {
+        "idx": 38,
+        "token": "of",
+        "status": "keep"
+      },
+      {
+        "idx": 39,
+        "token": "the",
+        "status": "keep"
+      },
+      {
+        "idx": 40,
+        "token": "world",
+        "status": "keep"
+      },
+      {
+        "idx": 41,
+        "token": "’",
+        "status": "keep"
+      },
+      {
+        "idx": 42,
+        "token": "s",
+        "status": "keep"
+      },
+      {
+        "idx": 43,
+        "token": "population",
+        "status": "keep"
+      },
+      {
+        "idx": 44,
+        "token": "—",
+        "status": "keep"
+      },
+      {
+        "idx": 45,
+        "token": "travel",
+        "status": "keep"
+      },
+      {
+        "idx": 46,
+        "token": "from",
+        "status": "keep"
+      },
+      {
+        "idx": 47,
+        "token": "northern",
+        "status": "keep"
+      },
+      {
+        "idx": 48,
+        "token": "Mexico",
+        "status": "keep"
+      },
+      {
+        "idx": 49,
+        "token": "and",
+        "status": "keep"
+      },
+      {
+        "idx": 50,
+        "token": "Texas",
+        "status": "keep"
+      },
+      {
+        "idx": 51,
+        "token": "to",
+        "status": "keep"
+      },
+      {
+        "idx": 52,
+        "token": "the",
+        "status": "keep"
+      },
+      {
+        "idx": 53,
+        "token": "Platte",
+        "status": "keep"
+      },
+      {
+        "idx": 54,
+        "token": "River",
+        "status": "keep"
+      },
+      {
+        "idx": 55,
+        "token": ".",
+        "status": "keep"
+      },
+      {
+        "idx": 56,
+        "token": "They",
+        "status": "keep"
+      },
+      {
+        "idx": 57,
+        "token": "rest",
+        "status": "keep"
+      },
+      {
+        "idx": 58,
+        "token": "there",
+        "status": "keep"
+      },
+      {
+        "idx": 59,
+        "token": "for",
+        "status": "keep"
+      },
+      {
+        "idx": 60,
+        "token": "about",
+        "status": "keep"
+      },
+      {
+        "idx": 61,
+        "token": "four",
+        "status": "keep"
+      },
+      {
+        "idx": 62,
+        "token": "weeks",
+        "status": "keep"
+      },
+      {
+        "idx": 63,
+        "token": ",",
+        "status": "keep"
+      },
+      {
+        "idx": 64,
+        "token": "feeding",
+        "status": "keep"
+      },
+      {
+        "idx": 65,
+        "token": "in",
+        "status": "keep"
+      },
+      {
+        "idx": 66,
+        "token": "the",
+        "status": "keep"
+      },
+      {
+        "idx": 67,
+        "token": "surrounding",
+        "status": "keep"
+      },
+      {
+        "idx": 68,
+        "token": "cornfields",
+        "status": "keep"
+      },
+      {
+        "idx": 69,
+        "token": "before",
+        "status": "keep"
+      },
+      {
+        "idx": 70,
+        "token": "continuing",
+        "status": "keep"
+      },
+      {
+        "idx": 71,
+        "token": "north",
+        "status": "keep"
+      },
+      {
+        "idx": 72,
+        "token": "to",
+        "status": "keep"
+      },
+      {
+        "idx": 73,
+        "token": "Canada",
+        "status": "keep"
+      },
+      {
+        "idx": 74,
+        "token": "and",
+        "status": "keep"
+      },
+      {
+        "idx": 75,
+        "token": "Siberia",
+        "status": "keep"
+      },
+      {
+        "idx": 76,
+        "token": ".",
+        "status": "keep"
+      },
+      {
+        "idx": 77,
+        "token": "When",
+        "status": "keep"
+      },
+      {
+        "idx": 78,
+        "token": "I",
+        "status": "keep"
+      },
+      {
+        "idx": 79,
+        "token": "visited",
+        "status": "keep"
+      },
+      {
+        "idx": 80,
+        "token": "the",
+        "status": "keep"
+      },
+      {
+        "idx": 81,
+        "token": "river",
+        "status": "keep"
+      },
+      {
+        "idx": 82,
+        "token": "in",
+        "status": "keep"
+      },
+      {
+        "idx": 83,
+        "token": "March",
+        "status": "keep"
+      },
+      {
+        "idx": 84,
+        "token": "2015",
+        "status": "keep"
+      },
+      {
+        "idx": 85,
+        "token": ",",
+        "status": "keep"
+      },
+      {
+        "idx": 86,
+        "token": "I",
+        "status": "keep"
+      },
+      {
+        "idx": 87,
+        "token": "witnessed",
+        "status": "keep"
+      },
+      {
+        "idx": 88,
+        "token": "the",
+        "status": "keep"
+      },
+      {
+        "idx": 89,
+        "token": "overwhelming",
+        "status": "keep"
+      },
+      {
+        "idx": 90,
+        "token": "sound",
+        "status": "keep"
+      },
+      {
+        "idx": 91,
+        "token": "of",
+        "status": "keep"
+      },
+      {
+        "idx": 92,
+        "token": "thousands",
+        "status": "keep"
+      },
+      {
+        "idx": 93,
+        "token": "of",
+        "status": "keep"
+      },
+      {
+        "idx": 94,
+        "token": "cranes",
+        "status": "keep"
+      },
+      {
+        "idx": 95,
+        "token": "and",
+        "status": "keep"
+      },
+      {
+        "idx": 96,
+        "token": "watched",
+        "status": "keep"
+      },
+      {
+        "idx": 97,
+        "token": "them",
+        "status": "keep"
+      },
+      {
+        "idx": 98,
+        "token": "settling",
+        "status": "keep"
+      },
+      {
+        "idx": 99,
+        "token": "along",
+        "status": "keep"
+      },
+      {
+        "idx": 100,
+        "token": "the",
+        "status": "keep"
+      },
+      {
+        "idx": 101,
+        "token": "riverbank",
+        "status": "keep"
+      },
+      {
+        "idx": 102,
+        "token": "at",
+        "status": "keep"
+      },
+      {
+        "idx": 103,
+        "token": "sunset",
+        "status": "keep"
+      },
+      {
+        "idx": 104,
+        "token": ",",
+        "status": "add"
+      },
+      {
+        "idx": 105,
+        "token": "their",
+        "status": "add"
+      },
+      {
+        "idx": 106,
+        "token": "silhouettes",
+        "status": "add"
+      },
+      {
+        "idx": 107,
+        "token": "threading",
+        "status": "add"
+      },
+      {
+        "idx": 108,
+        "token": "through",
+        "status": "add"
+      },
+      {
+        "idx": 109,
+        "token": "cold",
+        "status": "add"
+      },
+      {
+        "idx": 110,
+        "token": "air",
+        "status": "add"
+      },
+      {
+        "idx": 111,
+        "token": "that",
+        "status": "add"
+      },
+      {
+        "idx": 112,
+        "token": "carried",
+        "status": "add"
+      },
+      {
+        "idx": 113,
+        "token": "river",
+        "status": "add"
+      },
+      {
+        "idx": 114,
+        "token": "silt",
+        "status": "add"
+      },
+      {
+        "idx": 115,
+        "token": "and",
+        "status": "add"
+      },
+      {
+        "idx": 116,
+        "token": "field",
+        "status": "add"
+      },
+      {
+        "idx": 117,
+        "token": "dust",
+        "status": "add"
+      },
+      {
+        "idx": 118,
+        "token": ".",
+        "status": "keep"
+      },
+      {
+        "idx": 119,
+        "token": "The",
+        "status": "keep"
+      },
+      {
+        "idx": 120,
+        "token": "experience",
+        "status": "keep"
+      },
+      {
+        "idx": 121,
+        "token": "was",
+        "status": "keep"
+      },
+      {
+        "idx": 122,
+        "token": "breathtaking",
+        "status": "keep"
+      },
+      {
+        "idx": 123,
+        "token": "and",
+        "status": "keep"
+      },
+      {
+        "idx": 124,
+        "token": "hard",
+        "status": "keep"
+      },
+      {
+        "idx": 125,
+        "token": "to",
+        "status": "keep"
+      },
+      {
+        "idx": 126,
+        "token": "describe",
+        "status": "keep"
+      },
+      {
+        "idx": 127,
+        "token": ".",
+        "status": "keep"
+      },
+      {
+        "idx": 128,
+        "token": "This",
+        "status": "keep"
+      },
+      {
+        "idx": 129,
+        "token": "piece",
+        "status": "keep"
+      },
+      {
+        "idx": 130,
+        "token": "reflects",
+        "status": "keep"
+      },
+      {
+        "idx": 131,
+        "token": "both",
+        "status": "keep"
+      },
+      {
+        "idx": 132,
+        "token": "the",
+        "status": "keep"
+      },
+      {
+        "idx": 133,
+        "token": "beauty",
+        "status": "keep"
+      },
+      {
+        "idx": 134,
+        "token": "and",
+        "status": "keep"
+      },
+      {
+        "idx": 135,
+        "token": "the",
+        "status": "keep"
+      },
+      {
+        "idx": 136,
+        "token": "harshness",
+        "status": "keep"
+      },
+      {
+        "idx": 137,
+        "token": "of",
+        "status": "keep"
+      },
+      {
+        "idx": 138,
+        "token": "the",
+        "status": "keep"
+      },
+      {
+        "idx": 139,
+        "token": "long",
+        "status": "keep"
+      },
+      {
+        "idx": 140,
+        "token": "journey",
+        "status": "keep"
+      },
+      {
+        "idx": 141,
+        "token": "these",
+        "status": "keep"
+      },
+      {
+        "idx": 142,
+        "token": "birds",
+        "status": "keep"
+      },
+      {
+        "idx": 143,
+        "token": "undertake",
+        "status": "keep"
+      },
+      {
+        "idx": 144,
+        "token": ",",
+        "status": "keep"
+      },
+      {
+        "idx": 145,
+        "token": "a",
+        "status": "keep"
+      },
+      {
+        "idx": 146,
+        "token": "journey",
+        "status": "keep"
+      },
+      {
+        "idx": 147,
+        "token": "repeated",
+        "status": "keep"
+      },
+      {
+        "idx": 148,
+        "token": "for",
+        "status": "keep"
+      },
+      {
+        "idx": 149,
+        "token": "thousands",
+        "status": "keep"
+      },
+      {
+        "idx": 150,
+        "token": "of",
+        "status": "keep"
+      },
+      {
+        "idx": 151,
+        "token": "years",
+        "status": "keep"
+      },
+      {
+        "idx": 152,
+        "token": ",",
+        "status": "add"
+      },
+      {
+        "idx": 153,
+        "token": "and",
+        "status": "add"
+      },
+      {
+        "idx": 154,
+        "token": "it",
+        "status": "add"
+      },
+      {
+        "idx": 155,
+        "token": "listens",
+        "status": "add"
+      },
+      {
+        "idx": 156,
+        "token": "closely",
+        "status": "add"
+      },
+      {
+        "idx": 157,
+        "token": "to",
+        "status": "add"
+      },
+      {
+        "idx": 158,
+        "token": "how",
+        "status": "add"
+      },
+      {
+        "idx": 159,
+        "token": "water",
+        "status": "add"
+      },
+      {
+        "idx": 160,
+        "token": "levels",
+        "status": "add"
+      },
+      {
+        "idx": 161,
+        "token": ",",
+        "status": "add"
+      },
+      {
+        "idx": 162,
+        "token": "weather",
+        "status": "add"
+      },
+      {
+        "idx": 163,
+        "token": ",",
+        "status": "add"
+      },
+      {
+        "idx": 164,
+        "token": "and",
+        "status": "add"
+      },
+      {
+        "idx": 165,
+        "token": "human",
+        "status": "add"
+      },
+      {
+        "idx": 166,
+        "token": "noise",
+        "status": "add"
+      },
+      {
+        "idx": 167,
+        "token": "reshape",
+        "status": "add"
+      },
+      {
+        "idx": 168,
+        "token": "the",
+        "status": "add"
+      },
+      {
+        "idx": 169,
+        "token": "stopover",
+        "status": "add"
+      },
+      {
+        "idx": 170,
+        "token": ".",
+        "status": "keep"
+      },
+      {
+        "idx": 171,
+        "token": "Rapid",
+        "status": "keep"
+      },
+      {
+        "idx": 172,
+        "token": "residential",
+        "status": "keep"
+      },
+      {
+        "idx": 173,
+        "token": "development",
+        "status": "keep"
+      },
+      {
+        "idx": 174,
+        "token": "has",
+        "status": "keep"
+      },
+      {
+        "idx": 175,
+        "token": "increasingly",
+        "status": "keep"
+      },
+      {
+        "idx": 176,
+        "token": "reduced",
+        "status": "keep"
+      },
+      {
+        "idx": 177,
+        "token": "the",
+        "status": "keep"
+      },
+      {
+        "idx": 178,
+        "token": "cranes",
+        "status": "keep"
+      },
+      {
+        "idx": 179,
+        "token": "’",
+        "status": "keep"
+      },
+      {
+        "idx": 180,
+        "token": "habitat",
+        "status": "keep"
+      },
+      {
+        "idx": 181,
+        "token": ",",
+        "status": "keep"
+      },
+      {
+        "idx": 182,
+        "token": "and",
+        "status": "keep"
+      },
+      {
+        "idx": 183,
+        "token": "composing",
+        "status": "keep"
+      },
+      {
+        "idx": 184,
+        "token": "this",
+        "status": "keep"
+      },
+      {
+        "idx": 185,
+        "token": "piece",
+        "status": "keep"
+      },
+      {
+        "idx": 186,
+        "token": "was",
+        "status": "keep"
+      },
+      {
+        "idx": 187,
+        "token": "also",
+        "status": "keep"
+      },
+      {
+        "idx": 188,
+        "token": "a",
+        "status": "keep"
+      },
+      {
+        "idx": 189,
+        "token": "way",
+        "status": "keep"
+      },
+      {
+        "idx": 190,
+        "token": "for",
+        "status": "keep"
+      },
+      {
+        "idx": 191,
+        "token": "me",
+        "status": "keep"
+      },
+      {
+        "idx": 192,
+        "token": "to",
+        "status": "keep"
+      },
+      {
+        "idx": 193,
+        "token": "communicate",
+        "status": "keep"
+      },
+      {
+        "idx": 194,
+        "token": "this",
+        "status": "keep"
+      },
+      {
+        "idx": 195,
+        "token": "environmental",
+        "status": "keep"
+      },
+      {
+        "idx": 196,
+        "token": "concern",
+        "status": "keep"
+      },
+      {
+        "idx": 197,
+        "token": ".",
+        "status": "keep"
+      }
+    ],
+    "deletions": [],
+    "opcodes": [
+      {
+        "op": "equal",
+        "pre": [
+          0,
+          104
+        ],
+        "post": [
+          0,
+          104
+        ]
+      },
+      {
+        "op": "insert",
+        "post": [
+          104,
+          118
+        ]
+      },
+      {
+        "op": "equal",
+        "pre": [
+          104,
+          138
+        ],
+        "post": [
+          118,
+          152
+        ]
+      },
+      {
+        "op": "insert",
+        "post": [
+          152,
+          170
+        ]
+      },
+      {
+        "op": "equal",
+        "pre": [
+          138,
+          166
+        ],
+        "post": [
+          170,
+          198
+        ]
+      }
+    ]
+  }
+}

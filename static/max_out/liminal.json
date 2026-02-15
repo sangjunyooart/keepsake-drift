@@ -1,0 +1,946 @@
+{
+  "persona": "liminal",
+  "version_pre": 0,
+  "version_post": 1,
+  "pre_text_len": 642,
+  "post_text_len": 830,
+  "pre_token_count": 130,
+  "post_token_count": 173,
+  "diff": {
+    "post_events": [
+      {
+        "idx": 0,
+        "token": "Higurashi",
+        "status": "keep"
+      },
+      {
+        "idx": 1,
+        "token": "is",
+        "status": "keep"
+      },
+      {
+        "idx": 2,
+        "token": "rooted",
+        "status": "keep"
+      },
+      {
+        "idx": 3,
+        "token": "in",
+        "status": "keep"
+      },
+      {
+        "idx": 4,
+        "token": "one",
+        "status": "keep"
+      },
+      {
+        "idx": 5,
+        "token": "of",
+        "status": "keep"
+      },
+      {
+        "idx": 6,
+        "token": "my",
+        "status": "keep"
+      },
+      {
+        "idx": 7,
+        "token": "most",
+        "status": "keep"
+      },
+      {
+        "idx": 8,
+        "token": "unforgettable",
+        "status": "keep"
+      },
+      {
+        "idx": 9,
+        "token": "childhood",
+        "status": "keep"
+      },
+      {
+        "idx": 10,
+        "token": "memories",
+        "status": "keep"
+      },
+      {
+        "idx": 11,
+        "token": "—",
+        "status": "keep"
+      },
+      {
+        "idx": 12,
+        "token": "the",
+        "status": "keep"
+      },
+      {
+        "idx": 13,
+        "token": "sound",
+        "status": "keep"
+      },
+      {
+        "idx": 14,
+        "token": "of",
+        "status": "keep"
+      },
+      {
+        "idx": 15,
+        "token": "evening",
+        "status": "keep"
+      },
+      {
+        "idx": 16,
+        "token": "cicadas",
+        "status": "keep"
+      },
+      {
+        "idx": 17,
+        "token": "at",
+        "status": "keep"
+      },
+      {
+        "idx": 18,
+        "token": "dusk",
+        "status": "keep"
+      },
+      {
+        "idx": 19,
+        "token": "during",
+        "status": "keep"
+      },
+      {
+        "idx": 20,
+        "token": "summer",
+        "status": "keep"
+      },
+      {
+        "idx": 21,
+        "token": ".",
+        "status": "keep"
+      },
+      {
+        "idx": 22,
+        "token": "As",
+        "status": "keep"
+      },
+      {
+        "idx": 23,
+        "token": "a",
+        "status": "keep"
+      },
+      {
+        "idx": 24,
+        "token": "child",
+        "status": "keep"
+      },
+      {
+        "idx": 25,
+        "token": "in",
+        "status": "keep"
+      },
+      {
+        "idx": 26,
+        "token": "Fukushima",
+        "status": "keep"
+      },
+      {
+        "idx": 27,
+        "token": ",",
+        "status": "keep"
+      },
+      {
+        "idx": 28,
+        "token": "I",
+        "status": "keep"
+      },
+      {
+        "idx": 29,
+        "token": "would",
+        "status": "keep"
+      },
+      {
+        "idx": 30,
+        "token": "play",
+        "status": "keep"
+      },
+      {
+        "idx": 31,
+        "token": "with",
+        "status": "keep"
+      },
+      {
+        "idx": 32,
+        "token": "friends",
+        "status": "keep"
+      },
+      {
+        "idx": 33,
+        "token": "near",
+        "status": "keep"
+      },
+      {
+        "idx": 34,
+        "token": "a",
+        "status": "keep"
+      },
+      {
+        "idx": 35,
+        "token": "temple",
+        "status": "keep"
+      },
+      {
+        "idx": 36,
+        "token": "by",
+        "status": "keep"
+      },
+      {
+        "idx": 37,
+        "token": "my",
+        "status": "keep"
+      },
+      {
+        "idx": 38,
+        "token": "house",
+        "status": "keep"
+      },
+      {
+        "idx": 39,
+        "token": ",",
+        "status": "keep"
+      },
+      {
+        "idx": 40,
+        "token": "and",
+        "status": "keep"
+      },
+      {
+        "idx": 41,
+        "token": "the",
+        "status": "keep"
+      },
+      {
+        "idx": 42,
+        "token": "first",
+        "status": "keep"
+      },
+      {
+        "idx": 43,
+        "token": "calls",
+        "status": "keep"
+      },
+      {
+        "idx": 44,
+        "token": "of",
+        "status": "keep"
+      },
+      {
+        "idx": 45,
+        "token": "the",
+        "status": "keep"
+      },
+      {
+        "idx": 46,
+        "token": "cicadas",
+        "status": "keep"
+      },
+      {
+        "idx": 47,
+        "token": "signaled",
+        "status": "keep"
+      },
+      {
+        "idx": 48,
+        "token": "that",
+        "status": "keep"
+      },
+      {
+        "idx": 49,
+        "token": "it",
+        "status": "keep"
+      },
+      {
+        "idx": 50,
+        "token": "was",
+        "status": "keep"
+      },
+      {
+        "idx": 51,
+        "token": "time",
+        "status": "keep"
+      },
+      {
+        "idx": 52,
+        "token": "to",
+        "status": "keep"
+      },
+      {
+        "idx": 53,
+        "token": "go",
+        "status": "keep"
+      },
+      {
+        "idx": 54,
+        "token": "home",
+        "status": "keep"
+      },
+      {
+        "idx": 55,
+        "token": ",",
+        "status": "add"
+      },
+      {
+        "idx": 56,
+        "token": "as",
+        "status": "add"
+      },
+      {
+        "idx": 57,
+        "token": "if",
+        "status": "add"
+      },
+      {
+        "idx": 58,
+        "token": "the",
+        "status": "add"
+      },
+      {
+        "idx": 59,
+        "token": "air",
+        "status": "add"
+      },
+      {
+        "idx": 60,
+        "token": "itself",
+        "status": "add"
+      },
+      {
+        "idx": 61,
+        "token": "were",
+        "status": "add"
+      },
+      {
+        "idx": 62,
+        "token": "drawing",
+        "status": "add"
+      },
+      {
+        "idx": 63,
+        "token": "a",
+        "status": "add"
+      },
+      {
+        "idx": 64,
+        "token": "thin",
+        "status": "add"
+      },
+      {
+        "idx": 65,
+        "token": "line",
+        "status": "add"
+      },
+      {
+        "idx": 66,
+        "token": "between",
+        "status": "add"
+      },
+      {
+        "idx": 67,
+        "token": "play",
+        "status": "add"
+      },
+      {
+        "idx": 68,
+        "token": "and",
+        "status": "add"
+      },
+      {
+        "idx": 69,
+        "token": "quiet",
+        "status": "add"
+      },
+      {
+        "idx": 70,
+        "token": ".",
+        "status": "keep"
+      },
+      {
+        "idx": 71,
+        "token": "The",
+        "status": "keep"
+      },
+      {
+        "idx": 72,
+        "token": "cicada",
+        "status": "keep"
+      },
+      {
+        "idx": 73,
+        "token": "sounds",
+        "status": "keep"
+      },
+      {
+        "idx": 74,
+        "token": "included",
+        "status": "keep"
+      },
+      {
+        "idx": 75,
+        "token": "at",
+        "status": "keep"
+      },
+      {
+        "idx": 76,
+        "token": "the",
+        "status": "keep"
+      },
+      {
+        "idx": 77,
+        "token": "end",
+        "status": "keep"
+      },
+      {
+        "idx": 78,
+        "token": "of",
+        "status": "keep"
+      },
+      {
+        "idx": 79,
+        "token": "this",
+        "status": "keep"
+      },
+      {
+        "idx": 80,
+        "token": "piece",
+        "status": "keep"
+      },
+      {
+        "idx": 81,
+        "token": "are",
+        "status": "keep"
+      },
+      {
+        "idx": 82,
+        "token": "my",
+        "status": "keep"
+      },
+      {
+        "idx": 83,
+        "token": "own",
+        "status": "keep"
+      },
+      {
+        "idx": 84,
+        "token": "field",
+        "status": "keep"
+      },
+      {
+        "idx": 85,
+        "token": "recordings",
+        "status": "keep"
+      },
+      {
+        "idx": 86,
+        "token": "from",
+        "status": "keep"
+      },
+      {
+        "idx": 87,
+        "token": "Mount",
+        "status": "keep"
+      },
+      {
+        "idx": 88,
+        "token": "Iimori",
+        "status": "keep"
+      },
+      {
+        "idx": 89,
+        "token": "in",
+        "status": "keep"
+      },
+      {
+        "idx": 90,
+        "token": "Aizuwakamatsu",
+        "status": "keep"
+      },
+      {
+        "idx": 91,
+        "token": "City",
+        "status": "keep"
+      },
+      {
+        "idx": 92,
+        "token": ",",
+        "status": "keep"
+      },
+      {
+        "idx": 93,
+        "token": "Fukushima",
+        "status": "keep"
+      },
+      {
+        "idx": 94,
+        "token": "Prefecture",
+        "status": "keep"
+      },
+      {
+        "idx": 95,
+        "token": ",",
+        "status": "keep"
+      },
+      {
+        "idx": 96,
+        "token": "captured",
+        "status": "keep"
+      },
+      {
+        "idx": 97,
+        "token": "on",
+        "status": "keep"
+      },
+      {
+        "idx": 98,
+        "token": "July",
+        "status": "keep"
+      },
+      {
+        "idx": 99,
+        "token": "28",
+        "status": "keep"
+      },
+      {
+        "idx": 100,
+        "token": ",",
+        "status": "keep"
+      },
+      {
+        "idx": 101,
+        "token": "2025",
+        "status": "keep"
+      },
+      {
+        "idx": 102,
+        "token": ",",
+        "status": "keep"
+      },
+      {
+        "idx": 103,
+        "token": "around",
+        "status": "keep"
+      },
+      {
+        "idx": 104,
+        "token": "6",
+        "status": "keep"
+      },
+      {
+        "idx": 105,
+        "token": "p",
+        "status": "keep"
+      },
+      {
+        "idx": 106,
+        "token": ".",
+        "status": "keep"
+      },
+      {
+        "idx": 107,
+        "token": "m",
+        "status": "keep"
+      },
+      {
+        "idx": 108,
+        "token": ".",
+        "status": "keep"
+      },
+      {
+        "idx": 109,
+        "token": ",",
+        "status": "add"
+      },
+      {
+        "idx": 110,
+        "token": "when",
+        "status": "add"
+      },
+      {
+        "idx": 111,
+        "token": "the",
+        "status": "add"
+      },
+      {
+        "idx": 112,
+        "token": "light",
+        "status": "add"
+      },
+      {
+        "idx": 113,
+        "token": "felt",
+        "status": "add"
+      },
+      {
+        "idx": 114,
+        "token": "almost",
+        "status": "add"
+      },
+      {
+        "idx": 115,
+        "token": "borrowed",
+        "status": "add"
+      },
+      {
+        "idx": 116,
+        "token": ".",
+        "status": "add"
+      },
+      {
+        "idx": 117,
+        "token": "Hearing",
+        "status": "keep"
+      },
+      {
+        "idx": 118,
+        "token": "that",
+        "status": "keep"
+      },
+      {
+        "idx": 119,
+        "token": "sound",
+        "status": "keep"
+      },
+      {
+        "idx": 120,
+        "token": "again",
+        "status": "keep"
+      },
+      {
+        "idx": 121,
+        "token": "brought",
+        "status": "keep"
+      },
+      {
+        "idx": 122,
+        "token": "a",
+        "status": "keep"
+      },
+      {
+        "idx": 123,
+        "token": "wave",
+        "status": "keep"
+      },
+      {
+        "idx": 124,
+        "token": "of",
+        "status": "keep"
+      },
+      {
+        "idx": 125,
+        "token": "nostalgia",
+        "status": "keep"
+      },
+      {
+        "idx": 126,
+        "token": "and",
+        "status": "keep"
+      },
+      {
+        "idx": 127,
+        "token": "made",
+        "status": "keep"
+      },
+      {
+        "idx": 128,
+        "token": "me",
+        "status": "keep"
+      },
+      {
+        "idx": 129,
+        "token": "reflect",
+        "status": "keep"
+      },
+      {
+        "idx": 130,
+        "token": "on",
+        "status": "keep"
+      },
+      {
+        "idx": 131,
+        "token": "my",
+        "status": "keep"
+      },
+      {
+        "idx": 132,
+        "token": "childhood",
+        "status": "keep"
+      },
+      {
+        "idx": 133,
+        "token": ",",
+        "status": "add"
+      },
+      {
+        "idx": 134,
+        "token": "but",
+        "status": "add"
+      },
+      {
+        "idx": 135,
+        "token": "also",
+        "status": "add"
+      },
+      {
+        "idx": 136,
+        "token": "on",
+        "status": "add"
+      },
+      {
+        "idx": 137,
+        "token": "how",
+        "status": "add"
+      },
+      {
+        "idx": 138,
+        "token": "memory",
+        "status": "add"
+      },
+      {
+        "idx": 139,
+        "token": "can",
+        "status": "add"
+      },
+      {
+        "idx": 140,
+        "token": "blur",
+        "status": "add"
+      },
+      {
+        "idx": 141,
+        "token": "at",
+        "status": "add"
+      },
+      {
+        "idx": 142,
+        "token": "the",
+        "status": "add"
+      },
+      {
+        "idx": 143,
+        "token": "edges",
+        "status": "add"
+      },
+      {
+        "idx": 144,
+        "token": ",",
+        "status": "add"
+      },
+      {
+        "idx": 145,
+        "token": "like",
+        "status": "add"
+      },
+      {
+        "idx": 146,
+        "token": "a",
+        "status": "add"
+      },
+      {
+        "idx": 147,
+        "token": "path",
+        "status": "add"
+      },
+      {
+        "idx": 148,
+        "token": "half",
+        "status": "add"
+      },
+      {
+        "idx": 149,
+        "token": "-",
+        "status": "add"
+      },
+      {
+        "idx": 150,
+        "token": "seen",
+        "status": "add"
+      },
+      {
+        "idx": 151,
+        "token": "after",
+        "status": "add"
+      },
+      {
+        "idx": 152,
+        "token": "rain",
+        "status": "add"
+      },
+      {
+        "idx": 153,
+        "token": ".",
+        "status": "keep"
+      },
+      {
+        "idx": 154,
+        "token": "The",
+        "status": "keep"
+      },
+      {
+        "idx": 155,
+        "token": "piece",
+        "status": "keep"
+      },
+      {
+        "idx": 156,
+        "token": "carries",
+        "status": "keep"
+      },
+      {
+        "idx": 157,
+        "token": "that",
+        "status": "keep"
+      },
+      {
+        "idx": 158,
+        "token": "memory",
+        "status": "keep"
+      },
+      {
+        "idx": 159,
+        "token": "of",
+        "status": "keep"
+      },
+      {
+        "idx": 160,
+        "token": "transition",
+        "status": "keep"
+      },
+      {
+        "idx": 161,
+        "token": ",",
+        "status": "keep"
+      },
+      {
+        "idx": 162,
+        "token": "dusk",
+        "status": "keep"
+      },
+      {
+        "idx": 163,
+        "token": ",",
+        "status": "keep"
+      },
+      {
+        "idx": 164,
+        "token": "and",
+        "status": "keep"
+      },
+      {
+        "idx": 165,
+        "token": "the",
+        "status": "keep"
+      },
+      {
+        "idx": 166,
+        "token": "gentle",
+        "status": "keep"
+      },
+      {
+        "idx": 167,
+        "token": "shift",
+        "status": "keep"
+      },
+      {
+        "idx": 168,
+        "token": "between",
+        "status": "keep"
+      },
+      {
+        "idx": 169,
+        "token": "play",
+        "status": "keep"
+      },
+      {
+        "idx": 170,
+        "token": "and",
+        "status": "keep"
+      },
+      {
+        "idx": 171,
+        "token": "home",
+        "status": "keep"
+      },
+      {
+        "idx": 172,
+        "token": ".",
+        "status": "keep"
+      }
+    ],
+    "deletions": [],
+    "opcodes": [
+      {
+        "op": "equal",
+        "pre": [
+          0,
+          55
+        ],
+        "post": [
+          0,
+          55
+        ]
+      },
+      {
+        "op": "insert",
+        "post": [
+          55,
+          70
+        ]
+      },
+      {
+        "op": "equal",
+        "pre": [
+          55,
+          94
+        ],
+        "post": [
+          70,
+          109
+        ]
+      },
+      {
+        "op": "insert",
+        "post": [
+          109,
+          117
+        ]
+      },
+      {
+        "op": "equal",
+        "pre": [
+          94,
+          110
+        ],
+        "post": [
+          117,
+          133
+        ]
+      },
+      {
+        "op": "insert",
+        "post": [
+          133,
+          153
+        ]
+      },
+      {
+        "op": "equal",
+        "pre": [
+          110,
+          130
+        ],
+        "post": [
+          153,
+          173
+        ]
+      }
+    ]
+  }
+}

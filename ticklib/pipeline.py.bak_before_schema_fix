@@ -1,0 +1,286 @@
+# ticklib/pipeline.py
+from __future__ import annotations
+
+import json
+import os
+import sqlite3
+from typing import Any, Dict, List, Optional
+
+DEFAULT_EMBED_DIMS = int(os.getenv("OPENAI_EMBED_DIMS", "1536"))
+
+
+def _connect(db_path: str) -> sqlite3.Connection:
+    conn = sqlite3.connect(db_path, timeout=30)
+    conn.row_factory = sqlite3.Row
+    # Helps with concurrent reads/writes when the web server is also open.
+    try:
+        conn.execute("PRAGMA journal_mode=WAL;")
+    except Exception:
+        pass
+    try:
+        conn.execute("PRAGMA busy_timeout=5000;")
+    except Exception:
+        pass
+    return conn
+
+
+def _ensure_tick_row(conn: sqlite3.Connection, tick_id: int) -> None:
+    cols = {r["name"] for r in conn.execute("PRAGMA table_info(ticks)").fetchall()}
+    if "tick_id" not in cols:
+        return
+
+    if "created_at" in cols:
+        conn.execute(
+            "INSERT OR IGNORE INTO ticks (tick_id, created_at) VALUES (?, datetime('now'))",
+            (int(tick_id),),
+        )
+    else:
+        conn.execute(
+            "INSERT OR IGNORE INTO ticks (tick_id) VALUES (?)",
+            (int(tick_id),),
+        )
+
+
+def _fetch_minds(conn: sqlite3.Connection) -> List[sqlite3.Row]:
+    return conn.execute("SELECT mind_id, mind_key FROM minds ORDER BY mind_id ASC").fetchall()
+
+
+def _fetch_latest_drift_row(conn: sqlite3.Connection, mind_id: int) -> Optional[sqlite3.Row]:
+    return conn.execute(
+        """
+        SELECT drift_id, version, parent_drift_id, drift_text, drift_text_ar, summary_text, summary_text_ar, delta_json, ar_patch_json
+        FROM drift_memory
+        WHERE mind_id = ?
+        ORDER BY version DESC, drift_id DESC
+        LIMIT 1
+        """,
+        (int(mind_id),),
+    ).fetchone()
+
+
+def _fetch_axis_row(conn: sqlite3.Connection, mind_id: int) -> Optional[sqlite3.Row]:
+    """
+    Axis policy:
+    - Prefer version=0 if present
+    - Else: earliest version row (min version), which in your current DB is often version=1
+    """
+    r0 = conn.execute(
+        """
+        SELECT drift_id, version, drift_text
+        FROM drift_memory
+        WHERE mind_id = ? AND version = 0
+        ORDER BY drift_id ASC
+        LIMIT 1
+        """,
+        (int(mind_id),),
+    ).fetchone()
+    if r0:
+        return r0
+
+    rmin = conn.execute(
+        """
+        SELECT drift_id, version, drift_text
+        FROM drift_memory
+        WHERE mind_id = ?
+        ORDER BY version ASC, drift_id ASC
+        LIMIT 1
+        """,
+        (int(mind_id),),
+    ).fetchone()
+    return rmin
+
+
+def _insert_drift_memory_row(
+    conn: sqlite3.Connection,
+    *,
+    mind_id: int,
+    tick_id: int,
+    parent_drift_id: Optional[int],
+    version: int,
+    drift_text: str,
+    summary_text: str,
+    drift_text_ar: str,
+    summary_text_ar: str,
+    delta_json: str,
+    ar_patch_json: str,
+    params_json: str,
+    prompt_hash: str,
+) -> int:
+    """
+    Inserts directly using your current drift_memory schema (as you showed via PRAGMA).
+    """
+    cur = conn.execute(
+        """
+        INSERT INTO drift_memory (
+          mind_id, tick_id, parent_drift_id,
+          drift_text, summary_text,
+          best_similarity, avg_similarity,
+          grounded_ratio, hallucinate_ratio,
+          confidence_before, confidence_after,
+          hallucination_level, embedding_id,
+          params_json, prompt_hash,
+          version, confidence_state, hallucination_state,
+          instability_reason,
+          drift_text_ar, ar_patch_json,
+          summary_text_ar, summary_ar_patch_json,
+          keepsake_text, delta_json
+        )
+        VALUES (
+          ?, ?, ?,
+          ?, ?,
+          0.0, 0.0,
+          0.0, 1.0,
+          0.5, 0.5,
+          0.0, NULL,
+          ?, ?,
+          ?, 'unknown', 'unknown',
+          NULL,
+          ?, ?,
+          ?, NULL,
+          NULL, ?
+        )
+        """,
+        (
+            int(mind_id),
+            int(tick_id),
+            (int(parent_drift_id) if parent_drift_id is not None else None),
+            str(drift_text or ""),
+            str(summary_text or ""),
+            str(params_json or ""),
+            str(prompt_hash or ""),
+            int(version),
+            str(drift_text_ar or ""),
+            str(ar_patch_json or ""),
+            str(summary_text_ar or ""),
+            str(delta_json or ""),
+        ),
+    )
+    return int(cur.lastrowid)
+
+
+def run_tick(
+    *,
+    db_path: str,
+    tick_id: int,
+    allow_fallback_recent: bool = False,
+    timeout_seconds: float = 55.0,
+    text_model: Optional[str] = None,
+    event_ids: Optional[List[int]] = None,
+    **_ignored: Any,
+) -> Dict[str, Any]:
+    """
+    - Keeps signature tolerant to older callers (extra kwargs ignored).
+    - Generates drift/recap (EN), translation-locked AR, and EN/AR deltas.
+    - Writes drift_memory rows directly to avoid fragile db module signatures.
+    """
+    event_ids = event_ids or []
+
+    conn = _connect(db_path)
+    try:
+        _ensure_tick_row(conn, int(tick_id))
+        minds_rows = _fetch_minds(conn)
+
+        minds_payload: List[Dict[str, Any]] = []
+        for mr in minds_rows:
+            mind_id = int(mr["mind_id"])
+            mind_key = str(mr["mind_key"])
+
+            latest = _fetch_latest_drift_row(conn, mind_id)
+            axis = _fetch_axis_row(conn, mind_id)
+
+            axis_en = (axis["drift_text"] if axis and axis["drift_text"] is not None else "") if axis else ""
+            prev_en = (latest["drift_text"] if latest and latest["drift_text"] is not None else "") if latest else ""
+            prev_ar = (latest["drift_text_ar"] if latest and latest["drift_text_ar"] is not None else "") if latest else ""
+            prev_version = int(latest["version"]) if latest and latest["version"] is not None else 0
+            prev_drift_id = int(latest["drift_id"]) if latest and latest["drift_id"] is not None else None
+
+            minds_payload.append(
+                {
+                    "mind_id": mind_id,
+                    "mind_key": mind_key,
+                    "axis_en": axis_en,
+                    "prev_en": prev_en,
+                    "prev_ar": prev_ar,
+                    "prev_version": prev_version,
+                    "prev_drift_id": prev_drift_id,
+                }
+            )
+
+        import drift_text_openai
+
+        bundled = drift_text_openai.generate_bundled_drifts_openai(
+            db_path=db_path,
+            tick_id=int(tick_id),
+            event_ids=list(event_ids),
+            minds=minds_payload,
+            model=text_model,
+            timeout_seconds=float(timeout_seconds),
+        )
+
+        # Write all minds
+        inserted: Dict[str, Any] = {}
+        params_json = json.dumps(
+            {
+                "tick_id": int(tick_id),
+                "text_model": (text_model or os.getenv("OPENAI_TEXT_MODEL", "gpt-4.1-mini")),
+                "allow_fallback_recent": bool(allow_fallback_recent),
+            },
+            ensure_ascii=False,
+        )
+        prompt_hash = str(bundled.get("prompt_hash") or "")
+
+        for mind_key, payload in (bundled.get("minds") or {}).items():
+            mind_id = int(payload["mind_id"])
+            prev_version = int(payload.get("prev_version") or 0)
+            parent_drift_id = payload.get("prev_drift_id")
+            new_version = prev_version + 1 if prev_version >= 0 else 1
+
+            drift_en = str(payload.get("drift_en") or "")
+            recap_en = str(payload.get("recap_en") or "")
+            drift_ar = str(payload.get("drift_ar") or "")
+            recap_ar = str(payload.get("recap_ar") or "")
+            delta_json = str(payload.get("delta_json") or "")
+            ar_patch_json = str(payload.get("delta_json_ar") or "")
+
+            drift_id = _insert_drift_memory_row(
+                conn,
+                mind_id=mind_id,
+                tick_id=int(tick_id),
+                parent_drift_id=(int(parent_drift_id) if parent_drift_id is not None else None),
+                version=int(new_version),
+                drift_text=drift_en,
+                summary_text=recap_en,
+                drift_text_ar=drift_ar,
+                summary_text_ar=recap_ar,
+                delta_json=delta_json,
+                ar_patch_json=ar_patch_json,
+                params_json=params_json,
+                prompt_hash=prompt_hash,
+            )
+
+            inserted[mind_key] = {
+                "drift_id": drift_id,
+                "drift_version": int(new_version),
+                "has_arabic": bool(drift_ar),
+                "delta_counts": {
+                    "token_ops": len(json.loads(delta_json).get("token_ops") or []) if delta_json else 0
+                },
+            }
+
+        conn.commit()
+
+        return {
+            "tick_id": int(tick_id),
+            "event_ids": list(event_ids),
+            "used_fallback_recent": bool(allow_fallback_recent),
+            "minds": inserted,
+            "skipped_missing_axis": [],
+            "skipped_invalid_axis": [],
+            "status": "ok",
+        }
+
+    finally:
+        try:
+            conn.close()
+        except Exception:
+            pass

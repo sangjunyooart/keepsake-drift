@@ -1,0 +1,136 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Keepsakes ~ Drift | Personas</title>
+  <link rel="stylesheet" href="/static/css/base.css" />
+  <link rel="stylesheet" href="/static/css/layout.css" />
+  <style>
+    .rtl-block { direction: rtl; text-align: right; }
+  </style>
+</head>
+<body>
+  <div class="app-shell">
+    <div class="app-header">
+      <div class="menu-icon" id="menuIcon"><span></span><span></span><span></span></div>
+      <div class="header-center" id="headerCenter">Temporal personas</div>
+      <div class="lang-toggle" id="langToggle"><span id="langLabel">عرب</span></div>
+    </div>
+
+    <div class="persona-main">
+      <div class="persona-title" id="personaTitle">Choose a temporality</div>
+      <div class="persona-subtitle" id="personaSubtitle">
+        Each persona inhabits a different sense of time. Your memory will drift in its own way with each one.
+      </div>
+
+      <div class="persona-grid">
+        <a class="persona-card" href="/chat?persona=human">
+          <div class="persona-card-title" id="humanMain">Human-time</div>
+          <div class="persona-card-sub" id="humanSub">Daily routines, recall</div>
+        </a>
+
+        <a class="persona-card" href="/chat?persona=liminal">
+          <div class="persona-card-title" id="liminalMain">Liminal-time</div>
+          <div class="persona-card-sub" id="liminalSub">Corridors, waiting, thresholds</div>
+        </a>
+
+        <a class="persona-card" href="/chat?persona=environment">
+          <div class="persona-card-title" id="envMain">Environmental-time</div>
+          <div class="persona-card-sub" id="envSub">Weather, light, atmosphere</div>
+        </a>
+
+        <a class="persona-card" href="/chat?persona=digital">
+          <div class="persona-card-title" id="digitalMain">Digital-time</div>
+          <div class="persona-card-sub" id="digitalSub">Signals, feeds, network drift</div>
+        </a>
+
+        <a class="persona-card" href="/chat?persona=infrastructure">
+          <div class="persona-card-title" id="infraMain">Infrastructure-time</div>
+          <div class="persona-card-sub" id="infraSub">Logistics, systems, support layers</div>
+        </a>
+
+        <a class="persona-card" href="/chat?persona=more_than_human">
+          <div class="persona-card-title" id="mthMain">More-than-human-time</div>
+          <div class="persona-card-sub" id="mthSub">Nonhuman rhythms, ecological sense</div>
+        </a>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    document.addEventListener("DOMContentLoaded", () => {
+      const langToggle = document.getElementById("langToggle");
+      const langLabel = document.getElementById("langLabel");
+
+      const personaTitle = document.getElementById("personaTitle");
+      const personaSubtitle = document.getElementById("personaSubtitle");
+
+      const ids = [
+        "humanMain","humanSub",
+        "liminalMain","liminalSub",
+        "envMain","envSub",
+        "digitalMain","digitalSub",
+        "infraMain","infraSub",
+        "mthMain","mthSub"
+      ].reduce((acc, id) => (acc[id] = document.getElementById(id), acc), {});
+
+      const uiText = {
+        en: {
+          langButton: "عرب",
+          personaTitle: "Choose a temporality",
+          personaSubtitle: "Each persona inhabits a different sense of time. Your memory will drift in its own way with each one.",
+          humanMain: "Human-time", humanSub: "Daily routines, recall",
+          liminalMain: "Liminal-time", liminalSub: "Corridors, waiting, thresholds",
+          envMain: "Environmental-time", envSub: "Weather, light, atmosphere",
+          digitalMain: "Digital-time", digitalSub: "Signals, feeds, network drift",
+          infraMain: "Infrastructure-time", infraSub: "Logistics, systems, support layers",
+          mthMain: "More-than-human-time", mthSub: "Nonhuman rhythms, ecological sense"
+        },
+        ar: {
+          langButton: "EN",
+          personaTitle: "اختر زمنًا",
+          personaSubtitle: "كل شخصية تعيش إحساساً مختلفاً بالزمن. ستنجرف ذاكرتك بطريقة مختلفة مع كل واحدة.",
+          humanMain: "الزمن الإنساني", humanSub: "إيقاع الحياة اليومية",
+          liminalMain: "الزمن البيني", liminalSub: "ممرات، انتظار، عتبات",
+          envMain: "الزمن البيئي", envSub: "الطقس، الضوء، الجو",
+          digitalMain: "الزمن الرقمي", digitalSub: "إشارات، تغذيات، انجراف شبكي",
+          infraMain: "زمن البنى التحتية", infraSub: "لوجستيات، أنظمة، طبقات داعمة",
+          mthMain: "زمن أكثر من بشري", mthSub: "إيقاعات غير بشرية، إحساس بيئي"
+        }
+      };
+
+      let currentLang = "en";
+
+      function setRTL(on) {
+        document.body.classList.toggle("rtl", on);
+        [personaTitle, personaSubtitle].forEach(el => el.classList.toggle("rtl-block", on));
+        Object.values(ids).forEach(el => el.classList.toggle("rtl-block", on));
+      }
+
+      function applyLang() {
+        const t = uiText[currentLang];
+        langLabel.textContent = t.langButton;
+        personaTitle.textContent = t.personaTitle;
+        personaSubtitle.textContent = t.personaSubtitle;
+
+        Object.keys(ids).forEach(k => { if (ids[k]) ids[k].textContent = t[k]; });
+        setRTL(currentLang === "ar");
+      }
+
+      // keep Arabic support
+      langToggle.addEventListener("click", () => {
+        currentLang = (currentLang === "en") ? "ar" : "en";
+        applyLang();
+      });
+
+      // menu icon returns home (same behavior as chat_runtime)
+      document.getElementById("menuIcon").addEventListener("click", () => {
+        window.location.href = "/";
+      });
+
+      applyLang();
+    });
+  </script>
+</body>
+</html>

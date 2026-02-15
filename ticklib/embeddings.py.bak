@@ -1,0 +1,78 @@
+# ticklib/embeddings.py
+from __future__ import annotations
+
+import sqlite3
+from typing import Any, Dict, List
+
+import db
+from embeddings_local import (
+    blob_to_vector,
+    embedding_hash,   # keep re-exported behavior for callers
+    local_embed,
+    normalize,
+    vector_to_blob,
+)
+
+
+def embed_text(text: str, *, model: str, dims: int) -> List[float]:
+    """
+    Backward-compatible helper expected by ticklib.pipeline (and older code).
+
+    Returns a normalized vector list of length `dims`.
+    `model` is accepted for API stability (hashing/metadata elsewhere may use it).
+    """
+    vec = local_embed(text or "", dims=dims)
+    return normalize(vec)
+
+
+def ensure_event_embeddings(
+    conn: sqlite3.Connection,
+    event_ids: List[int],
+    events: Dict[int, Dict[str, Any]],
+    *,
+    model: str,
+    dims: int,
+) -> Dict[int, List[float]]:
+    event_vecs: Dict[int, List[float]] = {}
+    with conn:
+        for eid in event_ids:
+            e = events[eid]
+
+            if e.get("embedding_id"):
+                emb_id = int(e["embedding_id"])
+            else:
+                text = "\n\n".join([p for p in [e.get("title"), e.get("content"), e.get("url")] if p])
+
+                # Generate vector (same behavior as before)
+                vec = local_embed(text, dims=dims)
+                vec_blob = vector_to_blob(vec)
+                vec_hash = embedding_hash(model, "raw_event", vec_blob)
+
+                emb_id = db.upsert_embedding(
+                    conn,
+                    kind="raw_event",
+                    model=model,
+                    dims=dims,
+                    vector_blob=vec_blob,
+                    vector_hash=vec_hash,
+                )
+                db.set_raw_event_embedding(conn, eid, emb_id)
+
+            # Always return normalized vectors
+            event_vecs[eid] = normalize(blob_to_vector(db.load_embedding_blob(conn, emb_id)))
+
+    return event_vecs
+
+
+def ensure_drift_embedding(conn: sqlite3.Connection, drift_text: str, *, model: str, dims: int) -> int:
+    vec = local_embed(drift_text or "", dims=dims)
+    vec_blob = vector_to_blob(vec)
+    vec_hash = embedding_hash(model, "drift_memory", vec_blob)
+    return db.upsert_embedding(
+        conn,
+        kind="drift_memory",
+        model=model,
+        dims=dims,
+        vector_blob=vec_blob,
+        vector_hash=vec_hash,
+    )

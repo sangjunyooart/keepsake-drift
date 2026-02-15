@@ -1,0 +1,255 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Chat MOD</title>
+
+  <link rel="stylesheet" href="/static/css/base.css" />
+  <link rel="stylesheet" href="/static/css/layout.css" />
+  <link rel="stylesheet" href="/static/css/theme.css" />
+  <link rel="stylesheet" href="/static/css/chat.css" />
+
+  <style>
+    .mod-wrap { max-width: 1100px; margin: 0 auto; padding: 14px 12px 28px; }
+    .mod-top { display:flex; align-items:center; justify-content:space-between; gap:10px; flex-wrap:wrap; }
+    .mod-title { font-size: 14px; opacity: 0.8; }
+    .mod-controls { display:flex; gap:10px; align-items:center; flex-wrap:wrap; }
+
+    .seg { display:flex; align-items:center; gap:6px; border:1px solid rgba(255,255,255,0.14); border-radius: 999px; padding: 6px 10px; }
+    .seg label { font-size: 12px; opacity: 0.85; cursor:pointer; user-select:none; }
+    .seg .arrow { width: 28px; height: 28px; border-radius: 999px; border:1px solid rgba(255,255,255,0.14); background:transparent; color:inherit; cursor:pointer; }
+    .seg .arrow:disabled { opacity: 0.35; cursor:not-allowed; }
+    .seg .pill { padding: 4px 8px; border-radius: 999px; border:1px solid rgba(255,255,255,0.14); font-size: 12px; opacity: 0.9; }
+
+    .row { display:flex; gap:10px; align-items:center; flex-wrap:wrap; margin-top: 10px; }
+    select, button.small {
+      background: transparent; color: inherit;
+      border:1px solid rgba(255,255,255,0.14);
+      border-radius: 10px; padding: 6px 10px;
+    }
+
+    .grid { display:grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-top: 12px; }
+    .card { border:1px solid rgba(255,255,255,0.14); border-radius: 14px; padding: 12px; min-height: 340px; }
+    .meta { display:flex; justify-content:space-between; gap:8px; font-size: 12px; opacity: 0.75; }
+    .mode { margin-top: 8px; font-size: 12px; opacity: 0.7; }
+    .text { margin-top: 10px; white-space: pre-wrap; line-height: 1.45; }
+
+    /* Colorization: invariable categories + drifted segments */
+    .inv-sensory { color: #ff6b6b; }       /* red - sensory invariables */
+    .inv-temporal { color: #c792ea; }       /* purple - temporal invariables */
+    .inv-proper { color: #89ddff; }         /* cyan - proper noun invariables */
+    .inv { color: #ff6b6b; }               /* legacy fallback */
+    .drifted { color: #ffd93d; }            /* yellow - drifted segments (left panel) */
+
+    /* Semantic delta underlines: replacement regions on right panel */
+    .drift-new-mod {
+      text-decoration: underline;
+      text-decoration-thickness: 2px;
+      text-underline-offset: 4px;
+      text-decoration-color: #ffd93d;
+    }
+
+    /* Trigger info row */
+    .info-row { margin-top: 14px; border:1px solid rgba(255,255,255,0.14); border-radius: 14px; padding: 12px; }
+    .info-row h4 { font-size: 12px; opacity: 0.7; margin: 0 0 6px; text-transform: uppercase; letter-spacing: 0.05em; }
+    .info-section { margin-bottom: 10px; }
+    .info-section:last-child { margin-bottom: 0; }
+    .info-section .label { font-size: 11px; opacity: 0.55; margin-bottom: 3px; }
+    .info-section .items { font-size: 12px; line-height: 1.5; }
+    .info-section .items .tag { display: inline-block; padding: 2px 8px; border-radius: 999px; border:1px solid rgba(255,255,255,0.14); margin: 2px 4px 2px 0; font-size: 11px; }
+    .info-section .items .tag.anchor { border-color: rgba(255,107,107,0.5); color: #ff6b6b; }
+    .info-section .items .tag.temporal { border-color: rgba(199,146,234,0.5); color: #c792ea; }
+    .info-section .items .tag.proper { border-color: rgba(137,221,255,0.5); color: #89ddff; }
+    .info-section .items .tag.segment { border-color: rgba(255,217,61,0.5); color: #ffd93d; }
+    .info-section .items .tag.event { border-color: rgba(130,170,255,0.5); color: #82aaff; }
+    .info-section .items .tag.drifted-kw { border-color: rgba(255,217,61,0.6); color: #ffd93d; }
+    .info-section .items a { color: #82aaff; text-decoration: none; }
+    .info-section .items a:hover { text-decoration: underline; }
+
+    /* Drift Causality panel */
+    .causality-panel { margin-top: 14px; border:1px solid rgba(255,255,255,0.14); border-radius: 14px; padding: 14px; }
+    .causality-panel h4 { font-size: 12px; opacity: 0.7; margin: 0 0 10px; text-transform: uppercase; letter-spacing: 0.05em; }
+    .causality-justification { font-size: 12px; line-height: 1.55; font-style: italic; opacity: 0.85; margin-bottom: 12px; padding: 8px 10px; border-left: 3px solid rgba(255,217,61,0.5); background: rgba(255,217,61,0.04); border-radius: 0 8px 8px 0; }
+    .causality-flow { margin-bottom: 14px; }
+    .seg-diff { margin-bottom: 12px; padding: 8px 10px; border-radius: 8px; background: rgba(255,255,255,0.03); }
+    .seg-diff-label { font-size: 10px; text-transform: uppercase; letter-spacing: 0.06em; opacity: 0.45; margin-bottom: 4px; }
+    .seg-diff-old { font-size: 12px; line-height: 1.45; opacity: 0.55; text-decoration: line-through; text-decoration-color: rgba(255,107,107,0.5); margin-bottom: 4px; }
+    .seg-diff-arrow { font-size: 11px; opacity: 0.35; margin-bottom: 4px; }
+    .seg-diff-new { font-size: 12px; line-height: 1.45; }
+    .seg-diff-new .kw-hit { color: #ffd93d; text-decoration: underline; text-decoration-thickness: 2px; text-underline-offset: 3px; text-decoration-color: #ffd93d; }
+    .causality-keepsake { font-size: 12px; line-height: 1.55; opacity: 0.8; padding: 8px 10px; border-left: 3px solid rgba(130,170,255,0.5); background: rgba(130,170,255,0.04); border-radius: 0 8px 8px 0; }
+    .causality-keepsake .kp-label { font-size: 10px; text-transform: uppercase; letter-spacing: 0.06em; opacity: 0.45; margin-bottom: 4px; }
+    .causality-direction { font-size: 12px; line-height: 1.55; opacity: 0.85; margin-bottom: 12px; padding: 8px 10px; border-left: 3px solid rgba(199,146,234,0.5); background: rgba(199,146,234,0.04); border-radius: 0 8px 8px 0; }
+    .causality-direction .dir-label { font-size: 10px; text-transform: uppercase; letter-spacing: 0.06em; opacity: 0.45; margin-bottom: 4px; }
+
+    /* Image prompt panel */
+    .image-prompt-panel { margin-top: 14px; border:1px solid rgba(255,255,255,0.14); border-radius: 14px; padding: 14px; }
+    .image-prompt-panel h4 { font-size: 12px; opacity: 0.7; margin: 0 0 10px; text-transform: uppercase; letter-spacing: 0.05em; }
+    .image-prompt-header { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; }
+    .image-prompt-header h4 { margin: 0; }
+    .image-prompt-thumb { width: 60px; height: 90px; border-radius: 8px; object-fit: cover; border: 1px solid rgba(255,255,255,0.14); }
+    .image-prompt-thumb.empty { background: rgba(255,255,255,0.04); display: flex; align-items: center; justify-content: center; font-size: 10px; opacity: 0.3; }
+    .image-prompt-text {
+      font-size: 11px; line-height: 1.55; opacity: 0.8;
+      padding: 10px 12px;
+      border-left: 3px solid rgba(100,200,150,0.5);
+      background: rgba(100,200,150,0.04);
+      border-radius: 0 8px 8px 0;
+      white-space: pre-wrap;
+      max-height: 400px;
+      overflow-y: auto;
+      font-family: 'SF Mono', 'Fira Code', 'Consolas', monospace;
+    }
+    .image-prompt-none { font-size: 12px; opacity: 0.4; }
+
+    .legend { display:flex; gap: 16px; margin-top: 8px; font-size: 11px; opacity: 0.6; }
+    .legend-item { display:flex; align-items:center; gap: 4px; }
+    .legend-swatch { width: 10px; height: 10px; border-radius: 3px; }
+
+    .hint { margin-top: 10px; font-size: 12px; opacity: 0.6; }
+  </style>
+</head>
+
+<body>
+  <div class="mod-wrap">
+    <div class="mod-top">
+      <div class="mod-title">Chat MOD (private) — compare n-1 vs n</div>
+
+      <div class="mod-controls">
+        <div class="seg" id="segDrift">
+          <button class="arrow" id="driftPrev" title="Older">◀</button>
+          <label id="driftLabel">Drift</label>
+          <button class="arrow" id="driftNext" title="Newer">▶</button>
+          <span class="pill" id="driftVer">v?</span>
+        </div>
+
+        <div class="seg" id="segKeepsake">
+          <button class="arrow" id="keepPrev" title="Older">◀</button>
+          <label id="keepLabel">Keepsake</label>
+          <button class="arrow" id="keepNext" title="Newer">▶</button>
+          <span class="pill" id="keepVer">v?</span>
+        </div>
+
+        <div class="seg">
+          <span class="pill" id="langPill">EN</span>
+          <button class="arrow" id="toggleLang" title="Toggle language">↔</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="row">
+      <span class="pill">Persona</span>
+      <select id="personaSelect"></select>
+
+      <span class="pill" id="comparePill">n-1 vs n</span>
+      <button class="small" id="swapSides" title="Swap sides">swap</button>
+
+      <span class="pill" id="modePill">DRIFT</span>
+      <button class="small" id="toggleDelta" title="Show delta_json">delta</button>
+    </div>
+
+    <div class="grid">
+      <div class="card">
+        <div class="meta">
+          <div id="leftMeta">Left</div>
+          <div id="leftStamp"></div>
+        </div>
+        <div class="mode" id="leftMode"></div>
+        <div class="text" id="leftText"></div>
+      </div>
+
+      <div class="card">
+        <div class="meta">
+          <div id="rightMeta">Right</div>
+          <div id="rightStamp"></div>
+        </div>
+        <div class="mode" id="rightMode"></div>
+        <div class="text" id="rightText"></div>
+      </div>
+    </div>
+
+    <div class="legend">
+      <div class="legend-item"><div class="legend-swatch" style="background:#ff6b6b;"></div> sensory invariable</div>
+      <div class="legend-item"><div class="legend-swatch" style="background:#c792ea;"></div> temporal invariable</div>
+      <div class="legend-item"><div class="legend-swatch" style="background:#89ddff;"></div> proper noun invariable</div>
+      <div class="legend-item"><div class="legend-swatch" style="background:#ffd93d;"></div> drifted segment (left)</div>
+      <div class="legend-item"><div class="legend-swatch" style="background:#ffd93d; height:2px; width:16px; margin-top:4px;"></div> drift underline (right)</div>
+      <div class="legend-item"><div class="legend-swatch" style="background:#82aaff;"></div> RSS trigger</div>
+    </div>
+
+    <!-- Drift Causality Visualization -->
+    <div class="causality-panel" id="causalityPanel">
+      <h4>Drift Causality — <span id="causalityPersona">?</span> v<span id="causalityVer">?</span></h4>
+
+      <!-- Lens interpretation: HOW this mind reads the headlines -->
+      <div class="causality-direction" id="causalityDirection">
+        <div class="dir-label">Lens interpretation</div>
+        <span style="opacity:0.4;">not generated</span>
+      </div>
+
+      <!-- Justification: WHY this drifted -->
+      <div class="causality-justification" id="causalityJustification">
+        <span style="opacity:0.4;">no justification</span>
+      </div>
+
+      <!-- Segment-level before → after diffs with keyword highlighting -->
+      <div class="causality-flow" id="causalityFlow">
+        <!-- dynamically populated -->
+      </div>
+
+      <!-- Keepsake narration (3rd person) -->
+      <div class="causality-keepsake" id="causalityKeepsake">
+        <div class="kp-label">Keepsake narration</div>
+        <span style="opacity:0.4;">not generated</span>
+      </div>
+    </div>
+
+    <!-- Image generation prompt -->
+    <div class="image-prompt-panel" id="imagePromptPanel">
+      <div class="image-prompt-header">
+        <img class="image-prompt-thumb" id="imagePromptThumb" src="" alt="" style="display:none;" />
+        <h4>Image Prompt — <span id="imagePromptPersona">?</span> drift <span id="imagePromptVer">?</span></h4>
+      </div>
+      <div class="image-prompt-text" id="imagePromptText">
+        <span class="image-prompt-none">no image prompt available for this drift</span>
+      </div>
+    </div>
+
+    <!-- Collapsible technical metadata (invariables, event IDs, etc.) -->
+    <details style="margin-top: 10px;">
+      <summary style="font-size: 11px; opacity: 0.5; cursor: pointer;">Technical metadata</summary>
+      <div class="info-row" id="triggerInfo">
+        <h4>Drift Triggers (version <span id="triggerVer">?</span>)</h4>
+
+        <div class="info-section">
+          <div class="label">RSS Events</div>
+          <div class="items" id="triggerEvents"><span style="opacity:0.4;">none</span></div>
+        </div>
+
+        <div class="info-section">
+          <div class="label">Selected Segments (rewritten)</div>
+          <div class="items" id="triggerSegments"><span style="opacity:0.4;">none</span></div>
+        </div>
+
+        <div class="info-section">
+          <div class="label">Invariables</div>
+          <div class="items" id="triggerAnchors"><span style="opacity:0.4;">none</span></div>
+        </div>
+
+        <div class="info-section">
+          <div class="label">Drifted Keywords</div>
+          <div class="items" id="driftedKeywords"><span style="opacity:0.4;">none</span></div>
+        </div>
+      </div>
+    </details>
+
+    <div class="hint">
+      ArrowLeft/ArrowRight = older/newer • D = drift • K = keepsake • L = language • delta button shows delta_json for the selected drift (if present)
+    </div>
+  </div>
+
+  <script src="/static/js/chat_config.js"></script>
+  <script src="/static/js/chat_mod_runtime.js"></script>
+</body>
+</html>

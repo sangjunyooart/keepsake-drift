@@ -1,0 +1,1299 @@
+/* Updated: 2026-02-15 16:30 - Added overscroll contain to prevent pull-to-refresh */
+:root{
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  color-scheme: dark;
+
+  --bg: #050509;
+  --dock: #05070d;
+
+  --panel: rgba(5,7,13,0.78);
+  --panel-strong: rgba(5,7,13,0.90);
+
+  --border-subtle: rgba(120,130,160,0.25);
+
+  /* default text */
+  --text: #f5f5f7;
+  --text-dim: rgba(245,245,247,0.65);
+
+  --user-bubble: #161616;
+  --ai-bubble: #11171f;
+
+  /* persona-tinted variables (JS sets these per temporality) */
+  --persona-accent: #E6C15A;
+  --persona-accent-rgb: 230, 193, 90;
+
+  --persona-btn-bg: rgba(230, 193, 90, 0.5);
+  --persona-btn-border: rgba(230, 193, 90, 0.42);
+  --persona-btn-bg-active: rgba(230, 193, 90, 1);
+  --persona-btn-border-active: rgba(230, 193, 90, 1);
+}
+
+*{ box-sizing:border-box; }
+html, body{
+  margin:0;
+  padding:0;
+  height:100%;
+  width: 100%;
+  overflow-x: hidden;
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+}
+body{
+  background: radial-gradient(circle at top, #151820 0, #050509 55%);
+  color: var(--text);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  /* Hide scrollbar */
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+  /* Prevent pull-to-refresh on mobile */
+  overscroll-behavior-y: none;
+}
+body::-webkit-scrollbar {
+  display: none;
+}
+
+.app-shell{
+  width:100%;
+  height:100vh;
+  height: 100dvh; /* Dynamic viewport height for mobile */
+  display:flex;
+  flex-direction:column;
+  overflow:hidden;
+  background:#020308;
+  position: relative;
+  /* Prevent pull-to-refresh */
+  overscroll-behavior-y: none;
+  touch-action: pan-y;
+}
+
+/* TOP NAV DOCK */
+.app-header{
+  padding: 14px 18px;
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  align-items: center;
+  background: var(--dock);
+  border-bottom: 1px solid var(--border-subtle);
+  flex-shrink:0;
+}
+.menu-icon{
+  width:22px;
+  height:16px;
+  display:flex;
+  flex-direction:column;
+  justify-content:space-between;
+  padding:3px 0;
+  cursor:pointer;
+  justify-self: start;
+}
+.menu-icon span{
+  height:2px;
+  border-radius:999px;
+  background: var(--text);
+  opacity:0.8;
+}
+.header-center{
+  display:flex;
+  justify-content:center;
+  align-items:center;
+  justify-self: center;
+}
+.persona-title-chip{
+  font-size:14px;
+  color: var(--text);
+  min-height:36px;
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  max-width:70vw;
+  text-align:center;
+  padding-inline:18px;
+  border-radius:999px;
+  background: rgba(0,0,0,0.22);
+  border: 1px solid rgba(255,255,255,0.08);
+}
+.lang-toggle{
+  font-size:15px;
+  cursor:pointer;
+  color: var(--text);
+  min-height:44px;
+  display:flex;
+  align-items:center;
+  justify-self: end;
+  padding: 4px 8px;
+}
+
+/* SCREEN */
+.screen{
+  flex:1;
+  min-height:0;
+  position:relative;
+  background: #05070d;
+  overflow:hidden;
+}
+
+/* Background image area — starts black, fades in when image loads */
+.stage{
+  position:absolute;
+  inset:0;
+  overflow:hidden;
+  background:#05070d;
+  opacity:0;
+  transition: opacity 1.6s ease-in-out;
+}
+.stage.revealed{
+  opacity:1;
+}
+.bg-wrap{
+  position:absolute;
+  inset:0;
+  overflow:hidden;
+}
+
+/* ── Temporal image layers: n (current), n-1, n-2 stacked ── */
+/* No scale transforms — only gentle translate pan + filter breathing */
+.bg-img{
+  width:100%;
+  height:100%;
+  object-fit:cover;
+  object-position:center;
+  will-change: filter, opacity;
+}
+.bg-layer{
+  position:absolute;
+  inset:0;
+  width:100%;
+  height:100%;
+}
+
+/* n-2: deepest memory — slow deep surges */
+.bg-layer-prev2{
+  opacity:0;
+  filter:saturate(1.2) brightness(0.9) blur(4px) hue-rotate(0deg);
+  mix-blend-mode:screen;
+  animation:
+    layer-prev2-pulse  28s ease-in-out infinite;
+}
+@keyframes layer-prev2-pulse{
+  0%   { opacity:0.0;  filter:saturate(1.2) brightness(0.9)  blur(4px) hue-rotate(0deg); }
+  20%  { opacity:0.30; filter:saturate(1.6) brightness(1.1)  blur(2px) hue-rotate(-8deg); }
+  40%  { opacity:0.10; filter:saturate(0.8) brightness(0.7)  blur(6px) hue-rotate(5deg); }
+  60%  { opacity:0.25; filter:saturate(1.4) brightness(1.0)  blur(3px) hue-rotate(-5deg); }
+  80%  { opacity:0.05; filter:saturate(1.0) brightness(0.8)  blur(5px) hue-rotate(3deg); }
+  100% { opacity:0.0;  filter:saturate(1.2) brightness(0.9)  blur(4px) hue-rotate(0deg); }
+}
+
+/* n-1: recent past — strong but slow presence */
+.bg-layer-prev1{
+  opacity:0;
+  filter:saturate(1.1) brightness(0.95) blur(2px) hue-rotate(0deg);
+  mix-blend-mode:screen;
+  animation:
+    layer-prev1-pulse  22s ease-in-out infinite;
+}
+@keyframes layer-prev1-pulse{
+  0%   { opacity:0.0;  filter:saturate(1.1) brightness(0.95) blur(2px) hue-rotate(0deg); }
+  25%  { opacity:0.40; filter:saturate(1.5) brightness(1.15) blur(1px) hue-rotate(6deg); }
+  50%  { opacity:0.12; filter:saturate(0.9) brightness(0.80) blur(4px) hue-rotate(-4deg); }
+  75%  { opacity:0.35; filter:saturate(1.4) brightness(1.05) blur(1px) hue-rotate(-6deg); }
+  100% { opacity:0.0;  filter:saturate(1.1) brightness(0.95) blur(2px) hue-rotate(0deg); }
+}
+
+/* n: current — dominant, slow hue/saturation breathing only */
+.bg-layer-current{
+  opacity:1;
+  filter:saturate(1.15) brightness(1.0);
+  transition: opacity 1.8s ease-in-out;
+  animation:
+    layer-current-hue    30s ease-in-out infinite;
+}
+@keyframes layer-current-hue{
+  0%   { filter: saturate(1.15) brightness(1.00) hue-rotate(0deg); }
+  20%  { filter: saturate(1.35) brightness(1.06) hue-rotate(8deg); }
+  40%  { filter: saturate(1.00) brightness(0.92) hue-rotate(-6deg); }
+  60%  { filter: saturate(1.40) brightness(1.08) hue-rotate(10deg); }
+  80%  { filter: saturate(1.05) brightness(0.95) hue-rotate(-8deg); }
+  100% { filter: saturate(1.15) brightness(1.00) hue-rotate(0deg); }
+}
+.bg-layer-current.loading{
+  opacity:0;
+}
+
+/* ── Shimmer overlay: slow drifting light (no scale) ── */
+.bg-shimmer{
+  position:absolute;
+  inset:0;
+  width:100%;
+  height:100%;
+  background:
+    radial-gradient(ellipse 90% 70% at 25% 35%, rgba(255,255,255,0.06) 0%, transparent 60%),
+    radial-gradient(ellipse 70% 90% at 75% 65%, rgba(255,255,255,0.04) 0%, transparent 60%),
+    radial-gradient(ellipse 50% 50% at 50% 50%, rgba(255,200,100,0.03) 0%, transparent 50%);
+  animation: shimmer-move 35s ease-in-out infinite alternate;
+  pointer-events:none;
+  mix-blend-mode:soft-light;
+}
+@keyframes shimmer-move{
+  0%   { opacity:0.7; }
+  33%  { opacity:1.0; }
+  66%  { opacity:0.5; }
+  100% { opacity:0.8; }
+}
+
+.bg-vignette{
+  position:absolute;
+  inset:0;
+  background:
+    radial-gradient(circle at 50% 30%, rgba(0,0,0,0.05) 0%, rgba(0,0,0,0.35) 70%, rgba(0,0,0,0.50) 100%),
+    linear-gradient(to bottom, rgba(0,0,0,0.0) 0%, rgba(5,7,13,0.45) 70%, rgba(5,7,13,0.70) 100%);
+  pointer-events:none;
+}
+
+/* MIDDLE AREA BUTTONS + CONTENT */
+.mid-layer{
+  position:absolute;
+  inset:0;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  pointer-events:none;
+  padding-bottom: clamp(100px, 20vh, 130px); /* More space for keepsake shell */
+  box-sizing: border-box;
+  z-index: 5;
+}
+
+:root{
+  --midW: min(92vw, 420px);
+  --keepBtnBottom: 110px;
+  --keepBtnH: 44px;
+  --panelGap: 12px;
+}
+
+/* Drift button */
+.drift-btn{
+  pointer-events:auto;
+  position:relative;
+  margin-top: clamp(12px, 3vh, 16px);
+  margin-bottom: 0; /* No gap when panel is open */
+  width: var(--midW);
+  height: clamp(40px, 8vh, 44px);
+  min-height: 40px; /* Prevent shrinking below this height */
+  border-radius: 10px;
+  background: rgba(0,0,0,0.70);
+  border: 1px solid rgba(255,255,255,0.16);
+  color: rgba(245,245,247,0.88);
+  font-size: 15px;
+  font-weight: 500;
+  letter-spacing: 0.02em;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  cursor:pointer;
+  box-shadow: 0 10px 26px rgba(0,0,0,0.45);
+  user-select:none;
+  z-index: 10;
+  flex-shrink: 0; /* Never shrink this button */
+}
+.drift-btn.active{
+  background: rgba(255,255,255,0.92);
+  color:#000;
+  border-color: rgba(0,0,0,0.25);
+  border-bottom-left-radius: 0;
+  border-bottom-right-radius: 0;
+}
+
+/* When button is NOT active (panel closed), add spacing below */
+.drift-btn:not(.active){
+  margin-bottom: clamp(8px, 2vh, 12px);
+}
+
+/* TOP content: drift panel extends downward from drift button */
+.top-content{
+  pointer-events:none;
+  width: var(--midW);
+  margin-top: 0;
+  display:flex;
+  align-items:flex-start;
+  justify-content:center;
+}
+
+/* Panels — extend from button edge, growing in the same direction */
+.text-panel{
+  width: 100%;
+  padding: 14px 16px;
+  background: rgba(0,0,0,0.55);
+  border: 1px solid rgba(255,255,255,0.10);
+  box-shadow: 0 10px 30px rgba(0,0,0,0.35);
+  backdrop-filter: blur(10px);
+  overflow: hidden;
+
+  /* collapsed state */
+  max-height: 0;
+  padding-top: 0;
+  padding-bottom: 0;
+  opacity: 0;
+  border-color: transparent;
+  pointer-events: none;
+
+  transition:
+    max-height 0.4s cubic-bezier(0.22, 1, 0.36, 1),
+    padding 0.35s cubic-bezier(0.22, 1, 0.36, 1),
+    opacity 0.3s ease,
+    border-color 0.3s ease;
+}
+
+/* Drift panel: extends downward — round bottom corners, flat top to meet button */
+#driftPanel{
+  border-radius: 0 0 12px 12px;
+  border-top: none;
+}
+
+/* open state */
+.text-panel.open{
+  /* Max height calculated to stop slightly above keepsake tab */
+  /* 100vh - nav (60px) - drift button (60px) - keepsake tab (110px) - gap (30px) */
+  max-height: calc(100vh - 260px);
+  max-height: calc(100dvh - 260px); /* Dynamic viewport height for mobile */
+  padding-top: 14px;
+  padding-bottom: 30px; /* Extra padding at bottom for complete scroll access */
+  opacity: 1;
+  border-color: rgba(255,255,255,0.10);
+  pointer-events: auto;
+  overflow-y: auto;
+  overflow-x: hidden;
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior-y: contain; /* Prevent pull-to-refresh at scroll boundaries */
+  touch-action: pan-y; /* Allow vertical scrolling but prevent other gestures */
+  /* Hide scrollbar */
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+.text-panel.open::-webkit-scrollbar {
+  display: none;
+}
+.text-panel.hidden{ display:none; }
+
+.text-panel .body{
+  margin:0;
+  padding-bottom: 10px; /* Ensure bottom text is fully scrollable */
+  color: rgba(245,245,247,0.86);   /* default light grey text */
+  font-size: 15px;
+  line-height: 1.7;
+  font-weight: 300;
+  white-space: pre-wrap;
+  word-wrap: break-word;
+  overflow-wrap: break-word;
+}
+.text-panel.rtl .body{
+  direction: rtl;
+  text-align:right;
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+}
+
+/* Headlines fold inside keepsake panel */
+.headlines-fold{
+  margin-top:8px;
+  padding-top:0;
+}
+.headlines-toggle{
+  background:none;
+  border:none;
+  color:rgba(245,245,247,0.35);
+  font-size:11px;
+  cursor:pointer;
+  padding:2px 0;
+  display:inline-flex;
+  align-items:center;
+  gap:4px;
+  letter-spacing:0.03em;
+}
+.headlines-toggle:hover{
+  color:rgba(245,245,247,0.55);
+}
+.fold-arrow{
+  font-size:7px;
+  transition:transform 0.2s ease;
+  display:inline-block;
+}
+.fold-arrow.open{
+  transform:rotate(90deg);
+}
+.headlines-list{
+  list-style:none;
+  margin:6px 0 0 0;
+  padding:0 0 0 12px;
+  max-height:0;
+  overflow:hidden;
+  opacity:0;
+  transition: max-height 0.3s ease, opacity 0.25s ease;
+}
+.headlines-list.visible{
+  max-height:200px;
+  opacity:1;
+}
+.headlines-list li{
+  color:rgba(245,245,247,0.40);
+  font-size:11px;
+  line-height:1.5;
+  padding:1px 0;
+}
+.headlines-list li::before{
+  content:"– ";
+  opacity:0.4;
+}
+
+/* ============================================================
+   KEEPSAKE SHELL — archive of past keepsake narrations
+   ============================================================ */
+.keepsake-shell{
+  position:absolute;
+  left:0;
+  right:0;
+  bottom:0;
+  display:flex;
+  flex-direction:column;
+  align-items:stretch;
+
+  background: linear-gradient(
+    to top,
+    rgba(5,5,9,0.98) 0%,
+    rgba(5,7,13,0.94) 55%,
+    rgba(5,7,13,0.0) 100%
+  );
+
+  border-top-left-radius: clamp(16px, 3vh, 18px);
+  border-top-right-radius: clamp(16px, 3vh, 18px);
+  border-top: 1px solid var(--border-subtle);
+  backdrop-filter: blur(22px);
+  box-shadow: 0 -10px 26px rgba(0,0,0,0.65);
+  overflow:hidden;
+
+  /* Collapsed: handle + composer visible */
+  height: clamp(90px, 18vh, 110px);
+  min-height: 90px;
+  transition: height 0.45s cubic-bezier(0.25, 0.46, 0.45, 0.94), max-height 0.45s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  will-change: height;
+  z-index: 3; /* Below mid-layer (5) and drift-btn (10) */
+}
+.keepsake-shell.expanded{
+  /* Expanded to fill available space but stay below drift button */
+  height: calc(100vh - 160px); /* Mobile-safe: Reserve more space for header + drift button + safe buffer */
+  height: calc(100dvh - 160px); /* Dynamic viewport height for mobile browsers */
+  max-height: calc(100vh - 160px);
+  max-height: calc(100dvh - 160px);
+}
+
+/* Handle — shows "Keepsake" label, tap to toggle */
+.keepsake-handle{
+  height: 42px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  flex-shrink:0;
+  cursor:pointer;
+  user-select:none;
+  position: relative;
+  z-index: 10; /* Ensure handle stays above archive content */
+  background: linear-gradient(
+    to bottom,
+    rgba(5,7,13,0.95) 0%,
+    rgba(5,7,13,0.88) 100%
+  ); /* Solid background so archive doesn't show through */
+}
+.keepsake-handle-label{
+  font-size: 18px;
+  font-weight: 500;
+  letter-spacing: 0.02em;
+  color: rgba(var(--persona-accent-rgb), 0.85);
+}
+
+/* Archive entries — scrollable list, oldest at top, newest at bottom */
+.archive-entries-wrap{
+  position:relative;
+  flex:1;
+  min-height:0;
+  display:none;
+  transition: max-height 0.3s ease;
+}
+.keepsake-shell.expanded .archive-entries-wrap{
+  display:flex;
+  flex-direction:column;
+}
+
+/* Top fade mask: entries disappear into darkness at top */
+.archive-entries-wrap::before{
+  content:"";
+  position:absolute;
+  top:0;
+  left:0;
+  right:0;
+  height:48px;
+  background: linear-gradient(
+    to bottom,
+    rgba(5,7,13,0.95) 0%,
+    rgba(5,7,13,0.0) 100%
+  );
+  z-index:1; /* Below handle (z-index: 10) */
+  pointer-events:none;
+}
+
+.archive-entries{
+  flex:1;
+  padding: 10px 14px 10px;
+  overflow-y:auto;
+  display:flex;
+  flex-direction:column;
+  gap:16px;
+  min-height:0;
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior: contain;
+  /* Hide scrollbar */
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+.archive-entries::-webkit-scrollbar {
+  display: none;
+}
+
+/* Loading indicator inside archive */
+.archive-loading{
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  padding:24px 0;
+}
+
+/* Single keepsake entry card */
+.keepsake-entry{
+  padding: 14px 16px;
+  background: rgba(0,0,0,0.35);
+  border: 1px solid rgba(255,255,255,0.06);
+  border-radius: 12px;
+}
+.keepsake-entry-header{
+  display:flex;
+  justify-content:space-between;
+  align-items:baseline;
+  margin-bottom:8px;
+}
+.keepsake-entry-version{
+  font-size:11px;
+  color: rgba(var(--persona-accent-rgb), 0.65);
+  font-weight:500;
+  letter-spacing:0.04em;
+}
+.keepsake-entry-time{
+  font-size:11px;
+  color: rgba(245,245,247,0.30);
+}
+.keepsake-entry-text{
+  margin:0;
+  color: rgba(245,245,247,0.82);
+  font-size: 14px;
+  line-height: 1.7;
+  font-weight: 300;
+  font-family: "Georgia", "Times New Roman", serif;
+  white-space: pre-wrap;
+}
+
+/* Headlines fold inside keepsake entry */
+.keepsake-entry .headlines-fold{
+  margin-top:8px;
+  padding-top:0;
+}
+.keepsake-entry .headlines-toggle{
+  background:none;
+  border:none;
+  color:rgba(245,245,247,0.30);
+  font-size:10px;
+  cursor:pointer;
+  padding:2px 0;
+  display:inline-flex;
+  align-items:center;
+  gap:4px;
+  letter-spacing:0.03em;
+}
+.keepsake-entry .headlines-toggle:hover{
+  color:rgba(245,245,247,0.50);
+}
+.keepsake-entry .fold-arrow{
+  font-size:7px;
+  transition:transform 0.2s ease;
+  display:inline-block;
+}
+.keepsake-entry .fold-arrow.open{
+  transform:rotate(90deg);
+}
+.keepsake-entry .headlines-list{
+  list-style:none;
+  margin:6px 0 0 0;
+  padding:0 0 0 10px;
+  max-height:0;
+  overflow:hidden;
+  opacity:0;
+  transition: max-height 0.3s ease, opacity 0.25s ease;
+}
+.keepsake-entry .headlines-list.visible{
+  max-height:200px;
+  opacity:1;
+}
+.keepsake-entry .headlines-list li{
+  color:rgba(245,245,247,0.35);
+  font-size:10px;
+  line-height:1.5;
+  padding:1px 0;
+}
+.keepsake-entry .headlines-list li::before{
+  content:"\2013 ";
+  opacity:0.4;
+}
+
+/* Visitor fragment entries — slightly different styling */
+.keepsake-entry.visitor{
+  background: rgba(255,255,255,0.04);
+  border-color: rgba(255,255,255,0.08);
+}
+.keepsake-entry.visitor .keepsake-entry-version{
+  color: rgba(245,245,247,0.40);
+}
+
+/* Empty state */
+.archive-empty{
+  text-align:center;
+  padding:30px 16px;
+  color: rgba(245,245,247,0.30);
+  font-size:13px;
+  font-style:italic;
+}
+
+/* Fragment composer — always visible below handle */
+.fragment-composer{
+  border-top: 1px solid rgba(120,130,160,0.12);
+  padding: 8px 12px 14px;
+  display:flex;
+  gap: 10px;
+  align-items:center;
+  flex-shrink:0;
+  background: rgba(5,7,13,0.92);
+  transition: opacity 0.3s ease;
+  position: relative;
+  z-index: 20;
+}
+.fragment-composer.disabled{
+  opacity: 0.35;
+  pointer-events: none;
+}
+.fragment-composer input{
+  flex:1;
+  height: 42px;
+  border-radius: 12px;
+  border: 1px solid rgba(120,130,160,0.30);
+  padding: 0 14px;
+  background: rgba(0,0,0,0.25);
+  color: rgba(245,245,247,0.50); /* 50% opacity - very subtle */
+  font-size: max(16px, 14px); /* Minimum 16px prevents iOS zoom */
+  outline:none;
+  transition: all 0.25s ease;
+  pointer-events: auto;
+  cursor: text;
+  -webkit-user-select: text;
+  user-select: text;
+  position: relative;
+  z-index: 21;
+}
+
+.fragment-composer input:focus {
+  border-color: rgba(var(--persona-accent-rgb), 0.50);
+  border-width: 2px;
+  background: rgba(0,0,0,0.35);
+  box-shadow: 0 0 0 2px rgba(var(--persona-accent-rgb), 0.10),
+              0 4px 12px rgba(0,0,0,0.20);
+  caret-color: rgba(var(--persona-accent-rgb), 0.60);
+  color: rgba(245,245,247,0.50); /* 50% opacity - subtle even when typing */
+}
+
+/* Remove highlight effect when keepsake is closed */
+.keepsake-shell:not(.expanded) .fragment-composer input:focus {
+  border-color: rgba(120,130,160,0.30);
+  border-width: 1px;
+  box-shadow: none;
+}
+.fragment-composer input::placeholder{
+  color: rgba(245,245,247,0.20);
+}
+
+.fragment-composer input:focus::placeholder{
+  color: rgba(245,245,247,0.50); /* 50% opacity when focused */
+  opacity: 0.50;
+}
+
+.fragment-send-btn{
+  width: 42px;
+  height: 42px;
+  border-radius: 12px;
+  border: 1px solid rgba(var(--persona-accent-rgb), 0.40);
+  background: rgba(0,0,0,0.45);
+  color: rgba(245,245,247,0.8);
+  display:flex;
+  pointer-events: auto;
+  cursor: pointer;
+  position: relative;
+  z-index: 21;
+  align-items:center;
+  justify-content:center;
+  cursor:pointer;
+  user-select:none;
+  transition: opacity 0.3s ease;
+}
+
+/* Fragment feedback message — slides up gently from below */
+.fragment-feedback{
+  text-align:center;
+  padding:6px 12px;
+  font-size:12px;
+  color: rgba(245,245,247,0.50);
+  min-height:0;
+  overflow:hidden;
+  max-height:0;
+  opacity:0;
+  transform: translateY(8px);
+  transition: max-height 0.35s ease, opacity 0.3s ease, transform 0.35s ease;
+}
+.fragment-feedback.visible{
+  max-height:40px;
+  opacity:1;
+  transform: translateY(0);
+}
+.fragment-feedback.error{
+  color: rgba(255,120,120,0.70);
+}
+.fragment-feedback.slide-out{
+  max-height:0;
+  opacity:0;
+  transform: translateY(8px);
+  transition: max-height 0.4s ease, opacity 0.35s ease, transform 0.4s ease;
+}
+
+/* Listening popup notification */
+.listening-popup{
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%) scale(0.8);
+  background: rgba(5,7,13,0.95);
+  border: 1px solid rgba(var(--persona-accent-rgb), 0.40);
+  border-radius: 16px;
+  padding: 20px 32px;
+  font-size: 15px;
+  font-weight: 500;
+  color: rgba(245,245,247,0.85);
+  box-shadow: 0 8px 32px rgba(0,0,0,0.60),
+              0 0 0 1px rgba(var(--persona-accent-rgb), 0.10);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.3s ease, transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+  z-index: 500;
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+}
+
+.listening-popup.visible{
+  opacity: 1;
+  transform: translate(-50%, -50%) scale(1);
+}
+
+.listening-popup-text{
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.listening-dots{
+  display: inline-flex;
+  gap: 4px;
+}
+
+.listening-dots span{
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: rgba(var(--persona-accent-rgb), 0.70);
+  animation: listeningPulse 1.4s ease-in-out infinite;
+}
+
+.listening-dots span:nth-child(2){
+  animation-delay: 0.2s;
+}
+
+.listening-dots span:nth-child(3){
+  animation-delay: 0.4s;
+}
+
+@keyframes listeningPulse {
+  0%, 100% {
+    opacity: 0.3;
+    transform: scale(0.8);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1.2);
+  }
+}
+
+/* Typing indicator (three dots) — reused for loading */
+.typing-dots{
+  display:inline-flex;
+  align-items:center;
+  gap: 4px;
+  padding: 4px 2px;
+}
+.typing-dots span{
+  width: 6px;
+  height: 6px;
+  border-radius:50%;
+  background: rgba(245,245,247,0.50);
+  animation: dot-pulse 1.4s ease-in-out infinite;
+}
+.typing-dots span:nth-child(2){ animation-delay: 0.2s; }
+.typing-dots span:nth-child(3){ animation-delay: 0.4s; }
+@keyframes dot-pulse{
+  0%, 60%, 100%{ opacity:0.25; transform:scale(0.8); }
+  30%{ opacity:1; transform:scale(1); }
+}
+
+/* ===== Drift highlight (EN + AR) ===== */
+/* JS wraps changed runs with <span class="drift-new">...</span> */
+/* Drifted text takes the persona accent color at reduced opacity */
+#driftText .drift-new{
+  color: rgba(var(--persona-accent-rgb), 0.50) !important;
+  text-decoration: none !important;
+  border-bottom: none !important;
+}
+
+/* Persona tint for Drift button */
+#driftBtn{
+  background: var(--persona-btn-bg);
+  border-color: var(--persona-btn-border);
+  color: rgba(245,245,247,0.6);
+  font-size: 14pt;
+}
+
+#driftBtn.active{
+  background: var(--persona-btn-bg-active);
+  border-color: var(--persona-btn-border-active);
+  color: #000;
+}
+
+/* ===== RESPONSIVE DESIGN ===== */
+
+/* Mobile-first touch improvements */
+button, .drift-btn, .lang-toggle, .menu-icon {
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* Very small screens (< 360px) */
+@media (max-width: 360px){
+  .persona-title-chip{
+    font-size: 13px;
+    padding-inline: 14px;
+    max-width: 75vw;
+  }
+  .keepsake-entry-text{ font-size: 13px; }
+  .app-header { padding: 12px 14px; }
+  .drift-btn {
+    font-size: 12pt;
+    height: 38px;
+    margin-top: 10px;
+  }
+  .keepsake-shell {
+    height: 85px;
+    min-height: 85px;
+  }
+  .keepsake-shell.expanded {
+    height: calc(100vh - 140px);
+    height: calc(100dvh - 140px); /* Smaller screens: dynamic viewport height */
+    max-height: calc(100vh - 140px);
+    max-height: calc(100dvh - 140px);
+  }
+}
+
+/* Small phones (361px - 400px) */
+@media (min-width: 361px) and (max-width: 400px) {
+  .persona-title-chip {
+    font-size: 14px;
+    max-width: 68vw;
+  }
+}
+
+/* Tablets and larger phones (768px+) */
+@media (min-width: 768px) {
+  .app-header {
+    padding: 16px 24px;
+  }
+
+  .persona-title-chip {
+    font-size: 15px;
+    max-width: 400px;
+  }
+
+  .drift-btn {
+    font-size: 16pt;
+    min-width: 180px;
+  }
+
+  .keepsake-shell {
+    max-width: 600px;
+    margin: 0 auto;
+  }
+
+  .text-panel {
+    max-width: 600px;
+    margin: 0 auto;
+  }
+}
+
+/* Desktop (1024px+) */
+@media (min-width: 1024px) {
+  .screen {
+    max-width: 1200px;
+    margin: 0 auto;
+  }
+
+  .drift-btn {
+    font-size: 18pt;
+    min-width: 200px;
+  }
+}
+
+/* Landscape orientation on small devices */
+@media (orientation: landscape) and (max-height: 500px) {
+  .app-header {
+    padding: 8px 14px;
+  }
+
+  .persona-title-chip {
+    min-height: 32px;
+    font-size: 13px;
+  }
+
+  .drift-btn {
+    font-size: 12pt;
+    padding: 6px 14px;
+    height: 36px;
+    margin-top: 8px;
+  }
+
+  .keepsake-shell {
+    height: 75px;
+    min-height: 75px;
+  }
+
+  .keepsake-shell.expanded {
+    height: calc(100vh - 120px);
+    height: calc(100dvh - 120px); /* Landscape: tighter spacing with dynamic viewport */
+    max-height: calc(100vh - 120px);
+    max-height: calc(100dvh - 120px);
+  }
+}
+
+/* Short screens (height < 600px) */
+@media (max-height: 600px) {
+  .drift-btn {
+    margin-top: 10px;
+    height: 40px;
+  }
+
+  .keepsake-shell {
+    height: 90px;
+  }
+
+  .keepsake-shell.expanded {
+    height: calc(100vh - 140px);
+    height: calc(100dvh - 140px); /* Short screens: ensure drift button visible */
+    max-height: calc(100vh - 140px);
+    max-height: calc(100dvh - 140px);
+  }
+
+  .text-panel.open {
+    max-height: calc(100vh - 230px);
+    max-height: calc(100dvh - 230px);
+  }
+}
+
+/* Very short screens (height < 500px) in portrait */
+@media (max-height: 500px) and (orientation: portrait) {
+  .drift-btn {
+    margin-top: 8px;
+    height: 36px;
+    font-size: 13px;
+  }
+
+  .keepsake-shell {
+    height: 80px;
+    min-height: 80px;
+  }
+
+  .text-panel.open {
+    max-height: calc(100vh - 200px);
+    max-height: calc(100dvh - 200px);
+  }
+
+  .keepsake-shell.expanded {
+    height: calc(100vh - 120px);
+    height: calc(100dvh - 120px); /* Very short screens: preserve drift button space */
+    max-height: calc(100vh - 120px);
+    max-height: calc(100dvh - 120px);
+  }
+}
+
+/* HOME OVERLAY - Main page as popup */
+.home-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(5, 5, 9, 0.98);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  z-index: 1000;
+  display: none;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.home-overlay.visible {
+  display: flex;
+  opacity: 1;
+}
+
+.home-overlay-content {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.home-header {
+  padding: 14px 18px;
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  align-items: center;
+  background: rgba(5, 7, 13, 0.8);
+  border-bottom: 1px solid rgba(120, 130, 160, 0.25);
+  flex-shrink: 0;
+}
+
+.home-close-btn {
+  position: relative;
+  width: 22px;
+  height: 16px;
+  cursor: pointer;
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  justify-self: start;
+  /* Match menu-icon padding exactly */
+  padding: 3px 0;
+}
+
+.home-close-btn span {
+  position: absolute;
+  top: 50%;
+  left: 50%; /* Center horizontally like index page X button */
+  width: 100%;
+  height: 2px;
+  background: #f5f5f7;
+  border-radius: 999px;
+  transform-origin: center;
+}
+
+.home-close-btn span:nth-child(1) {
+  transform: translate(-50%, -50%) rotate(45deg);
+}
+
+.home-close-btn span:nth-child(2) {
+  transform: translate(-50%, -50%) rotate(-45deg);
+}
+
+.home-title {
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--text);
+  justify-self: center;
+  text-align: center;
+}
+
+.home-lang-toggle {
+  font-size: 15px;
+  cursor: pointer;
+  min-height: 44px;
+  display: flex;
+  align-items: center;
+  padding: 4px 8px;
+  color: var(--text);
+  touch-action: manipulation;
+  justify-self: end;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.home-main {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 20px clamp(14px, 3vw, 18px) clamp(20px, 4vw, 24px);
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+.home-section-label {
+  font-size: clamp(0.85rem, 2vw, 0.95rem);
+  color: #9ca0b5;
+  margin-bottom: 16px;
+  text-align: center;
+}
+
+.home-persona-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: clamp(10px, 2vw, 12px);
+  width: 100%;
+  max-width: 500px;
+}
+
+.home-persona-card {
+  border-radius: clamp(12px, 3vw, 14px);
+  border: 1px solid rgba(120, 130, 160, 0.25);
+  background: rgba(7, 9, 20, 0.6);
+  padding: clamp(12px, 2.5vw, 14px);
+  display: flex;
+  flex-direction: column;
+  cursor: pointer;
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+  transition: all 0.2s ease;
+}
+
+.home-persona-card:hover,
+.home-persona-card:focus {
+  background: rgba(10, 13, 22, 0.8);
+  border-color: rgba(var(--persona-accent-rgb), 0.4);
+  transform: translateY(-2px);
+}
+
+.home-persona-card:active {
+  transform: translateY(0);
+}
+
+.home-persona-name {
+  font-size: clamp(0.85rem, 2vw, 0.95rem);
+  font-weight: 600;
+  margin-bottom: 4px;
+  color: var(--text);
+}
+
+.home-persona-desc {
+  font-size: clamp(0.75rem, 1.8vw, 0.8rem);
+  color: #9ca0b5;
+  line-height: 1.4;
+}
+
+@media (min-width: 500px) {
+  .home-persona-grid {
+    grid-template-columns: repeat(3, 1fr);
+    max-width: 600px;
+  }
+}
+
+/* Safe area support for notched devices */
+@supports (padding: max(0px)) {
+  .app-header {
+    padding-left: max(18px, env(safe-area-inset-left));
+    padding-right: max(18px, env(safe-area-inset-right));
+    padding-top: max(14px, env(safe-area-inset-top));
+  }
+
+  .keepsake-shell {
+    padding-bottom: max(12px, env(safe-area-inset-bottom));
+  }
+}
+
+/* High DPI displays */
+@media (-webkit-min-device-pixel-ratio: 2), (min-resolution: 192dpi) {
+  body {
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+}
+
+/* Reduce motion for accessibility */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+/* iOS-specific fixes for better mobile adaptation */
+@supports (-webkit-touch-callout: none) {
+  /* Fix for iOS Safari viewport height */
+  body {
+    min-height: -webkit-fill-available;
+  }
+
+  .app-shell {
+    min-height: -webkit-fill-available;
+  }
+
+  /* Prevent iOS zoom on input focus */
+  input, textarea, select {
+    font-size: 16px !important;
+  }
+
+  /* Better touch scrolling */
+  .archive-entries,
+  .text-panel.open,
+  .messages,
+  .menu-list,
+  .menu-panel {
+    -webkit-overflow-scrolling: touch;
+  }
+
+  /* Ensure keepsake shell stays above keyboard */
+  .keepsake-shell {
+    position: fixed;
+    bottom: 0;
+  }
+
+  /* When input is focused, ensure visibility and cursor */
+  .fragment-composer input {
+    -webkit-appearance: none;
+    -webkit-user-select: text;
+  }
+
+  .fragment-composer input:focus {
+    position: relative;
+    z-index: 30;
+    caret-color: #f5f5f7;
+    -webkit-text-fill-color: #f5f5f7;
+  }
+}
+
+/* Fix for iOS notch and safe areas */
+@supports (padding: env(safe-area-inset-bottom)) {
+  .keepsake-shell {
+    padding-bottom: calc(12px + env(safe-area-inset-bottom));
+  }
+
+  .app-header {
+    padding-top: calc(14px + env(safe-area-inset-top));
+  }
+}

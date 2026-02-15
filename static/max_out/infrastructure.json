@@ -1,0 +1,1025 @@
+{
+  "persona": "infrastructure",
+  "version_pre": 0,
+  "version_post": 1,
+  "pre_text_len": 564,
+  "post_text_len": 979,
+  "pre_token_count": 109,
+  "post_token_count": 187,
+  "diff": {
+    "post_events": [
+      {
+        "idx": 0,
+        "token": "There",
+        "status": "keep"
+      },
+      {
+        "idx": 1,
+        "token": "are",
+        "status": "keep"
+      },
+      {
+        "idx": 2,
+        "token": "many",
+        "status": "keep"
+      },
+      {
+        "idx": 3,
+        "token": "Japanese",
+        "status": "keep"
+      },
+      {
+        "idx": 4,
+        "token": "folk",
+        "status": "keep"
+      },
+      {
+        "idx": 5,
+        "token": "tales",
+        "status": "keep"
+      },
+      {
+        "idx": 6,
+        "token": "involving",
+        "status": "keep"
+      },
+      {
+        "idx": 7,
+        "token": "Oni",
+        "status": "keep"
+      },
+      {
+        "idx": 8,
+        "token": "(",
+        "status": "keep"
+      },
+      {
+        "idx": 9,
+        "token": "Ogres",
+        "status": "change"
+      },
+      {
+        "idx": 10,
+        "token": ")",
+        "status": "keep"
+      },
+      {
+        "idx": 11,
+        "token": ".",
+        "status": "keep"
+      },
+      {
+        "idx": 12,
+        "token": "One",
+        "status": "keep"
+      },
+      {
+        "idx": 13,
+        "token": "example",
+        "status": "keep"
+      },
+      {
+        "idx": 14,
+        "token": "is",
+        "status": "keep"
+      },
+      {
+        "idx": 15,
+        "token": "“",
+        "status": "keep"
+      },
+      {
+        "idx": 16,
+        "token": "Mame",
+        "status": "keep"
+      },
+      {
+        "idx": 17,
+        "token": "-",
+        "status": "keep"
+      },
+      {
+        "idx": 18,
+        "token": "Maki",
+        "status": "keep"
+      },
+      {
+        "idx": 19,
+        "token": ",",
+        "status": "keep"
+      },
+      {
+        "idx": 20,
+        "token": "”",
+        "status": "keep"
+      },
+      {
+        "idx": 21,
+        "token": "a",
+        "status": "keep"
+      },
+      {
+        "idx": 22,
+        "token": "traditional",
+        "status": "keep"
+      },
+      {
+        "idx": 23,
+        "token": "event",
+        "status": "keep"
+      },
+      {
+        "idx": 24,
+        "token": "held",
+        "status": "keep"
+      },
+      {
+        "idx": 25,
+        "token": "on",
+        "status": "keep"
+      },
+      {
+        "idx": 26,
+        "token": "February",
+        "status": "keep"
+      },
+      {
+        "idx": 27,
+        "token": "3rd",
+        "status": "keep"
+      },
+      {
+        "idx": 28,
+        "token": ",",
+        "status": "keep"
+      },
+      {
+        "idx": 29,
+        "token": "when",
+        "status": "keep"
+      },
+      {
+        "idx": 30,
+        "token": "people",
+        "status": "keep"
+      },
+      {
+        "idx": 31,
+        "token": "throw",
+        "status": "keep"
+      },
+      {
+        "idx": 32,
+        "token": "roasted",
+        "status": "keep"
+      },
+      {
+        "idx": 33,
+        "token": "soybeans",
+        "status": "keep"
+      },
+      {
+        "idx": 34,
+        "token": "outside",
+        "status": "keep"
+      },
+      {
+        "idx": 35,
+        "token": "or",
+        "status": "keep"
+      },
+      {
+        "idx": 36,
+        "token": "at",
+        "status": "keep"
+      },
+      {
+        "idx": 37,
+        "token": "household",
+        "status": "keep"
+      },
+      {
+        "idx": 38,
+        "token": "members",
+        "status": "keep"
+      },
+      {
+        "idx": 39,
+        "token": "wearing",
+        "status": "keep"
+      },
+      {
+        "idx": 40,
+        "token": "Oni",
+        "status": "keep"
+      },
+      {
+        "idx": 41,
+        "token": "masks",
+        "status": "keep"
+      },
+      {
+        "idx": 42,
+        "token": "while",
+        "status": "keep"
+      },
+      {
+        "idx": 43,
+        "token": "saying",
+        "status": "keep"
+      },
+      {
+        "idx": 44,
+        "token": ",",
+        "status": "keep"
+      },
+      {
+        "idx": 45,
+        "token": "“",
+        "status": "keep"
+      },
+      {
+        "idx": 46,
+        "token": "Ogres",
+        "status": "keep"
+      },
+      {
+        "idx": 47,
+        "token": "out",
+        "status": "keep"
+      },
+      {
+        "idx": 48,
+        "token": ",",
+        "status": "keep"
+      },
+      {
+        "idx": 49,
+        "token": "luck",
+        "status": "keep"
+      },
+      {
+        "idx": 50,
+        "token": "in",
+        "status": "keep"
+      },
+      {
+        "idx": 51,
+        "token": ".",
+        "status": "keep"
+      },
+      {
+        "idx": 52,
+        "token": "”",
+        "status": "keep"
+      },
+      {
+        "idx": 53,
+        "token": "Despite",
+        "status": "keep"
+      },
+      {
+        "idx": 54,
+        "token": "their",
+        "status": "keep"
+      },
+      {
+        "idx": 55,
+        "token": "fearsome",
+        "status": "keep"
+      },
+      {
+        "idx": 56,
+        "token": "appearance",
+        "status": "keep"
+      },
+      {
+        "idx": 57,
+        "token": ",",
+        "status": "keep"
+      },
+      {
+        "idx": 58,
+        "token": "Oni",
+        "status": "keep"
+      },
+      {
+        "idx": 59,
+        "token": "in",
+        "status": "keep"
+      },
+      {
+        "idx": 60,
+        "token": "Japanese",
+        "status": "keep"
+      },
+      {
+        "idx": 61,
+        "token": "folklore",
+        "status": "keep"
+      },
+      {
+        "idx": 62,
+        "token": "are",
+        "status": "keep"
+      },
+      {
+        "idx": 63,
+        "token": "often",
+        "status": "keep"
+      },
+      {
+        "idx": 64,
+        "token": "portrayed",
+        "status": "keep"
+      },
+      {
+        "idx": 65,
+        "token": "as",
+        "status": "keep"
+      },
+      {
+        "idx": 66,
+        "token": "comical",
+        "status": "keep"
+      },
+      {
+        "idx": 67,
+        "token": "or",
+        "status": "keep"
+      },
+      {
+        "idx": 68,
+        "token": "kindhearted",
+        "status": "keep"
+      },
+      {
+        "idx": 69,
+        "token": "creatures",
+        "status": "keep"
+      },
+      {
+        "idx": 70,
+        "token": ".",
+        "status": "keep"
+      },
+      {
+        "idx": 71,
+        "token": "Oni",
+        "status": "keep"
+      },
+      {
+        "idx": 72,
+        "token": "-",
+        "status": "keep"
+      },
+      {
+        "idx": 73,
+        "token": "Mai",
+        "status": "keep"
+      },
+      {
+        "idx": 74,
+        "token": "reflects",
+        "status": "keep"
+      },
+      {
+        "idx": 75,
+        "token": "my",
+        "status": "keep"
+      },
+      {
+        "idx": 76,
+        "token": "imagination",
+        "status": "keep"
+      },
+      {
+        "idx": 77,
+        "token": "of",
+        "status": "keep"
+      },
+      {
+        "idx": 78,
+        "token": "such",
+        "status": "keep"
+      },
+      {
+        "idx": 79,
+        "token": "an",
+        "status": "keep"
+      },
+      {
+        "idx": 80,
+        "token": "ogre",
+        "status": "keep"
+      },
+      {
+        "idx": 81,
+        "token": "—",
+        "status": "keep"
+      },
+      {
+        "idx": 82,
+        "token": "gentle",
+        "status": "keep"
+      },
+      {
+        "idx": 83,
+        "token": ",",
+        "status": "keep"
+      },
+      {
+        "idx": 84,
+        "token": "slightly",
+        "status": "keep"
+      },
+      {
+        "idx": 85,
+        "token": "quirky",
+        "status": "keep"
+      },
+      {
+        "idx": 86,
+        "token": "—",
+        "status": "keep"
+      },
+      {
+        "idx": 87,
+        "token": "wandering",
+        "status": "keep"
+      },
+      {
+        "idx": 88,
+        "token": "from",
+        "status": "keep"
+      },
+      {
+        "idx": 89,
+        "token": "town",
+        "status": "keep"
+      },
+      {
+        "idx": 90,
+        "token": "to",
+        "status": "keep"
+      },
+      {
+        "idx": 91,
+        "token": "town",
+        "status": "keep"
+      },
+      {
+        "idx": 92,
+        "token": "and",
+        "status": "keep"
+      },
+      {
+        "idx": 93,
+        "token": "village",
+        "status": "keep"
+      },
+      {
+        "idx": 94,
+        "token": "to",
+        "status": "keep"
+      },
+      {
+        "idx": 95,
+        "token": "village",
+        "status": "keep"
+      },
+      {
+        "idx": 96,
+        "token": ",",
+        "status": "add"
+      },
+      {
+        "idx": 97,
+        "token": "following",
+        "status": "add"
+      },
+      {
+        "idx": 98,
+        "token": "the",
+        "status": "add"
+      },
+      {
+        "idx": 99,
+        "token": "quiet",
+        "status": "add"
+      },
+      {
+        "idx": 100,
+        "token": "infrastructure",
+        "status": "add"
+      },
+      {
+        "idx": 101,
+        "token": "of",
+        "status": "add"
+      },
+      {
+        "idx": 102,
+        "token": "daily",
+        "status": "add"
+      },
+      {
+        "idx": 103,
+        "token": "life",
+        "status": "add"
+      },
+      {
+        "idx": 104,
+        "token": ":",
+        "status": "add"
+      },
+      {
+        "idx": 105,
+        "token": "thresholds",
+        "status": "add"
+      },
+      {
+        "idx": 106,
+        "token": ",",
+        "status": "add"
+      },
+      {
+        "idx": 107,
+        "token": "gates",
+        "status": "add"
+      },
+      {
+        "idx": 108,
+        "token": ",",
+        "status": "add"
+      },
+      {
+        "idx": 109,
+        "token": "roadways",
+        "status": "add"
+      },
+      {
+        "idx": 110,
+        "token": ",",
+        "status": "add"
+      },
+      {
+        "idx": 111,
+        "token": "and",
+        "status": "add"
+      },
+      {
+        "idx": 112,
+        "token": "the",
+        "status": "add"
+      },
+      {
+        "idx": 113,
+        "token": "way",
+        "status": "add"
+      },
+      {
+        "idx": 114,
+        "token": "a",
+        "status": "add"
+      },
+      {
+        "idx": 115,
+        "token": "neighborhood",
+        "status": "add"
+      },
+      {
+        "idx": 116,
+        "token": "’",
+        "status": "add"
+      },
+      {
+        "idx": 117,
+        "token": "s",
+        "status": "add"
+      },
+      {
+        "idx": 118,
+        "token": "routines",
+        "status": "add"
+      },
+      {
+        "idx": 119,
+        "token": "route",
+        "status": "add"
+      },
+      {
+        "idx": 120,
+        "token": "bodies",
+        "status": "add"
+      },
+      {
+        "idx": 121,
+        "token": "like",
+        "status": "add"
+      },
+      {
+        "idx": 122,
+        "token": "a",
+        "status": "add"
+      },
+      {
+        "idx": 123,
+        "token": "convoy",
+        "status": "add"
+      },
+      {
+        "idx": 124,
+        "token": "through",
+        "status": "add"
+      },
+      {
+        "idx": 125,
+        "token": "narrow",
+        "status": "add"
+      },
+      {
+        "idx": 126,
+        "token": "streets",
+        "status": "add"
+      },
+      {
+        "idx": 127,
+        "token": ".",
+        "status": "add"
+      },
+      {
+        "idx": 128,
+        "token": "There",
+        "status": "add"
+      },
+      {
+        "idx": 129,
+        "token": "is",
+        "status": "add"
+      },
+      {
+        "idx": 130,
+        "token": "a",
+        "status": "add"
+      },
+      {
+        "idx": 131,
+        "token": "sense",
+        "status": "add"
+      },
+      {
+        "idx": 132,
+        "token": "of",
+        "status": "add"
+      },
+      {
+        "idx": 133,
+        "token": "passage",
+        "status": "add"
+      },
+      {
+        "idx": 134,
+        "token": "built",
+        "status": "add"
+      },
+      {
+        "idx": 135,
+        "token": "into",
+        "status": "add"
+      },
+      {
+        "idx": 136,
+        "token": "the",
+        "status": "add"
+      },
+      {
+        "idx": 137,
+        "token": "ritual",
+        "status": "add"
+      },
+      {
+        "idx": 138,
+        "token": "itself",
+        "status": "add"
+      },
+      {
+        "idx": 139,
+        "token": ",",
+        "status": "add"
+      },
+      {
+        "idx": 140,
+        "token": "beans",
+        "status": "add"
+      },
+      {
+        "idx": 141,
+        "token": "crossing",
+        "status": "add"
+      },
+      {
+        "idx": 142,
+        "token": "a",
+        "status": "add"
+      },
+      {
+        "idx": 143,
+        "token": "boundary",
+        "status": "add"
+      },
+      {
+        "idx": 144,
+        "token": "to",
+        "status": "add"
+      },
+      {
+        "idx": 145,
+        "token": "reset",
+        "status": "add"
+      },
+      {
+        "idx": 146,
+        "token": "a",
+        "status": "add"
+      },
+      {
+        "idx": 147,
+        "token": "household",
+        "status": "add"
+      },
+      {
+        "idx": 148,
+        "token": "’",
+        "status": "add"
+      },
+      {
+        "idx": 149,
+        "token": "s",
+        "status": "add"
+      },
+      {
+        "idx": 150,
+        "token": "circulation",
+        "status": "add"
+      },
+      {
+        "idx": 151,
+        "token": ",",
+        "status": "add"
+      },
+      {
+        "idx": 152,
+        "token": "and",
+        "status": "add"
+      },
+      {
+        "idx": 153,
+        "token": "the",
+        "status": "add"
+      },
+      {
+        "idx": 154,
+        "token": "mask",
+        "status": "add"
+      },
+      {
+        "idx": 155,
+        "token": "turning",
+        "status": "add"
+      },
+      {
+        "idx": 156,
+        "token": "a",
+        "status": "add"
+      },
+      {
+        "idx": 157,
+        "token": "living",
+        "status": "add"
+      },
+      {
+        "idx": 158,
+        "token": "room",
+        "status": "add"
+      },
+      {
+        "idx": 159,
+        "token": "into",
+        "status": "add"
+      },
+      {
+        "idx": 160,
+        "token": "a",
+        "status": "add"
+      },
+      {
+        "idx": 161,
+        "token": "temporary",
+        "status": "add"
+      },
+      {
+        "idx": 162,
+        "token": "checkpoint",
+        "status": "add"
+      },
+      {
+        "idx": 163,
+        "token": "of",
+        "status": "add"
+      },
+      {
+        "idx": 164,
+        "token": "play",
+        "status": "add"
+      },
+      {
+        "idx": 165,
+        "token": ".",
+        "status": "keep"
+      },
+      {
+        "idx": 166,
+        "token": "The",
+        "status": "keep"
+      },
+      {
+        "idx": 167,
+        "token": "piece",
+        "status": "keep"
+      },
+      {
+        "idx": 168,
+        "token": "embodies",
+        "status": "keep"
+      },
+      {
+        "idx": 169,
+        "token": "the",
+        "status": "keep"
+      },
+      {
+        "idx": 170,
+        "token": "personality",
+        "status": "keep"
+      },
+      {
+        "idx": 171,
+        "token": "and",
+        "status": "keep"
+      },
+      {
+        "idx": 172,
+        "token": "movement",
+        "status": "keep"
+      },
+      {
+        "idx": 173,
+        "token": "of",
+        "status": "keep"
+      },
+      {
+        "idx": 174,
+        "token": "this",
+        "status": "keep"
+      },
+      {
+        "idx": 175,
+        "token": "benevolent",
+        "status": "keep"
+      },
+      {
+        "idx": 176,
+        "token": "figure",
+        "status": "keep"
+      },
+      {
+        "idx": 177,
+        "token": ",",
+        "status": "add"
+      },
+      {
+        "idx": 178,
+        "token": "carried",
+        "status": "add"
+      },
+      {
+        "idx": 179,
+        "token": "by",
+        "status": "add"
+      },
+      {
+        "idx": 180,
+        "token": "small",
+        "status": "add"
+      },
+      {
+        "idx": 181,
+        "token": "systems",
+        "status": "add"
+      },
+      {
+        "idx": 182,
+        "token": "that",
+        "status": "add"
+      },
+      {
+        "idx": 183,
+        "token": "keep",
+        "status": "add"
+      },
+      {
+        "idx": 184,
+        "token": "communities",
+        "status": "add"
+      },
+      {
+        "idx": 185,
+        "token": "moving",
+        "status": "add"
+      },
+      {
+        "idx": 186,
+        "token": ".",
+        "status": "keep"
+      }
+    ],
+    "deletions": [
+      {
+        "src_idx": 9,
+        "token": "ogres"
+      }
+    ],
+    "opcodes": [
+      {
+        "op": "equal",
+        "pre": [
+          0,
+          9
+        ],
+        "post": [
+          0,
+          9
+        ]
+      },
+      {
+        "op": "replace",
+        "pre": [
+          9,
+          10
+        ],
+        "post": [
+          9,
+          10
+        ]
+      },
+      {
+        "op": "equal",
+        "pre": [
+          10,
+          96
+        ],
+        "post": [
+          10,
+          96
+        ]
+      },
+      {
+        "op": "insert",
+        "post": [
+          96,
+          165
+        ]
+      },
+      {
+        "op": "equal",
+        "pre": [
+          96,
+          108
+        ],
+        "post": [
+          165,
+          177
+        ]
+      },
+      {
+        "op": "insert",
+        "post": [
+          177,
+          186
+        ]
+      },
+      {
+        "op": "equal",
+        "pre": [
+          108,
+          109
+        ],
+        "post": [
+          186,
+          187
+        ]
+      }
+    ]
+  }
+}

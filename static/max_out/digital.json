@@ -1,0 +1,1018 @@
+{
+  "persona": "digital",
+  "version_pre": 0,
+  "version_post": 1,
+  "pre_text_len": 528,
+  "post_text_len": 900,
+  "pre_token_count": 100,
+  "post_token_count": 176,
+  "diff": {
+    "post_events": [
+      {
+        "idx": 0,
+        "token": "Hotaru",
+        "status": "keep"
+      },
+      {
+        "idx": 1,
+        "token": "(",
+        "status": "keep"
+      },
+      {
+        "idx": 2,
+        "token": "Fireflies",
+        "status": "keep"
+      },
+      {
+        "idx": 3,
+        "token": ")",
+        "status": "keep"
+      },
+      {
+        "idx": 4,
+        "token": "draws",
+        "status": "keep"
+      },
+      {
+        "idx": 5,
+        "token": "from",
+        "status": "keep"
+      },
+      {
+        "idx": 6,
+        "token": "my",
+        "status": "keep"
+      },
+      {
+        "idx": 7,
+        "token": "memories",
+        "status": "keep"
+      },
+      {
+        "idx": 8,
+        "token": "of",
+        "status": "keep"
+      },
+      {
+        "idx": 9,
+        "token": "Lincoln",
+        "status": "keep"
+      },
+      {
+        "idx": 10,
+        "token": ",",
+        "status": "keep"
+      },
+      {
+        "idx": 11,
+        "token": "Nebraska",
+        "status": "keep"
+      },
+      {
+        "idx": 12,
+        "token": ",",
+        "status": "keep"
+      },
+      {
+        "idx": 13,
+        "token": "where",
+        "status": "keep"
+      },
+      {
+        "idx": 14,
+        "token": "I",
+        "status": "keep"
+      },
+      {
+        "idx": 15,
+        "token": "lived",
+        "status": "keep"
+      },
+      {
+        "idx": 16,
+        "token": "from",
+        "status": "keep"
+      },
+      {
+        "idx": 17,
+        "token": "2012",
+        "status": "keep"
+      },
+      {
+        "idx": 18,
+        "token": "to",
+        "status": "keep"
+      },
+      {
+        "idx": 19,
+        "token": "2016",
+        "status": "keep"
+      },
+      {
+        "idx": 20,
+        "token": ",",
+        "status": "add"
+      },
+      {
+        "idx": 21,
+        "token": "but",
+        "status": "add"
+      },
+      {
+        "idx": 22,
+        "token": "the",
+        "status": "add"
+      },
+      {
+        "idx": 23,
+        "token": "recollection",
+        "status": "add"
+      },
+      {
+        "idx": 24,
+        "token": "now",
+        "status": "add"
+      },
+      {
+        "idx": 25,
+        "token": "feels",
+        "status": "add"
+      },
+      {
+        "idx": 26,
+        "token": "like",
+        "status": "add"
+      },
+      {
+        "idx": 27,
+        "token": "a",
+        "status": "add"
+      },
+      {
+        "idx": 28,
+        "token": "compressed",
+        "status": "add"
+      },
+      {
+        "idx": 29,
+        "token": "file",
+        "status": "add"
+      },
+      {
+        "idx": 30,
+        "token": "that",
+        "status": "add"
+      },
+      {
+        "idx": 31,
+        "token": "keeps",
+        "status": "add"
+      },
+      {
+        "idx": 32,
+        "token": "re",
+        "status": "add"
+      },
+      {
+        "idx": 33,
+        "token": "-",
+        "status": "add"
+      },
+      {
+        "idx": 34,
+        "token": "saving",
+        "status": "add"
+      },
+      {
+        "idx": 35,
+        "token": "itself",
+        "status": "add"
+      },
+      {
+        "idx": 36,
+        "token": ".",
+        "status": "keep"
+      },
+      {
+        "idx": 37,
+        "token": "Fireflies",
+        "status": "keep"
+      },
+      {
+        "idx": 38,
+        "token": "appeared",
+        "status": "keep"
+      },
+      {
+        "idx": 39,
+        "token": "in",
+        "status": "keep"
+      },
+      {
+        "idx": 40,
+        "token": "early",
+        "status": "keep"
+      },
+      {
+        "idx": 41,
+        "token": "July",
+        "status": "keep"
+      },
+      {
+        "idx": 42,
+        "token": ",",
+        "status": "keep"
+      },
+      {
+        "idx": 43,
+        "token": "glowing",
+        "status": "keep"
+      },
+      {
+        "idx": 44,
+        "token": "softly",
+        "status": "keep"
+      },
+      {
+        "idx": 45,
+        "token": "in",
+        "status": "keep"
+      },
+      {
+        "idx": 46,
+        "token": "the",
+        "status": "keep"
+      },
+      {
+        "idx": 47,
+        "token": "twilight",
+        "status": "keep"
+      },
+      {
+        "idx": 48,
+        "token": "with",
+        "status": "keep"
+      },
+      {
+        "idx": 49,
+        "token": "a",
+        "status": "keep"
+      },
+      {
+        "idx": 50,
+        "token": "melancholic",
+        "status": "keep"
+      },
+      {
+        "idx": 51,
+        "token": ",",
+        "status": "keep"
+      },
+      {
+        "idx": 52,
+        "token": "ethereal",
+        "status": "keep"
+      },
+      {
+        "idx": 53,
+        "token": "beauty",
+        "status": "keep"
+      },
+      {
+        "idx": 54,
+        "token": ",",
+        "status": "add"
+      },
+      {
+        "idx": 55,
+        "token": "and",
+        "status": "add"
+      },
+      {
+        "idx": 56,
+        "token": "I",
+        "status": "add"
+      },
+      {
+        "idx": 57,
+        "token": "remember",
+        "status": "add"
+      },
+      {
+        "idx": 58,
+        "token": "them",
+        "status": "add"
+      },
+      {
+        "idx": 59,
+        "token": "as",
+        "status": "add"
+      },
+      {
+        "idx": 60,
+        "token": "tiny",
+        "status": "add"
+      },
+      {
+        "idx": 61,
+        "token": "pixels",
+        "status": "add"
+      },
+      {
+        "idx": 62,
+        "token": "that",
+        "status": "add"
+      },
+      {
+        "idx": 63,
+        "token": "brighten",
+        "status": "add"
+      },
+      {
+        "idx": 64,
+        "token": "and",
+        "status": "add"
+      },
+      {
+        "idx": 65,
+        "token": "dim",
+        "status": "add"
+      },
+      {
+        "idx": 66,
+        "token": "with",
+        "status": "add"
+      },
+      {
+        "idx": 67,
+        "token": "no",
+        "status": "add"
+      },
+      {
+        "idx": 68,
+        "token": "stable",
+        "status": "add"
+      },
+      {
+        "idx": 69,
+        "token": "pattern",
+        "status": "add"
+      },
+      {
+        "idx": 70,
+        "token": ".",
+        "status": "keep"
+      },
+      {
+        "idx": 71,
+        "token": "I",
+        "status": "keep"
+      },
+      {
+        "idx": 72,
+        "token": "often",
+        "status": "keep"
+      },
+      {
+        "idx": 73,
+        "token": "rode",
+        "status": "keep"
+      },
+      {
+        "idx": 74,
+        "token": "my",
+        "status": "keep"
+      },
+      {
+        "idx": 75,
+        "token": "bicycle",
+        "status": "keep"
+      },
+      {
+        "idx": 76,
+        "token": "to",
+        "status": "keep"
+      },
+      {
+        "idx": 77,
+        "token": "school",
+        "status": "keep"
+      },
+      {
+        "idx": 78,
+        "token": "along",
+        "status": "keep"
+      },
+      {
+        "idx": 79,
+        "token": "the",
+        "status": "keep"
+      },
+      {
+        "idx": 80,
+        "token": "Billy",
+        "status": "keep"
+      },
+      {
+        "idx": 81,
+        "token": "Wolff",
+        "status": "keep"
+      },
+      {
+        "idx": 82,
+        "token": "trail",
+        "status": "keep"
+      },
+      {
+        "idx": 83,
+        "token": ",",
+        "status": "keep"
+      },
+      {
+        "idx": 84,
+        "token": "tracking",
+        "status": "change"
+      },
+      {
+        "idx": 85,
+        "token": "the",
+        "status": "change"
+      },
+      {
+        "idx": 86,
+        "token": "same",
+        "status": "change"
+      },
+      {
+        "idx": 87,
+        "token": "turns",
+        "status": "change"
+      },
+      {
+        "idx": 88,
+        "token": "as",
+        "status": "change"
+      },
+      {
+        "idx": 89,
+        "token": "if",
+        "status": "change"
+      },
+      {
+        "idx": 90,
+        "token": "following",
+        "status": "change"
+      },
+      {
+        "idx": 91,
+        "token": "a",
+        "status": "change"
+      },
+      {
+        "idx": 92,
+        "token": "cached",
+        "status": "change"
+      },
+      {
+        "idx": 93,
+        "token": "route",
+        "status": "change"
+      },
+      {
+        "idx": 94,
+        "token": ",",
+        "status": "change"
+      },
+      {
+        "idx": 95,
+        "token": "yet",
+        "status": "change"
+      },
+      {
+        "idx": 96,
+        "token": "each",
+        "status": "change"
+      },
+      {
+        "idx": 97,
+        "token": "ride",
+        "status": "change"
+      },
+      {
+        "idx": 98,
+        "token": "reloads",
+        "status": "change"
+      },
+      {
+        "idx": 99,
+        "token": "with",
+        "status": "change"
+      },
+      {
+        "idx": 100,
+        "token": "slight",
+        "status": "change"
+      },
+      {
+        "idx": 101,
+        "token": "artifacts",
+        "status": "change"
+      },
+      {
+        "idx": 102,
+        "token": ":",
+        "status": "change"
+      },
+      {
+        "idx": 103,
+        "token": "the",
+        "status": "change"
+      },
+      {
+        "idx": 104,
+        "token": "hum",
+        "status": "change"
+      },
+      {
+        "idx": 105,
+        "token": "of",
+        "status": "change"
+      },
+      {
+        "idx": 106,
+        "token": "tires",
+        "status": "change"
+      },
+      {
+        "idx": 107,
+        "token": ",",
+        "status": "change"
+      },
+      {
+        "idx": 108,
+        "token": "the",
+        "status": "change"
+      },
+      {
+        "idx": 109,
+        "token": "damp",
+        "status": "change"
+      },
+      {
+        "idx": 110,
+        "token": "grass",
+        "status": "change"
+      },
+      {
+        "idx": 111,
+        "token": ",",
+        "status": "change"
+      },
+      {
+        "idx": 112,
+        "token": "the",
+        "status": "change"
+      },
+      {
+        "idx": 113,
+        "token": "pause",
+        "status": "change"
+      },
+      {
+        "idx": 114,
+        "token": "before",
+        "status": "change"
+      },
+      {
+        "idx": 115,
+        "token": "night",
+        "status": "change"
+      },
+      {
+        "idx": 116,
+        "token": "fully",
+        "status": "change"
+      },
+      {
+        "idx": 117,
+        "token": "arrives",
+        "status": "change"
+      },
+      {
+        "idx": 118,
+        "token": ".",
+        "status": "change"
+      },
+      {
+        "idx": 119,
+        "token": "Although",
+        "status": "change"
+      },
+      {
+        "idx": 120,
+        "token": "fireflies",
+        "status": "keep"
+      },
+      {
+        "idx": 121,
+        "token": "appear",
+        "status": "keep"
+      },
+      {
+        "idx": 122,
+        "token": "in",
+        "status": "keep"
+      },
+      {
+        "idx": 123,
+        "token": "summer",
+        "status": "keep"
+      },
+      {
+        "idx": 124,
+        "token": ",",
+        "status": "keep"
+      },
+      {
+        "idx": 125,
+        "token": "I",
+        "status": "keep"
+      },
+      {
+        "idx": 126,
+        "token": "would",
+        "status": "keep"
+      },
+      {
+        "idx": 127,
+        "token": "strangely",
+        "status": "keep"
+      },
+      {
+        "idx": 128,
+        "token": "imagine",
+        "status": "keep"
+      },
+      {
+        "idx": 129,
+        "token": "countless",
+        "status": "keep"
+      },
+      {
+        "idx": 130,
+        "token": "fireflies",
+        "status": "keep"
+      },
+      {
+        "idx": 131,
+        "token": "illuminating",
+        "status": "keep"
+      },
+      {
+        "idx": 132,
+        "token": "the",
+        "status": "keep"
+      },
+      {
+        "idx": 133,
+        "token": "trail",
+        "status": "keep"
+      },
+      {
+        "idx": 134,
+        "token": "during",
+        "status": "keep"
+      },
+      {
+        "idx": 135,
+        "token": "the",
+        "status": "keep"
+      },
+      {
+        "idx": 136,
+        "token": "fall",
+        "status": "keep"
+      },
+      {
+        "idx": 137,
+        "token": ",",
+        "status": "add"
+      },
+      {
+        "idx": 138,
+        "token": "like",
+        "status": "add"
+      },
+      {
+        "idx": 139,
+        "token": "an",
+        "status": "add"
+      },
+      {
+        "idx": 140,
+        "token": "overlay",
+        "status": "add"
+      },
+      {
+        "idx": 141,
+        "token": "I",
+        "status": "add"
+      },
+      {
+        "idx": 142,
+        "token": "can",
+        "status": "add"
+      },
+      {
+        "idx": 143,
+        "token": "’",
+        "status": "add"
+      },
+      {
+        "idx": 144,
+        "token": "t",
+        "status": "add"
+      },
+      {
+        "idx": 145,
+        "token": "disable",
+        "status": "add"
+      },
+      {
+        "idx": 146,
+        "token": ".",
+        "status": "keep"
+      },
+      {
+        "idx": 147,
+        "token": "This",
+        "status": "keep"
+      },
+      {
+        "idx": 148,
+        "token": "mixture",
+        "status": "keep"
+      },
+      {
+        "idx": 149,
+        "token": "of",
+        "status": "keep"
+      },
+      {
+        "idx": 150,
+        "token": "real",
+        "status": "keep"
+      },
+      {
+        "idx": 151,
+        "token": "and",
+        "status": "keep"
+      },
+      {
+        "idx": 152,
+        "token": "imagined",
+        "status": "keep"
+      },
+      {
+        "idx": 153,
+        "token": "memory",
+        "status": "keep"
+      },
+      {
+        "idx": 154,
+        "token": "—",
+        "status": "keep"
+      },
+      {
+        "idx": 155,
+        "token": "the",
+        "status": "keep"
+      },
+      {
+        "idx": 156,
+        "token": "flickering",
+        "status": "keep"
+      },
+      {
+        "idx": 157,
+        "token": "lights",
+        "status": "keep"
+      },
+      {
+        "idx": 158,
+        "token": ",",
+        "status": "keep"
+      },
+      {
+        "idx": 159,
+        "token": "the",
+        "status": "keep"
+      },
+      {
+        "idx": 160,
+        "token": "quiet",
+        "status": "keep"
+      },
+      {
+        "idx": 161,
+        "token": "motion",
+        "status": "keep"
+      },
+      {
+        "idx": 162,
+        "token": ",",
+        "status": "keep"
+      },
+      {
+        "idx": 163,
+        "token": "the",
+        "status": "keep"
+      },
+      {
+        "idx": 164,
+        "token": "atmosphere",
+        "status": "keep"
+      },
+      {
+        "idx": 165,
+        "token": "of",
+        "status": "keep"
+      },
+      {
+        "idx": 166,
+        "token": "twilight",
+        "status": "keep"
+      },
+      {
+        "idx": 167,
+        "token": "—",
+        "status": "keep"
+      },
+      {
+        "idx": 168,
+        "token": "still",
+        "status": "change"
+      },
+      {
+        "idx": 169,
+        "token": "shapes",
+        "status": "change"
+      },
+      {
+        "idx": 170,
+        "token": "the",
+        "status": "keep"
+      },
+      {
+        "idx": 171,
+        "token": "tone",
+        "status": "keep"
+      },
+      {
+        "idx": 172,
+        "token": "of",
+        "status": "keep"
+      },
+      {
+        "idx": 173,
+        "token": "this",
+        "status": "keep"
+      },
+      {
+        "idx": 174,
+        "token": "piece",
+        "status": "keep"
+      },
+      {
+        "idx": 175,
+        "token": ".",
+        "status": "keep"
+      }
+    ],
+    "deletions": [
+      {
+        "src_idx": 52,
+        "token": "and"
+      },
+      {
+        "src_idx": 53,
+        "token": "although"
+      },
+      {
+        "src_idx": 93,
+        "token": "shaped"
+      }
+    ],
+    "opcodes": [
+      {
+        "op": "equal",
+        "pre": [
+          0,
+          20
+        ],
+        "post": [
+          0,
+          20
+        ]
+      },
+      {
+        "op": "insert",
+        "post": [
+          20,
+          36
+        ]
+      },
+      {
+        "op": "equal",
+        "pre": [
+          20,
+          38
+        ],
+        "post": [
+          36,
+          54
+        ]
+      },
+      {
+        "op": "insert",
+        "post": [
+          54,
+          70
+        ]
+      },
+      {
+        "op": "equal",
+        "pre": [
+          38,
+          52
+        ],
+        "post": [
+          70,
+          84
+        ]
+      },
+      {
+        "op": "replace",
+        "pre": [
+          52,
+          54
+        ],
+        "post": [
+          84,
+          120
+        ]
+      },
+      {
+        "op": "equal",
+        "pre": [
+          54,
+          71
+        ],
+        "post": [
+          120,
+          137
+        ]
+      },
+      {
+        "op": "insert",
+        "post": [
+          137,
+          146
+        ]
+      },
+      {
+        "op": "equal",
+        "pre": [
+          71,
+          93
+        ],
+        "post": [
+          146,
+          168
+        ]
+      },
+      {
+        "op": "replace",
+        "pre": [
+          93,
+          94
+        ],
+        "post": [
+          168,
+          170
+        ]
+      },
+      {
+        "op": "equal",
+        "pre": [
+          94,
+          100
+        ],
+        "post": [
+          170,
+          176
+        ]
+      }
+    ]
+  }
+}

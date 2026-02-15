@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Keepsakes ~ Drift</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes, viewport-fit=cover" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <link rel="stylesheet" href="css/chat.css" />
+</head>
+
+<body>
+  <div class="app-shell">
+    <div class="app-header">
+      <div class="menu-icon" id="menuIcon" aria-label="Menu">
+        <span></span><span></span><span></span>
+      </div>
+
+      <div class="header-center">
+        <div class="persona-title-chip" id="personaTitleChip">Liminal-time</div>
+      </div>
+
+      <div class="lang-toggle" id="langToggle">
+        <span id="langLabel">عرب</span>
+      </div>
+    </div>
+
+    <div class="screen">
+      <div class="stage">
+        <div class="bg-wrap">
+          <img id="bgPrev2" class="bg-img bg-layer bg-layer-prev2" src="" alt="" />
+          <img id="bgPrev1" class="bg-img bg-layer bg-layer-prev1" src="" alt="" />
+          <img id="bgImage" class="bg-img bg-layer bg-layer-current" src="" alt="Drift background" />
+          <div class="bg-shimmer"></div>
+          <div class="bg-vignette"></div>
+        </div>
+      </div>
+
+      <div class="mid-layer">
+        <button class="drift-btn" id="driftBtn">Drift 32</button>
+
+        <!-- TOP AREA: Drift panel opens here -->
+        <div class="top-content">
+          <div class="text-panel hidden" id="driftPanel">
+            <p class="body" id="driftText"></p>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- KEEPSAKE SHELL: archive of past keepsake narrations + fragment input -->
+      <div class="keepsake-shell" id="keepsakeShell">
+        <div class="keepsake-handle" id="keepsakeHandle" aria-label="Toggle keepsake archive">
+          <span class="keepsake-handle-label">Keepsake</span>
+        </div>
+
+        <div class="archive-entries-wrap">
+          <div class="archive-entries" id="archiveEntries"></div>
+        </div>
+
+        <div class="fragment-composer" id="fragmentComposer">
+          <input id="fragmentInput" placeholder="leave a memory fragment..." />
+          <button class="fragment-send-btn" id="fragmentSendBtn" aria-label="Send">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+              <path d="M12 19V5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+              <path d="M5 12l7-7 7 7" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- HOME OVERLAY: Main page as popup -->
+    <div class="home-overlay" id="homeOverlay" aria-hidden="true">
+      <div class="home-overlay-content">
+        <!-- Header with close button -->
+        <div class="home-header">
+          <div class="home-close-btn" id="homeCloseBtn" aria-label="Close" role="button" tabindex="0">
+            <span></span><span></span>
+          </div>
+          <div class="home-title" id="homeTitle">Keepsakes ~ Drift</div>
+          <div class="home-lang-toggle" id="homeLangToggle" role="button" tabindex="0">
+            <span id="homeLangLabel">PT</span>
+          </div>
+        </div>
+
+        <!-- Main content -->
+        <div class="home-main">
+          <div class="home-section-label" id="homePersonaSectionLabel">Choose a temporality</div>
+          <div class="home-persona-grid">
+            <div class="home-persona-card" data-persona="human">
+              <div class="home-persona-name" id="homePersonaHumanMain">Human-time</div>
+              <div class="home-persona-desc" id="homePersonaHumanSub">Daily routines, recall</div>
+            </div>
+            <div class="home-persona-card" data-persona="liminal">
+              <div class="home-persona-name" id="homePersonaLiminalMain">Liminal-time</div>
+              <div class="home-persona-desc" id="homePersonaLiminalSub">Corridors, waiting, thresholds</div>
+            </div>
+            <div class="home-persona-card" data-persona="environment">
+              <div class="home-persona-name" id="homePersonaEnvMain">Environmental-time</div>
+              <div class="home-persona-desc" id="homePersonaEnvSub">Weather, light, atmosphere</div>
+            </div>
+            <div class="home-persona-card" data-persona="digital">
+              <div class="home-persona-name" id="homePersonaDigitalMain">Digital-time</div>
+              <div class="home-persona-desc" id="homePersonaDigitalSub">Signals, feeds, network drift</div>
+            </div>
+            <div class="home-persona-card" data-persona="infrastructure">
+              <div class="home-persona-name" id="homePersonaInfraMain">Infrastructure-time</div>
+              <div class="home-persona-desc" id="homePersonaInfraSub">Logistics, systems, support layers</div>
+            </div>
+            <div class="home-persona-card" data-persona="more_than_human">
+              <div class="home-persona-name" id="homePersonaMthMain">More-than-human-time</div>
+              <div class="home-persona-desc" id="homePersonaMthSub">Nonhuman rhythms, ecological sense</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="js/api_config.js"></script>
+  <script src="js/chat_config.js"></script>
+  <script src="js/chat_runtime.js"></script>
+</body>
+</html>

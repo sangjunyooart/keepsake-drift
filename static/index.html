@@ -1,0 +1,616 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Keepsakes ~ Drift</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes, viewport-fit=cover" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+
+  <!-- Externalized CSS -->
+  <link rel="stylesheet" href="css/base.css" />
+  <link rel="stylesheet" href="css/layout.css" />
+  <link rel="stylesheet" href="css/theme.css" />
+
+  <style>
+    /* Index-specific overrides */
+    body {
+      background: #050509;
+      display: flex;
+      flex-direction: column;
+      min-height: 100vh;
+      min-height: 100dvh; /* Dynamic viewport height for mobile */
+      position: fixed;
+      overflow: hidden;
+    }
+
+    /* Hide all scrollbars */
+    body, html {
+      -ms-overflow-style: none;
+      scrollbar-width: none;
+    }
+    body::-webkit-scrollbar,
+    html::-webkit-scrollbar {
+      display: none;
+    }
+    .index-main {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 0 clamp(14px, 3vw, 18px) clamp(20px, 4vw, 24px);
+      max-width: 520px;
+      margin: 0 auto;
+      width: 100%;
+      overflow-y: auto;
+      -webkit-overflow-scrolling: touch;
+      -ms-overflow-style: none;
+      scrollbar-width: none;
+    }
+    .index-main::-webkit-scrollbar {
+      display: none;
+    }
+
+    /* Countdown clock */
+    .tick-wrap {
+      text-align: center;
+      margin-bottom: 10px;
+      user-select: none;
+    }
+    .tick-label {
+      font-size: 10px;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: rgba(245, 245, 247, 0.18);
+      margin-bottom: 2px;
+    }
+    .tick-clock {
+      font-size: 18px;
+      font-weight: 300;
+      letter-spacing: 0.06em;
+      color: rgba(245, 245, 247, 0.25);
+      font-variant-numeric: tabular-nums;
+    }
+    .tick-clock.drifting {
+      color: rgba(245, 212, 107, 0.40);
+      font-size: 14px;
+      letter-spacing: 0.08em;
+    }
+
+    /* Section label above grid */
+    .section-label {
+      font-size: 13px;
+      color: rgba(245, 245, 247, 0.35);
+      letter-spacing: 0.05em;
+      margin-bottom: 16px;
+      text-align: center;
+    }
+
+    /* Persona grid — centered, tighter */
+    .persona-grid {
+      margin-top: 0;
+      gap: 10px;
+      width: 100%;
+    }
+
+    /* Privacy — very subtle, at the bottom */
+    .privacy-line {
+      font-size: 11px;
+      color: rgba(245, 245, 247, 0.22);
+      text-align: center;
+      line-height: 1.5;
+      margin-top: 28px;
+      padding: 0 12px;
+      max-width: 400px;
+    }
+    .privacy-line a {
+      color: rgba(245, 245, 247, 0.30);
+      text-decoration: underline;
+      text-decoration-color: rgba(245, 245, 247, 0.15);
+    }
+    .privacy-line a:hover {
+      color: rgba(245, 245, 247, 0.45);
+    }
+
+    /* Override menu icon to be X (close) icon on index page */
+    /* Match hamburger menu size: 22px width × 16px height */
+    .menu-icon {
+      position: relative;
+      width: 22px;
+      height: 16px;
+      padding: 3px 0; /* Match hamburger menu padding for perfect alignment */
+      display: flex;
+      flex-direction: column;
+      justify-content: center; /* Center the X vertically like hamburger */
+    }
+    .menu-icon span {
+      position: absolute;
+      top: 50%;
+      left: 50%; /* Center horizontally */
+      width: 100%;
+      height: 2px;
+      background: #f5f5f7;
+      border-radius: 999px;
+      transform-origin: center;
+    }
+    .menu-icon span:nth-child(1) {
+      transform: translate(-50%, -50%) rotate(45deg);
+    }
+    .menu-icon span:nth-child(2) {
+      opacity: 0;
+      transform: translate(-50%, -50%);
+    }
+    .menu-icon span:nth-child(3) {
+      transform: translate(-50%, -50%) rotate(-45deg);
+    }
+  </style>
+</head>
+
+<body>
+  <div class="app-shell" style="min-height:100vh; min-height:100dvh; display:flex; flex-direction:column; overflow:hidden;">
+    <!-- HEADER -->
+    <div class="app-header">
+      <div class="menu-icon" id="menuIcon" aria-label="Menu" role="button" tabindex="0">
+        <span></span><span></span><span></span>
+      </div>
+
+      <div class="header-center">
+        <div class="header-title" id="headerTitle">Keepsakes ~ Drift</div>
+      </div>
+
+      <div class="lang-toggle" id="langToggle" role="button" tabindex="0">
+        <span id="langLabel"></span>
+      </div>
+    </div>
+
+    <!-- MENU OVERLAY -->
+    <div class="menu-overlay" id="menuOverlay" aria-hidden="true">
+      <div class="menu-panel" role="dialog" aria-modal="true" aria-label="Menu">
+        <div class="menu-header-row">
+          <div class="menu-title" id="menuTitle">Menu</div>
+          <div class="menu-close" id="menuClose" role="button" tabindex="0" aria-label="Close">&times;</div>
+        </div>
+
+        <div class="menu-list">
+          <div class="menu-item" id="menuHome">Home</div>
+          <a class="menu-item" href="/chat?persona=human" id="menuHuman">Human-time</a>
+          <a class="menu-item" href="/chat?persona=liminal" id="menuLiminal">Liminal-time</a>
+          <a class="menu-item" href="/chat?persona=environment" id="menuEnv">Environmental-time</a>
+          <a class="menu-item" href="/chat?persona=digital" id="menuDigital">Digital-time</a>
+          <a class="menu-item" href="/chat?persona=infrastructure" id="menuInfra">Infrastructure-time</a>
+          <a class="menu-item" href="/chat?persona=more_than_human" id="menuMth">More-than-human-time</a>
+        </div>
+      </div>
+    </div>
+
+    <!-- MAIN -->
+    <div class="index-main">
+      <!-- Countdown clock -->
+      <div class="tick-wrap">
+        <div class="tick-label" id="tickLabel">next drift</div>
+        <div class="tick-clock" id="tickClock">--:--</div>
+      </div>
+
+      <div class="section-label" id="personaSectionLabel">Choose a temporality</div>
+
+      <!-- Persona cards -->
+      <div class="persona-grid" id="personaGrid">
+        <div class="persona-card" data-persona="human" role="button" tabindex="0">
+          <div class="persona-name" id="btnHumanMain">Human-time</div>
+          <div class="persona-desc" id="btnHumanSub">Daily routines, recall</div>
+        </div>
+
+        <div class="persona-card" data-persona="liminal" role="button" tabindex="0">
+          <div class="persona-name" id="btnLiminalMain">Liminal-time</div>
+          <div class="persona-desc" id="btnLiminalSub">Corridors, waiting, thresholds</div>
+        </div>
+
+        <div class="persona-card" data-persona="environment" role="button" tabindex="0">
+          <div class="persona-name" id="btnEnvMain">Environmental-time</div>
+          <div class="persona-desc" id="btnEnvSub">Weather, light, atmosphere</div>
+        </div>
+
+        <div class="persona-card" data-persona="digital" role="button" tabindex="0">
+          <div class="persona-name" id="btnDigitalMain">Digital-time</div>
+          <div class="persona-desc" id="btnDigitalSub">Signals, feeds, network drift</div>
+        </div>
+
+        <div class="persona-card" data-persona="infrastructure" role="button" tabindex="0">
+          <div class="persona-name" id="btnInfraMain">Infrastructure-time</div>
+          <div class="persona-desc" id="btnInfraSub">Logistics, systems, support layers</div>
+        </div>
+
+        <div class="persona-card" data-persona="more_than_human" role="button" tabindex="0">
+          <div class="persona-name" id="btnMthMain">More-than-human-time</div>
+          <div class="persona-desc" id="btnMthSub">Nonhuman rhythms, ecological sense</div>
+        </div>
+      </div>
+
+      <!-- Privacy — minimal -->
+      <div class="privacy-line" id="privacyLine">
+        Your words may drift into the artwork's memory. <a href="/privacy" id="privacyLink">Data &amp; privacy</a>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    document.addEventListener("DOMContentLoaded", () => {
+      const STORAGE_LANG_KEY = "kd_lang";
+
+      const langToggle = document.getElementById("langToggle");
+      const langLabel = document.getElementById("langLabel");
+      const headerTitle = document.getElementById("headerTitle");
+
+      const menuIcon = document.getElementById("menuIcon");
+      const menuOverlay = document.getElementById("menuOverlay");
+      const menuClose = document.getElementById("menuClose");
+      const menuTitle = document.getElementById("menuTitle");
+      const menuHome = document.getElementById("menuHome");
+
+      const personaSectionLabel = document.getElementById("personaSectionLabel");
+      const privacyLine = document.getElementById("privacyLine");
+      const privacyLink = document.getElementById("privacyLink");
+
+      const els = {
+        btnHumanMain: document.getElementById("btnHumanMain"),
+        btnHumanSub: document.getElementById("btnHumanSub"),
+        btnLiminalMain: document.getElementById("btnLiminalMain"),
+        btnLiminalSub: document.getElementById("btnLiminalSub"),
+        btnEnvMain: document.getElementById("btnEnvMain"),
+        btnEnvSub: document.getElementById("btnEnvSub"),
+        btnDigitalMain: document.getElementById("btnDigitalMain"),
+        btnDigitalSub: document.getElementById("btnDigitalSub"),
+        btnInfraMain: document.getElementById("btnInfraMain"),
+        btnInfraSub: document.getElementById("btnInfraSub"),
+        btnMthMain: document.getElementById("btnMthMain"),
+        btnMthSub: document.getElementById("btnMthSub"),
+      };
+
+      const menuEls = {
+        menuTitle,
+        menuHome,
+        menuHuman: document.getElementById("menuHuman"),
+        menuLiminal: document.getElementById("menuLiminal"),
+        menuEnv: document.getElementById("menuEnv"),
+        menuDigital: document.getElementById("menuDigital"),
+        menuInfra: document.getElementById("menuInfra"),
+        menuMth: document.getElementById("menuMth"),
+      };
+
+      // Active second language — fetched from /lang_config, defaults to "ar"
+      let secondLang = "ar";
+      let secondLangDirection = "rtl";
+
+      const uiText = {
+        en: {
+          headerTitle: "Keepsakes ~ Drift",
+          langButton: "PT",   // overridden by /lang_config
+          menuTitle: "Menu",
+          menuHome: "Home",
+          personaSectionLabel: "Choose a temporality",
+          tickLabel: "next drift",
+          driftingText: "drifting\u2026",
+          personas: {
+            humanMain: "Human-time",
+            humanSub: "Daily routines, recall",
+            liminalMain: "Liminal-time",
+            liminalSub: "Corridors, waiting, thresholds",
+            envMain: "Environmental-time",
+            envSub: "Weather, light, atmosphere",
+            digitalMain: "Digital-time",
+            digitalSub: "Signals, feeds, network drift",
+            infraMain: "Infrastructure-time",
+            infraSub: "Logistics, systems, support layers",
+            mthMain: "More-than-human-time",
+            mthSub: "Nonhuman rhythms, ecological sense"
+          },
+          privacyLine: "Your words may drift into the artwork\u2019s memory.",
+          privacyLinkText: "Data & privacy"
+        },
+        ar: {
+          headerTitle: "تذكار في كل خصلة ~ انجراف",
+          langButton: "EN",
+          menuTitle: "القائمة",
+          menuHome: "الرئيسية",
+          personaSectionLabel: "اختر زمناً",
+          tickLabel: "الانجراف التالي",
+          driftingText: "انجراف…",
+          personas: {
+            humanMain: "الزمن الإنساني",
+            humanSub: "إيقاع الحياة اليومية",
+            liminalMain: "الزمن البيني",
+            liminalSub: "ممرات، انتظار، عتبات",
+            envMain: "الزمن البيئي",
+            envSub: "الطقس، الضوء، الجو",
+            digitalMain: "الزمن الرقمي",
+            digitalSub: "إشارات، تغذيات، انجراف شبكي",
+            infraMain: "زمن البنى التحتية",
+            infraSub: "لوجستيات، أنظمة، طبقات داعمة",
+            mthMain: "زمن أكثر من بشري",
+            mthSub: "إيقاعات غير بشرية، إحساس بيئي"
+          },
+          privacyLine: "\u0642\u062f \u062a\u0646\u062c\u0631\u0641 \u0643\u0644\u0645\u0627\u062a\u0643 \u0625\u0644\u0649 \u0630\u0627\u0643\u0631\u0629 \u0627\u0644\u0639\u0645\u0644 \u0627\u0644\u0641\u0646\u064a.",
+          privacyLinkText: "\u0627\u0644\u0628\u064a\u0627\u0646\u0627\u062a \u0648\u0627\u0644\u062e\u0635\u0648\u0635\u064a\u0629"
+        },
+        el: {
+          headerTitle: "Ενθύμια ~ Παρέκκλιση",
+          langButton: "EN",
+          menuTitle: "Μενού",
+          menuHome: "Αρχική",
+          personaSectionLabel: "Επιλέξτε χρονικότητα",
+          tickLabel: "επόμενη παρέκκλιση",
+          driftingText: "παρέκκλιση\u2026",
+          personas: {
+            humanMain: "Ανθρώπινος χρόνος",
+            humanSub: "Καθημερινές ρουτίνες, ανάκληση",
+            liminalMain: "Μεταβατικός χρόνος",
+            liminalSub: "Διάδρομοι, αναμονή, κατώφλια",
+            envMain: "Περιβαλλοντικός χρόνος",
+            envSub: "Καιρός, φως, ατμόσφαιρα",
+            digitalMain: "Ψηφιακός χρόνος",
+            digitalSub: "Σήματα, ροές, δικτυακή παρέκκλιση",
+            infraMain: "Χρόνος υποδομής",
+            infraSub: "Εφοδιαστική, συστήματα, επίπεδα στήριξης",
+            mthMain: "Υπεράνθρωπος χρόνος",
+            mthSub: "Μη ανθρώπινοι ρυθμοί, οικολογική αίσθηση"
+          },
+          privacyLine: "Οι λέξεις σας μπορεί να παρεκκλίνουν στη μνήμη του έργου.",
+          privacyLinkText: "Δεδομένα & απόρρητο"
+        },
+        "pt-br": {
+          headerTitle: "Relíquias ~ Deriva",
+          langButton: "EN",
+          menuTitle: "Menu",
+          menuHome: "Início",
+          personaSectionLabel: "Escolha uma temporalidade",
+          tickLabel: "próxima deriva",
+          driftingText: "derivando\u2026",
+          personas: {
+            humanMain: "Tempo humano",
+            humanSub: "Rotinas diárias, recordação",
+            liminalMain: "Tempo liminar",
+            liminalSub: "Corredores, espera, limiares",
+            envMain: "Tempo ambiental",
+            envSub: "Clima, luz, atmosfera",
+            digitalMain: "Tempo digital",
+            digitalSub: "Sinais, feeds, deriva de rede",
+            infraMain: "Tempo de infraestrutura",
+            infraSub: "Logística, sistemas, camadas de suporte",
+            mthMain: "Tempo mais-que-humano",
+            mthSub: "Ritmos não humanos, sentido ecológico"
+          },
+          privacyLine: "Suas palavras podem derivar para a memória da obra.",
+          privacyLinkText: "Dados & privacidade"
+        }
+      };
+
+      // ======================================================
+      // Countdown clock — syncs with server tick cycle
+      // ======================================================
+      const TICK_SECONDS = 1800;  // 30-minute global tick cycle (fallback)
+      const LS_NEXT_TICK = "kd_next_tick_epoch_ms_v2";
+      const clockEl = document.getElementById("tickClock");
+      const tickLabelEl = document.getElementById("tickLabel");
+
+      function fmtMMSS(sec) {
+        const s = Math.max(0, Math.floor(sec));
+        const mm = String(Math.floor(s / 60)).padStart(2, "0");
+        const ss = String(s % 60).padStart(2, "0");
+        return mm + ":" + ss;
+      }
+
+      let tickIntervalMs = TICK_SECONDS * 1000;
+
+      function getOrInitNextTickMs() {
+        const now = Date.now();
+        const v = Number(localStorage.getItem(LS_NEXT_TICK) || "0");
+        if (v && Number.isFinite(v) && v > now - 10000 && v < now + (tickIntervalMs * 10)) return v;
+        const step = tickIntervalMs;
+        const next = Math.ceil(now / step) * step;
+        localStorage.setItem(LS_NEXT_TICK, String(next));
+        return next;
+      }
+
+      function setNextTickMs(ms) {
+        localStorage.setItem(LS_NEXT_TICK, String(ms));
+      }
+
+      let nextTickMs = getOrInitNextTickMs();
+      // Expose globally so chat_runtime.js can gate version updates
+      window.kdNextTickMs = nextTickMs;
+
+      // Sync with server on load (non-blocking)
+      fetch("/tick_status").then(r => r.json()).then(data => {
+        if (data && data.next_display_epoch_ms) {
+          nextTickMs = data.next_display_epoch_ms;
+          window.kdNextTickMs = nextTickMs;
+          tickIntervalMs = (data.tick_interval_s || TICK_SECONDS) * 1000;
+          setNextTickMs(nextTickMs);
+        }
+      }).catch(() => {});
+
+      let _reloadScheduled = false;
+
+      function updateClock() {
+        if (!clockEl) return;
+        const now = Date.now();
+        let remaining = Math.ceil((nextTickMs - now) / 1000);
+        if (remaining <= 0) {
+          const t = uiText[currentLang];
+          clockEl.textContent = (t.driftingText || "drifting\u2026");
+          clockEl.classList.add("drifting");
+          if (tickLabelEl) tickLabelEl.style.display = "none";
+          // Reload page after brief "drifting..." display
+          if (!_reloadScheduled) {
+            _reloadScheduled = true;
+            setTimeout(() => { window.location.reload(); }, 1500);
+          }
+          return;
+        }
+        clockEl.textContent = fmtMMSS(remaining);
+        clockEl.classList.remove("drifting");
+        if (tickLabelEl) tickLabelEl.style.display = "";
+      }
+
+      // ======================================================
+      // RTL & Language
+      // ======================================================
+      function setRTL(isRTL) {
+        // Only apply RTL to text content elements — UI layout stays LTR
+        const rtlTextIds = [
+          "personaSectionLabel",
+          "btnHumanMain","btnHumanSub",
+          "btnLiminalMain","btnLiminalSub",
+          "btnEnvMain","btnEnvSub",
+          "btnDigitalMain","btnDigitalSub",
+          "btnInfraMain","btnInfraSub",
+          "btnMthMain","btnMthSub",
+          "privacyLine"
+        ];
+        rtlTextIds.forEach(id => {
+          const el = document.getElementById(id);
+          if (el) {
+            el.dir = isRTL ? "rtl" : "";
+            el.style.textAlign = isRTL ? "right" : "";
+          }
+        });
+      }
+
+      function updateUILanguage(lang) {
+        const t = uiText[lang];
+
+        langLabel.textContent = t.langButton;
+        headerTitle.textContent = t.headerTitle;
+        if (tickLabelEl) tickLabelEl.textContent = t.tickLabel;
+
+        menuEls.menuTitle.textContent = t.menuTitle;
+        menuEls.menuHome.textContent = t.menuHome;
+        menuEls.menuHuman.textContent = t.personas.humanMain;
+        menuEls.menuLiminal.textContent = t.personas.liminalMain;
+        menuEls.menuEnv.textContent = t.personas.envMain;
+        menuEls.menuDigital.textContent = t.personas.digitalMain;
+        menuEls.menuInfra.textContent = t.personas.infraMain;
+        menuEls.menuMth.textContent = t.personas.mthMain;
+
+        personaSectionLabel.textContent = t.personaSectionLabel;
+
+        els.btnHumanMain.textContent = t.personas.humanMain;
+        els.btnHumanSub.textContent = t.personas.humanSub;
+        els.btnLiminalMain.textContent = t.personas.liminalMain;
+        els.btnLiminalSub.textContent = t.personas.liminalSub;
+        els.btnEnvMain.textContent = t.personas.envMain;
+        els.btnEnvSub.textContent = t.personas.envSub;
+        els.btnDigitalMain.textContent = t.personas.digitalMain;
+        els.btnDigitalSub.textContent = t.personas.digitalSub;
+        els.btnInfraMain.textContent = t.personas.infraMain;
+        els.btnInfraSub.textContent = t.personas.infraSub;
+        els.btnMthMain.textContent = t.personas.mthMain;
+        els.btnMthSub.textContent = t.personas.mthSub;
+
+        // Privacy line — reconstructed with translated text + link
+        privacyLine.innerHTML = "";
+        privacyLine.appendChild(document.createTextNode(t.privacyLine + " "));
+        const link = document.createElement("a");
+        link.href = "/privacy";
+        link.id = "privacyLink";
+        link.textContent = t.privacyLinkText;
+        privacyLine.appendChild(link);
+
+        setRTL(lang !== "en" && secondLangDirection === "rtl");
+      }
+
+      // ======================================================
+      // Menu
+      // ======================================================
+      function openMenu() {
+        menuOverlay.classList.add("visible");
+        menuOverlay.setAttribute("aria-hidden", "false");
+      }
+      function closeMenu() {
+        menuOverlay.classList.remove("visible");
+        menuOverlay.setAttribute("aria-hidden", "true");
+      }
+      function onKeyActivate(el, handler) {
+        el.addEventListener("keydown", (e) => {
+          if (e.key === "Enter" || e.key === " ") {
+            e.preventDefault();
+            handler();
+          }
+        });
+      }
+
+      // ======================================================
+      // Init
+      // ======================================================
+      const storedLang = localStorage.getItem(STORAGE_LANG_KEY);
+      let currentLang = (storedLang && uiText[storedLang]) ? storedLang : "en";
+      // If stored lang isn't "en" and isn't the active L2, reset to "en"
+      if (currentLang !== "en" && currentLang !== secondLang) currentLang = "en";
+      updateUILanguage(currentLang);
+
+      // Fetch active second language from server (non-blocking)
+      fetch("/lang_config").then(r => r.json()).then(data => {
+        if (data && data.second_lang && uiText[data.second_lang]) {
+          secondLang = data.second_lang;
+          secondLangDirection = data.direction || "ltr";
+          // Update EN's toggle button label to show the active L2 toggle label
+          if (data.toggle_label) {
+            uiText.en.langButton = data.toggle_label;
+          }
+          // If user had a stale L2 stored, reset to "en"
+          if (currentLang !== "en" && currentLang !== secondLang) {
+            currentLang = "en";
+            localStorage.setItem(STORAGE_LANG_KEY, currentLang);
+          }
+          updateUILanguage(currentLang);
+        }
+      }).catch(() => {});
+
+      // Language toggle — cycle between EN and active second lang
+      const toggleLang = () => {
+        currentLang = (currentLang === "en") ? secondLang : "en";
+        localStorage.setItem(STORAGE_LANG_KEY, currentLang);
+        updateUILanguage(currentLang);
+      };
+      langToggle.addEventListener("click", toggleLang);
+      onKeyActivate(langToggle, toggleLang);
+
+      // Persona navigation
+      const goPersona = (persona) => {
+        window.location.href = "/chat?persona=" + encodeURIComponent(persona);
+      };
+      document.querySelectorAll(".persona-card").forEach(card => {
+        const persona = card.dataset.persona;
+        card.addEventListener("click", () => goPersona(persona));
+        onKeyActivate(card, () => goPersona(persona));
+      });
+
+      // Menu icon (X) - navigate back to last chat page or default to liminal
+      const goBackToChat = () => {
+        // Check if there's a stored last persona in localStorage
+        const lastPersona = localStorage.getItem("kd_last_persona") || "liminal";
+        window.location.href = "/chat?persona=" + encodeURIComponent(lastPersona);
+      };
+      menuIcon.addEventListener("click", goBackToChat);
+      onKeyActivate(menuIcon, goBackToChat);
+      menuClose.addEventListener("click", () => closeMenu());
+      onKeyActivate(menuClose, () => closeMenu());
+      menuOverlay.addEventListener("click", (e) => {
+        if (e.target === menuOverlay) closeMenu();
+      });
+      menuHome.addEventListener("click", () => {
+        closeMenu();
+        window.scrollTo({ top: 0, behavior: "smooth" });
+      });
+      document.addEventListener("keydown", (e) => {
+        if (e.key === "Escape") closeMenu();
+      });
+
+      // Start clock
+      updateClock();
+      setInterval(updateClock, 250);
+    });
+  </script>
+</body>
+</html>

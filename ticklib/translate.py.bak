@@ -1,0 +1,40 @@
+# ticklib/translate.py
+from __future__ import annotations
+
+import sqlite3
+from typing import Optional
+
+import storage
+
+
+def translate_en_to_ar_cached(
+    text_en: str,
+    *,
+    db_path: str,
+    conn: Optional[sqlite3.Connection] = None,
+) -> str:
+    """
+    Translate EN -> AR using cache in DB.
+
+    IMPORTANT: if `conn` is provided, we reuse it to avoid SQLite writer lock
+    (tick pipeline already holds a write txn).
+    """
+    text_en = (text_en or "").strip()
+    if not text_en:
+        return ""
+
+    cached = storage.get_cached_translation("en", "ar", text_en, db_path=db_path, conn=conn)
+    if cached:
+        return cached
+
+    # NOTE: keep using your existing translation implementation.
+    # storage.translate_text_en_to_ar should be whatever you already use
+    # (OpenAI/LLM/local). If your project uses a different function name,
+    # keep it exactly as is in YOUR current storage.py and call it here.
+    out = storage.translate_text_en_to_ar(text_en, db_path=db_path)
+    out = (out or "").strip()
+
+    if out:
+        storage.put_cached_translation("en", "ar", text_en, out, db_path=db_path, conn=conn)
+
+    return out

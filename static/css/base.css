@@ -1,0 +1,105 @@
+/* base.css : 기본 타이포, 리셋, 폰트 */
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  padding: 0;
+  height: 100%;
+  width: 100%;
+  overflow-x: hidden;
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+}
+
+body {
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI",
+    sans-serif;
+  background: radial-gradient(circle at top, #151820 0, #050509 55%);
+  color: #f5f5f7;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  /* Hide scrollbars */
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+body::-webkit-scrollbar {
+  display: none;
+}
+
+/* 전역 텍스트 스타일 */
+
+.page-container {
+  max-width: 640px;
+  margin: 0 auto;
+  padding: clamp(12px, 3vw, 18px) clamp(12px, 3vw, 18px) clamp(18px, 4vw, 24px);
+  width: 100%;
+}
+
+.page-title {
+  font-size: clamp(1.2rem, 2.5vw, 1.5rem);
+  font-weight: 600;
+  margin-bottom: 10px;
+}
+
+.subtitle {
+  font-size: clamp(0.85rem, 2vw, 0.9rem);
+  color: #9ca0b5;
+  margin-bottom: 12px;
+}
+
+.body-text {
+  font-size: clamp(0.85rem, 2vw, 0.9rem);
+  line-height: 1.6;
+  color: #dde1f0;
+  margin-bottom: 12px;
+}
+
+.primary-btn {
+  border-radius: 999px;
+  border: none;
+  padding: clamp(8px, 2vw, 10px) clamp(14px, 3vw, 18px);
+  font-size: clamp(0.85rem, 2vw, 0.95rem);
+  font-weight: 600;
+  cursor: pointer;
+  background: #f5d46b;
+  color: #000;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  margin-top: 8px;
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* RTL 유틸 */
+
+.rtl {
+  direction: rtl;
+  text-align: right;
+}
+
+.rtl-block {
+  direction: rtl;
+  text-align: right;
+}
+
+/* 링크 */
+
+a {
+  color: #f5d46b;
+  text-decoration: none;
+}
+
+a:hover {
+  text-decoration: underline;
+}

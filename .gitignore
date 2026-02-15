@@ -1,0 +1,52 @@
+# Python
+venv/
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+*.so
+*.egg
+*.egg-info/
+dist/
+build/
+
+# Environment
+.env
+.env.local
+
+# Data & Database
+data/*.sqlite
+data/*.sqlite-shm
+data/*.sqlite-wal
+data/tunnel_url.txt
+data/rss_cycle_state.json
+data/images/*.png
+data/images/*.jpg
+data/translation_cache.sqlite*
+data/images_athens_backup/
+
+# Logs
+*.log
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Wrangler
+.wrangler/
+wrangler.toml
+
+# Node
+node_modules/
+package-lock.json
+
+# Generated files
+static/generated/

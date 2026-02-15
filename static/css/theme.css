@@ -1,0 +1,69 @@
+/* theme.css : 색감, 폰트 디테일, serif 적용 */
+
+:root {
+  color-scheme: dark;
+  --bg: #050509;
+  --panel: #13141a;
+  --accent: #f5d46b;
+  --accent-soft: rgba(245, 212, 107, 0.2);
+  --user-bubble: #273349;
+  --ai-bubble: #11171f;
+  --border-subtle: #262833;
+  --text-dim: #9ca0b5;
+  --persona-accent: #E6C15A;
+  --persona-accent-rgb: 230, 193, 90;
+
+  --persona-btn-bg: rgba(230, 193, 90, 0.22);
+  --persona-btn-border: rgba(230, 193, 90, 0.45);
+  --persona-btn-bg-active: rgba(230, 193, 90, 0.34);
+  --persona-btn-border-active: rgba(230, 193, 90, 0.60);
+}
+
+/* AI 메시지용 serif 폰트 */
+
+.bubble.ai {
+  font-family: "Georgia", "Times New Roman", serif;
+}
+
+/* 아랍어일 때도 serif 느낌 살릴 수 있도록 */
+.rtl .bubble.ai,
+.bubble.ai.rtl {
+  font-family: "Amiri", "Scheherazade", "Times New Roman", serif;
+}
+
+/* 버튼 호버 */
+
+.primary-btn:hover,
+.send-btn:hover,
+.drift-cta:hover {
+  filter: brightness(1.05);
+}
+
+/* 카드 hover */
+
+.persona-card:hover {
+  border-color: var(--accent-soft);
+}
+
+
+/* Underline marker for drifted words/segments (no color change to text) */
+#driftText .drift-new{
+  color: inherit;
+  text-decoration: underline;
+  text-decoration-thickness: 2px;
+  text-underline-offset: 4px;
+  text-decoration-color: var(--persona-accent);
+}
+
+/* Persona-tinted buttons (light fill, readable label) */
+#driftBtn,
+#keepsakeBtn{
+  background: var(--persona-btn-bg);
+  border-color: var(--persona-btn-border);
+}
+
+#driftBtn.active,
+#keepsakeBtn.active{
+  background: var(--persona-btn-bg-active);
+  border-color: var(--persona-btn-border-active);
+}

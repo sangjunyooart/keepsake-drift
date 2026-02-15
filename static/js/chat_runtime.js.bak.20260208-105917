@@ -1,0 +1,595 @@
+/* static/js/chat_runtime.js */
+(() => {
+  "use strict";
+
+  // ---------------------------
+  // Config + persistent state
+  // ---------------------------
+  const CFG = window.KD_CFG || {};
+  const TEMPORALITIES = (CFG.TEMPORALITIES || ["human","liminal","environment","digital","infrastructure","more_than_human"]);
+
+  const qs = new URLSearchParams(location.search);
+  const currentPersona = (qs.get("persona") || "liminal").trim();
+
+  const STORAGE_LANG_KEY = CFG.STORAGE_LANG_KEY || "keepsake_lang";
+  const ENABLE_ARABIC = !!CFG.ENABLE_ARABIC;
+
+  let currentLangView = (ENABLE_ARABIC && (localStorage.getItem(STORAGE_LANG_KEY) === "ar")) ? "ar" : "en";
+
+  // ---------------------------
+  // DOM
+  // ---------------------------
+  const menuIcon = document.getElementById("menuIcon");
+  const personaTitleChip = document.getElementById("personaTitleChip");
+  const langToggle = document.getElementById("langToggle");
+
+  const bgImg = document.getElementById("bgImg");
+
+  const driftBtn = document.getElementById("driftBtn");
+  const keepsakeBtn = document.getElementById("keepsakeBtn");
+
+  const driftPanel = document.getElementById("driftPanel");
+  const keepsakePanel = document.getElementById("keepsakePanel");
+
+  const driftText = document.getElementById("driftText");
+  const keepsakeText = document.getElementById("keepsakeText");
+
+  const chatShell = document.getElementById("chatShell");
+  const chatHandle = document.getElementById("chatHandle");
+  const messagesEl = document.getElementById("messages");
+  const statusText = document.getElementById("statusText");
+
+  const inputEl = document.getElementById("chatInput");
+  const sendBtn = document.getElementById("sendBtn");
+
+  // ---------------------------
+  // Persona label + theme color
+  // ---------------------------
+  const personaLabel = {
+    human: "Human-time",
+    liminal: "Liminal-time",
+    environment: "Environmental-time",
+    digital: "Digital-time",
+    infrastructure: "Infrastructure-time",
+    more_than_human: "More-than-human-time"
+  };
+
+  // lighter button + underline colors per temporality (you can tweak)
+  const personaAccent = {
+    human: "#E6C15A",
+    liminal: "#86D0FF",
+    environment: "#88E0B0",
+    digital: "#BCA7FF",
+    infrastructure: "#FF9BCB",
+    more_than_human: "#FFA66E"
+  };
+
+  function applyPersonaTheme(persona){
+    const c = personaAccent[persona] || "#E6C15A";
+    document.documentElement.style.setProperty("--persona-accent", c);
+
+    // derive rgb for translucent button bg/border
+    const rgb = hexToRgb(c) || {r:230,g:193,b:90};
+    document.documentElement.style.setProperty("--persona-accent-rgb", `${rgb.r}, ${rgb.g}, ${rgb.b}`);
+
+    document.documentElement.style.setProperty("--persona-btn-bg", `rgba(${rgb.r}, ${rgb.g}, ${rgb.b}, 0.18)`);
+    document.documentElement.style.setProperty("--persona-btn-border", `rgba(${rgb.r}, ${rgb.g}, ${rgb.b}, 0.42)`);
+    document.documentElement.style.setProperty("--persona-btn-bg-active", `rgba(${rgb.r}, ${rgb.g}, ${rgb.b}, 0.30)`);
+    document.documentElement.style.setProperty("--persona-btn-border-active", `rgba(${rgb.r}, ${rgb.g}, ${rgb.b}, 0.60)`);
+  }
+
+  function hexToRgb(hex){
+    const h = (hex || "").trim();
+    const m = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(h);
+    if (!m) return null;
+    return { r: parseInt(m[1], 16), g: parseInt(m[2], 16), b: parseInt(m[3], 16) };
+  }
+
+  // ---------------------------
+  // UI text
+  // ---------------------------
+  function t(){
+    const ui = (CFG.uiText && CFG.uiText[currentLangView]) ? CFG.uiText[currentLangView] : (CFG.uiText?.en || {});
+    return ui || {};
+  }
+
+  function fmtMMSS(totalSeconds){
+    const s = Math.max(0, Math.floor(totalSeconds));
+    const mm = String(Math.floor(s / 60)).padStart(2, "0");
+    const ss = String(s % 60).padStart(2, "0");
+    return `${mm}:${ss}`;
+  }
+
+  // ---------------------------
+  // Clock (global tick countdown)
+  // ---------------------------
+  const TICK_SECONDS = Number(CFG.TICK_SECONDS || 180); // fallback 3 minutes
+  const STORAGE_NEXT_TICK_AT = CFG.STORAGE_NEXT_TICK_AT || "keepsake_next_tick_at";
+
+  function getNextTickAt(){
+    const raw = localStorage.getItem(STORAGE_NEXT_TICK_AT);
+    const n = raw ? Number(raw) : NaN;
+    if (!Number.isFinite(n) || n <= 0){
+      const next = Date.now() + (TICK_SECONDS * 1000);
+      localStorage.setItem(STORAGE_NEXT_TICK_AT, String(next));
+      return next;
+    }
+    return n;
+  }
+
+  function setNextTickAt(ms){
+    localStorage.setItem(STORAGE_NEXT_TICK_AT, String(ms));
+  }
+
+  function ensureClockEl(){
+    let el = document.getElementById("tickClockChip");
+    if (el) return el;
+
+    // mount next to hamburger, in the header center row (but still visible)
+    const header = document.querySelector(".app-header");
+    if (!header) return null;
+
+    el = document.createElement("div");
+    el.id = "tickClockChip";
+    el.style.fontSize = "12px";
+    el.style.opacity = "0.85";
+    el.style.padding = "6px 10px";
+    el.style.border = "1px solid rgba(255,255,255,0.12)";
+    el.style.borderRadius = "999px";
+    el.style.marginLeft = "10px";
+    el.style.whiteSpace = "nowrap";
+
+    const center = header.querySelector(".header-center");
+    if (center) center.appendChild(el);
+    else header.appendChild(el);
+
+    return el;
+  }
+
+  let clockTimer = null;
+  let isDrifting = false;
+
+  function startClock(){
+    const el = ensureClockEl();
+    if (!el) return;
+
+    if (clockTimer) clearInterval(clockTimer);
+
+    const tick = async () => {
+      const nextAt = getNextTickAt();
+      const remain = Math.max(0, Math.ceil((nextAt - Date.now()) / 1000));
+
+      if (isDrifting){
+        el.textContent = (currentLangView === "ar") ? "انجراف..." : "Drifting...";
+        return;
+      }
+
+      el.textContent = fmtMMSS(remain);
+
+      if (remain <= 0){
+        // rollover
+        isDrifting = true;
+        el.textContent = (currentLangView === "ar") ? "انجراف..." : "Drifting...";
+
+        // schedule next tick immediately so page switches do not reset
+        setNextTickAt(Date.now() + (TICK_SECONDS * 1000));
+
+        // refresh state to reveal latest drift
+        await loadStateAndRender(true);
+
+        isDrifting = false;
+      }
+    };
+
+    tick();
+    clockTimer = setInterval(tick, 250);
+  }
+
+  // ---------------------------
+  // Drift highlight builder
+  // ---------------------------
+  function escapeHtml(s){
+    return (s || "")
+      .replace(/&/g, "&amp;")
+      .replace(/</g, "&lt;")
+      .replace(/>/g, "&gt;");
+  }
+
+  function safeJsonParse(s){
+    try { return JSON.parse(s); } catch { return null; }
+  }
+
+  // Tokenizer for fallback underline
+  function tokenizeWithSeparators(text, lang){
+    const s = text || "";
+    // Try unicode-word match for Arabic; fallback if not supported
+    let reWord;
+    if (lang === "ar"){
+      try { reWord = /([\p{L}\p{M}\p{N}]+)/gu; }
+      catch { reWord = /([A-Za-z0-9\u0600-\u06FF]+)/g; }
+    } else {
+      reWord = /([A-Za-z0-9']+)/g;
+    }
+
+    const out = [];
+    let last = 0;
+    let m;
+    while ((m = reWord.exec(s)) !== null){
+      const start = m.index;
+      const end = start + m[0].length;
+      if (start > last) out.push({t: s.slice(last, start), w: false});
+      out.push({t: m[0], w: true});
+      last = end;
+    }
+    if (last < s.length) out.push({t: s.slice(last), w: false});
+    return out;
+  }
+
+  // robust delta renderer:
+  // 1) runs: [{t, chg}] -> best, continuous underline
+  // 2) spans: [[s,e]...] -> wrap char slices
+  // 3) token_ops: highlight words belonging to ops (fallback)
+  function highlightDriftText(text, deltaStr, lang){
+    const raw = (text || "");
+    const dj = (deltaStr || "").trim();
+    if (!raw.trim() || !dj) return escapeHtml(raw);
+
+    const j = safeJsonParse(dj);
+    if (!j) return escapeHtml(raw);
+
+    // (1) runs format
+    if (Array.isArray(j.runs)){
+      let html = "";
+      for (const r of j.runs){
+        const tt = String(r?.t ?? "");
+        const chg = !!(r?.chg);
+        if (!tt) continue;
+        if (chg) html += `<span class="drift-new">${escapeHtml(tt)}</span>`;
+        else html += escapeHtml(tt);
+      }
+      return html || escapeHtml(raw);
+    }
+
+    // (2) spans format
+    if (Array.isArray(j.spans)){
+      const spans = j.spans
+        .filter(a => Array.isArray(a) && a.length === 2)
+        .map(a => [Number(a[0]), Number(a[1])])
+        .filter(([s,e]) => Number.isFinite(s) && Number.isFinite(e) && e > s)
+        .sort((a,b) => a[0] - b[0]);
+
+      if (spans.length){
+        let html = "";
+        let idx = 0;
+        for (const [s,e] of spans){
+          const ss = Math.max(0, Math.min(raw.length, s));
+          const ee = Math.max(0, Math.min(raw.length, e));
+          if (ss > idx) html += escapeHtml(raw.slice(idx, ss));
+          html += `<span class="drift-new">${escapeHtml(raw.slice(ss, ee))}</span>`;
+          idx = ee;
+        }
+        if (idx < raw.length) html += escapeHtml(raw.slice(idx));
+        return html || escapeHtml(raw);
+      }
+    }
+
+    // (3) token_ops fallback
+    if (Array.isArray(j.token_ops)){
+      const changed = new Set();
+      for (const op of j.token_ops){
+        const b = Array.isArray(op?.b) ? op.b : [];
+        for (const tok of b){
+          const tt = String(tok || "").toLowerCase();
+          if (tt) changed.add(tt);
+        }
+      }
+      if (!changed.size) return escapeHtml(raw);
+
+      const parts = tokenizeWithSeparators(raw, lang);
+      // merge adjacent changed words into a single underline span by including separators between them
+      let html = "";
+      let run = "";
+
+      const flushRun = () => {
+        if (run){
+          html += `<span class="drift-new">${escapeHtml(run)}</span>`;
+          run = "";
+        }
+      };
+
+      for (let i=0; i<parts.length; i++){
+        const p = parts[i];
+        if (!p.w){
+          // separator
+          if (run){
+            // keep separators inside underline so adjacent words connect
+            run += p.t;
+          } else {
+            html += escapeHtml(p.t);
+          }
+          continue;
+        }
+
+        const key = p.t.toLowerCase();
+        if (changed.has(key)){
+          run += p.t;
+        } else {
+          flushRun();
+          html += escapeHtml(p.t);
+        }
+      }
+      flushRun();
+      return html || escapeHtml(raw);
+    }
+
+    return escapeHtml(raw);
+  }
+
+  // ---------------------------
+  // State cache + render
+  // ---------------------------
+  const stateCache = {
+    temporality: currentPersona,
+    version: 0,
+    image_url: null,
+    drift_en: "",
+    drift_ar: "",
+    recap_en: "",
+    recap_ar: "",
+    delta_json: "",
+    delta_json_ar: ""
+  };
+
+  function isRTL(){
+    return currentLangView === "ar";
+  }
+
+  function applyRTL(panelEl){
+    if (!panelEl) return;
+    if (isRTL()) panelEl.classList.add("rtl");
+    else panelEl.classList.remove("rtl");
+  }
+
+  function renderPanels(){
+    applyRTL(driftPanel);
+    applyRTL(keepsakePanel);
+
+    const drift = (currentLangView === "ar") ? stateCache.drift_ar : stateCache.drift_en;
+    const recap = (currentLangView === "ar") ? stateCache.recap_ar : stateCache.recap_en;
+
+    const delta = (currentLangView === "ar") ? stateCache.delta_json_ar : stateCache.delta_json;
+
+    // Drift: render underline spans via innerHTML
+    if (driftText){
+      const html = highlightDriftText(drift, delta, currentLangView);
+      driftText.innerHTML = html;
+    }
+
+    // Keepsake: recap text
+    if (keepsakeText){
+      keepsakeText.textContent = (recap && recap.trim()) ? recap : ((t().keepsakePlaceholder) || "");
+    }
+
+    // Buttons labels
+    const tt = t();
+    if (driftBtn) driftBtn.textContent = `${tt.driftBtnPrefix || "Drift"} ${stateCache.version || 0}`;
+    if (keepsakeBtn) keepsakeBtn.textContent = tt.keepsakeBtn || "Keepsake";
+  }
+
+  async function loadStateAndRender(force){
+    try {
+      const url = `/state?persona=${encodeURIComponent(currentPersona)}&ts=${force ? Date.now() : 0}`;
+      const r = await fetch(url, { cache: "no-store" });
+      const s = await r.json();
+
+      if (typeof s.drift_en === "string") stateCache.drift_en = s.drift_en;
+      if (typeof s.drift_ar === "string") stateCache.drift_ar = s.drift_ar;
+      if (typeof s.recap_en === "string") stateCache.recap_en = s.recap_en;
+      if (typeof s.recap_ar === "string") stateCache.recap_ar = s.recap_ar;
+
+      if (typeof s.delta_json === "string") stateCache.delta_json = s.delta_json;
+      if (typeof s.delta_json_ar === "string") stateCache.delta_json_ar = s.delta_json_ar;
+
+      stateCache.version = Number(s.version || 0);
+      stateCache.image_url = s.image_url || null;
+
+      // background image
+      if (bgImg){
+        const fallback = (CFG.personaImageMap && CFG.personaImageMap[currentPersona]) ? CFG.personaImageMap[currentPersona] : bgImg.src;
+        bgImg.src = stateCache.image_url || fallback;
+      }
+
+      renderPanels();
+    } catch (e){
+      // keep existing UI, just avoid breaking
+      console.warn("state load failed:", e);
+    }
+  }
+
+  // Poll state lightly (keeps drift fresh if another process runs ticks)
+  let pollTimer = null;
+  function startStatePoll(){
+    if (pollTimer) clearInterval(pollTimer);
+    pollTimer = setInterval(() => loadStateAndRender(false), 4000);
+  }
+
+  // ---------------------------
+  // Panel toggles
+  // ---------------------------
+  function setPanelActive(btn, panel, on){
+    if (!btn || !panel) return;
+    if (on){
+      btn.classList.add("active");
+      panel.classList.remove("hidden");
+    } else {
+      btn.classList.remove("active");
+      panel.classList.add("hidden");
+    }
+  }
+
+  function initPanels(){
+    // default: drift visible, keepsake hidden
+    setPanelActive(driftBtn, driftPanel, true);
+    setPanelActive(keepsakeBtn, keepsakePanel, false);
+
+    if (driftBtn){
+      driftBtn.addEventListener("click", () => {
+        const on = !driftBtn.classList.contains("active");
+        setPanelActive(driftBtn, driftPanel, on);
+        if (!on) return;
+        setPanelActive(keepsakeBtn, keepsakePanel, false);
+      });
+    }
+
+    if (keepsakeBtn){
+      keepsakeBtn.addEventListener("click", () => {
+        const on = !keepsakeBtn.classList.contains("active");
+        setPanelActive(keepsakeBtn, keepsakePanel, on);
+        if (!on) return;
+        setPanelActive(driftBtn, driftPanel, false);
+      });
+    }
+  }
+
+  // ---------------------------
+  // Chat UI
+  // ---------------------------
+  function appendBubble(role, text){
+    if (!messagesEl) return;
+
+    const row = document.createElement("div");
+    row.className = `bubble-row ${role === "user" ? "user" : "ai"}`;
+
+    const meta = document.createElement("div");
+    meta.className = "bubble-meta";
+    meta.textContent = (role === "user") ? (t().you || "You") : (t().ai || "AI");
+
+    const bubble = document.createElement("div");
+    bubble.className = `bubble ${role === "user" ? "user" : "ai"}`;
+    bubble.textContent = text || "";
+
+    if (isRTL()){
+      bubble.classList.add("rtl");
+      row.classList.add("rtl");
+    }
+
+    row.appendChild(meta);
+    row.appendChild(bubble);
+    messagesEl.appendChild(row);
+    messagesEl.scrollTop = messagesEl.scrollHeight;
+  }
+
+  async function sendChatMessage(text){
+    const payload = {
+      session_id: (CFG.sessionId || ("sess-" + Math.random().toString(16).slice(2))),
+      persona: currentPersona,
+      lang: currentLangView,
+      message: text
+    };
+
+    const r = await fetch("/chat_ui", {
+      method: "POST",
+      headers: {"Content-Type":"application/json"},
+      body: JSON.stringify(payload)
+    });
+    return await r.json();
+  }
+
+  async function onSend(){
+    const text = (inputEl?.value || "").trim();
+    if (!text) return;
+
+    inputEl.value = "";
+    appendBubble("user", text);
+
+    if (statusText){
+      statusText.textContent = (currentLangView === "ar") ? "أستمع..." : "Listening...";
+    }
+
+    try {
+      const out = await sendChatMessage(text);
+      const reply = (currentLangView === "ar" && out.reply_ar) ? out.reply_ar : (out.reply_en || out.reply_ar || "");
+      appendBubble("ai", reply);
+
+      if (statusText) statusText.textContent = "";
+    } catch (e){
+      if (statusText) statusText.textContent = (currentLangView === "ar") ? "حدث خطأ" : "Error";
+      console.warn(e);
+    }
+  }
+
+  function initChat(){
+    if (chatHandle && chatShell){
+      chatHandle.addEventListener("click", () => {
+        chatShell.classList.toggle("expanded");
+        if (chatShell.classList.contains("expanded")){
+          inputEl?.focus();
+        }
+      });
+    }
+
+    if (sendBtn) sendBtn.addEventListener("click", onSend);
+    if (inputEl){
+      inputEl.addEventListener("keydown", (e) => {
+        if (e.key === "Enter"){
+          e.preventDefault();
+          onSend();
+        }
+      });
+    }
+  }
+
+  // ---------------------------
+  // Lang toggle + hamburger behavior
+  // ---------------------------
+  function initHeader(){
+    // Hamburger goes to Main
+    if (menuIcon){
+      menuIcon.addEventListener("click", () => {
+        window.location.href = "/";
+      });
+    }
+
+    // Title label
+    if (personaTitleChip){
+      personaTitleChip.textContent = personaLabel[currentPersona] || currentPersona;
+    }
+
+    // Lang toggle
+    if (langToggle){
+      // if Arabic disabled, hide
+      if (!ENABLE_ARABIC){
+        langToggle.style.opacity = "0.35";
+        langToggle.style.pointerEvents = "none";
+      }
+
+      langToggle.addEventListener("click", () => {
+        if (!ENABLE_ARABIC) return;
+        currentLangView = (currentLangView === "en") ? "ar" : "en";
+        localStorage.setItem(STORAGE_LANG_KEY, currentLangView);
+
+        // update chip label
+        langToggle.textContent = (currentLangView === "ar") ? (t().langButton || "العربية") : (t().langButton || "AR");
+
+        // re-render drift + keepsake + chat RTL classes
+        renderPanels();
+      });
+
+      // set initial
+      langToggle.textContent = (currentLangView === "ar") ? (t().langButton || "العربية") : (t().langButton || "AR");
+    }
+  }
+
+  // ---------------------------
+  // Boot
+  // ---------------------------
+  applyPersonaTheme(currentPersona);
+  initHeader();
+  initPanels();
+  initChat();
+
+  loadStateAndRender(true);
+  startStatePoll();
+  startClock();
+
+})();

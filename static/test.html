@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>API Test</title>
+</head>
+<body>
+  <h1>API Test</h1>
+  <div id="status">Testing...</div>
+  <pre id="output"></pre>
+
+  <script src="js/api_config.js"></script>
+  <script>
+    const status = document.getElementById('status');
+    const output = document.getElementById('output');
+
+    // Log API base URL
+    console.log('API_BASE_URL:', window.KD_API_CONFIG?.API_BASE_URL);
+    output.textContent += 'API_BASE_URL: ' + (window.KD_API_CONFIG?.API_BASE_URL || 'NOT SET') + '\n\n';
+
+    // Test fetch
+    const apiBase = window.KD_API_CONFIG?.API_BASE_URL || '';
+    fetch(`${apiBase}/state?persona=environment`)
+      .then(r => {
+        console.log('Response status:', r.status);
+        output.textContent += 'Response status: ' + r.status + '\n';
+        return r.json();
+      })
+      .then(data => {
+        console.log('Data:', data);
+        status.textContent = 'SUCCESS!';
+        output.textContent += '\nData received:\n' + JSON.stringify(data, null, 2);
+      })
+      .catch(err => {
+        console.error('Error:', err);
+        status.textContent = 'ERROR: ' + err.message;
+        output.textContent += '\nError: ' + err.message;
+      });
+  </script>
+</body>
+</html>

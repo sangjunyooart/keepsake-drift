@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Debug - Keepsake Drift</title>
+  <style>
+    body { font-family: monospace; padding: 20px; background: #1a1a1a; color: #0f0; }
+    .test { margin: 10px 0; padding: 10px; border: 1px solid #333; }
+    .success { background: #1a3a1a; }
+    .error { background: #3a1a1a; }
+    pre { white-space: pre-wrap; word-wrap: break-word; }
+  </style>
+</head>
+<body>
+  <h1>Keepsake Drift - Debug Console</h1>
+  <div id="tests"></div>
+
+  <script src="js/api_config.js"></script>
+  <script>
+    const output = document.getElementById('tests');
+
+    function log(title, status, message) {
+      const div = document.createElement('div');
+      div.className = 'test ' + (status ? 'success' : 'error');
+      div.innerHTML = `<strong>${title}:</strong> ${status ? '✓' : '✗'}<pre>${message}</pre>`;
+      output.appendChild(div);
+    }
+
+    // Test 1: Check if api_config.js loaded
+    if (window.KD_API_CONFIG) {
+      log('API Config Loaded', true, JSON.stringify(window.KD_API_CONFIG, null, 2));
+    } else {
+      log('API Config Loaded', false, 'window.KD_API_CONFIG is undefined');
+    }
+
+    // Test 2: Check API base URL
+    const apiBase = window.KD_API_CONFIG?.API_BASE_URL || '';
+    log('API Base URL', !!apiBase, apiBase || 'NOT SET');
+
+    // Test 3: Test CORS preflight
+    fetch(`${apiBase}/lang_config`, { method: 'OPTIONS' })
+      .then(r => {
+        log('CORS Preflight', r.ok, `Status: ${r.status}`);
+      })
+      .catch(err => {
+        log('CORS Preflight', false, err.message);
+      });
+
+    // Test 4: Fetch lang_config
+    fetch(`${apiBase}/lang_config`)
+      .then(r => {
+        log('Fetch /lang_config', r.ok, `Status: ${r.status}`);
+        return r.json();
+      })
+      .then(data => {
+        log('Parse JSON', true, JSON.stringify(data, null, 2));
+      })
+      .catch(err => {
+        log('Fetch /lang_config', false, err.message);
+      });
+
+    // Test 5: Fetch state
+    fetch(`${apiBase}/state?persona=environment`)
+      .then(r => {
+        log('Fetch /state', r.ok, `Status: ${r.status}`);
+        return r.json();
+      })
+      .then(data => {
+        log('State Data', true, `Version: ${data.version}\nDrift EN length: ${data.drift_en?.length || 0}\nDrift AR length: ${data.drift_ar?.length || 0}\nImage URL: ${data.image_url || 'none'}`);
+      })
+      .catch(err => {
+        log('Fetch /state', false, err.message);
+      });
+
+    // Test 6: Image accessibility
+    setTimeout(() => {
+      fetch(`${apiBase}/drift_images/environment_v7.png`)
+        .then(r => {
+          log('Fetch Image', r.ok, `Status: ${r.status}, Size: ${r.headers.get('content-length')} bytes`);
+        })
+        .catch(err => {
+          log('Fetch Image', false, err.message);
+        });
+    }, 1000);
+  </script>
+</body>
+</html>

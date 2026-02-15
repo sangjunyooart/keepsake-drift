@@ -1,0 +1,1247 @@
+{
+  "persona": "human",
+  "version_pre": 0,
+  "version_post": 1,
+  "pre_text_len": 664,
+  "post_text_len": 862,
+  "pre_token_count": 130,
+  "post_token_count": 169,
+  "diff": {
+    "post_events": [
+      {
+        "idx": 0,
+        "token": "I",
+        "status": "keep"
+      },
+      {
+        "idx": 1,
+        "token": "composed",
+        "status": "keep"
+      },
+      {
+        "idx": 2,
+        "token": "When",
+        "status": "keep"
+      },
+      {
+        "idx": 3,
+        "token": "a",
+        "status": "keep"
+      },
+      {
+        "idx": 4,
+        "token": "Cardinal",
+        "status": "keep"
+      },
+      {
+        "idx": 5,
+        "token": "Sings",
+        "status": "keep"
+      },
+      {
+        "idx": 6,
+        "token": "during",
+        "status": "keep"
+      },
+      {
+        "idx": 7,
+        "token": "the",
+        "status": "keep"
+      },
+      {
+        "idx": 8,
+        "token": "summer",
+        "status": "keep"
+      },
+      {
+        "idx": 9,
+        "token": "of",
+        "status": "keep"
+      },
+      {
+        "idx": 10,
+        "token": "2022",
+        "status": "keep"
+      },
+      {
+        "idx": 11,
+        "token": "while",
+        "status": "keep"
+      },
+      {
+        "idx": 12,
+        "token": "staying",
+        "status": "keep"
+      },
+      {
+        "idx": 13,
+        "token": "at",
+        "status": "keep"
+      },
+      {
+        "idx": 14,
+        "token": "an",
+        "status": "keep"
+      },
+      {
+        "idx": 15,
+        "token": "artist",
+        "status": "keep"
+      },
+      {
+        "idx": 16,
+        "token": "residency",
+        "status": "keep"
+      },
+      {
+        "idx": 17,
+        "token": "in",
+        "status": "keep"
+      },
+      {
+        "idx": 18,
+        "token": "Nebraska",
+        "status": "keep"
+      },
+      {
+        "idx": 19,
+        "token": "City",
+        "status": "keep"
+      },
+      {
+        "idx": 20,
+        "token": ".",
+        "status": "keep"
+      },
+      {
+        "idx": 21,
+        "token": "Outside",
+        "status": "keep"
+      },
+      {
+        "idx": 22,
+        "token": "the",
+        "status": "keep"
+      },
+      {
+        "idx": 23,
+        "token": "music",
+        "status": "keep"
+      },
+      {
+        "idx": 24,
+        "token": "studio",
+        "status": "keep"
+      },
+      {
+        "idx": 25,
+        "token": ",",
+        "status": "keep"
+      },
+      {
+        "idx": 26,
+        "token": "a",
+        "status": "keep"
+      },
+      {
+        "idx": 27,
+        "token": "large",
+        "status": "keep"
+      },
+      {
+        "idx": 28,
+        "token": "tree",
+        "status": "keep"
+      },
+      {
+        "idx": 29,
+        "token": "held",
+        "status": "change"
+      },
+      {
+        "idx": 30,
+        "token": "the",
+        "status": "change"
+      },
+      {
+        "idx": 31,
+        "token": "same",
+        "status": "change"
+      },
+      {
+        "idx": 32,
+        "token": "small",
+        "status": "change"
+      },
+      {
+        "idx": 33,
+        "token": "bird",
+        "status": "change"
+      },
+      {
+        "idx": 34,
+        "token": "I",
+        "status": "change"
+      },
+      {
+        "idx": 35,
+        "token": "came",
+        "status": "change"
+      },
+      {
+        "idx": 36,
+        "token": "to",
+        "status": "change"
+      },
+      {
+        "idx": 37,
+        "token": "expect",
+        "status": "change"
+      },
+      {
+        "idx": 38,
+        "token": ",",
+        "status": "change"
+      },
+      {
+        "idx": 39,
+        "token": "a",
+        "status": "keep"
+      },
+      {
+        "idx": 40,
+        "token": "cardinal",
+        "status": "keep"
+      },
+      {
+        "idx": 41,
+        "token": "that",
+        "status": "add"
+      },
+      {
+        "idx": 42,
+        "token": "often",
+        "status": "keep"
+      },
+      {
+        "idx": 43,
+        "token": "perched",
+        "status": "keep"
+      },
+      {
+        "idx": 44,
+        "token": "around",
+        "status": "keep"
+      },
+      {
+        "idx": 45,
+        "token": "11",
+        "status": "keep"
+      },
+      {
+        "idx": 46,
+        "token": ":",
+        "status": "keep"
+      },
+      {
+        "idx": 47,
+        "token": "00",
+        "status": "keep"
+      },
+      {
+        "idx": 48,
+        "token": "a",
+        "status": "keep"
+      },
+      {
+        "idx": 49,
+        "token": ".",
+        "status": "keep"
+      },
+      {
+        "idx": 50,
+        "token": "m",
+        "status": "keep"
+      },
+      {
+        "idx": 51,
+        "token": ".",
+        "status": "keep"
+      },
+      {
+        "idx": 52,
+        "token": "each",
+        "status": "keep"
+      },
+      {
+        "idx": 53,
+        "token": "morning",
+        "status": "keep"
+      },
+      {
+        "idx": 54,
+        "token": "as",
+        "status": "add"
+      },
+      {
+        "idx": 55,
+        "token": "if",
+        "status": "add"
+      },
+      {
+        "idx": 56,
+        "token": "it",
+        "status": "add"
+      },
+      {
+        "idx": 57,
+        "token": "had",
+        "status": "add"
+      },
+      {
+        "idx": 58,
+        "token": "an",
+        "status": "add"
+      },
+      {
+        "idx": 59,
+        "token": "appointment",
+        "status": "add"
+      },
+      {
+        "idx": 60,
+        "token": "with",
+        "status": "add"
+      },
+      {
+        "idx": 61,
+        "token": "the",
+        "status": "add"
+      },
+      {
+        "idx": 62,
+        "token": "window",
+        "status": "add"
+      },
+      {
+        "idx": 63,
+        "token": "and",
+        "status": "add"
+      },
+      {
+        "idx": 64,
+        "token": "my",
+        "status": "add"
+      },
+      {
+        "idx": 65,
+        "token": "unfinished",
+        "status": "add"
+      },
+      {
+        "idx": 66,
+        "token": "staff",
+        "status": "add"
+      },
+      {
+        "idx": 67,
+        "token": "paper",
+        "status": "add"
+      },
+      {
+        "idx": 68,
+        "token": ".",
+        "status": "keep"
+      },
+      {
+        "idx": 69,
+        "token": "I",
+        "status": "keep"
+      },
+      {
+        "idx": 70,
+        "token": "grew",
+        "status": "keep"
+      },
+      {
+        "idx": 71,
+        "token": "fond",
+        "status": "keep"
+      },
+      {
+        "idx": 72,
+        "token": "of",
+        "status": "keep"
+      },
+      {
+        "idx": 73,
+        "token": "it",
+        "status": "change"
+      },
+      {
+        "idx": 74,
+        "token": "because",
+        "status": "keep"
+      },
+      {
+        "idx": 75,
+        "token": "the",
+        "status": "change"
+      },
+      {
+        "idx": 76,
+        "token": "song",
+        "status": "keep"
+      },
+      {
+        "idx": 77,
+        "token": "repeated",
+        "status": "change"
+      },
+      {
+        "idx": 78,
+        "token": "with",
+        "status": "change"
+      },
+      {
+        "idx": 79,
+        "token": "such",
+        "status": "change"
+      },
+      {
+        "idx": 80,
+        "token": "steady",
+        "status": "change"
+      },
+      {
+        "idx": 81,
+        "token": "clarity",
+        "status": "change"
+      },
+      {
+        "idx": 82,
+        "token": "that",
+        "status": "change"
+      },
+      {
+        "idx": 83,
+        "token": "I",
+        "status": "change"
+      },
+      {
+        "idx": 84,
+        "token": "began",
+        "status": "change"
+      },
+      {
+        "idx": 85,
+        "token": "to",
+        "status": "change"
+      },
+      {
+        "idx": 86,
+        "token": "believe",
+        "status": "keep"
+      },
+      {
+        "idx": 87,
+        "token": "it",
+        "status": "keep"
+      },
+      {
+        "idx": 88,
+        "token": "was",
+        "status": "keep"
+      },
+      {
+        "idx": 89,
+        "token": "the",
+        "status": "keep"
+      },
+      {
+        "idx": 90,
+        "token": "same",
+        "status": "keep"
+      },
+      {
+        "idx": 91,
+        "token": "cardinal",
+        "status": "keep"
+      },
+      {
+        "idx": 92,
+        "token": "returning",
+        "status": "keep"
+      },
+      {
+        "idx": 93,
+        "token": ",",
+        "status": "change"
+      },
+      {
+        "idx": 94,
+        "token": "day",
+        "status": "change"
+      },
+      {
+        "idx": 95,
+        "token": "after",
+        "status": "change"
+      },
+      {
+        "idx": 96,
+        "token": "day",
+        "status": "change"
+      },
+      {
+        "idx": 97,
+        "token": ",",
+        "status": "change"
+      },
+      {
+        "idx": 98,
+        "token": "giving",
+        "status": "change"
+      },
+      {
+        "idx": 99,
+        "token": "the",
+        "status": "change"
+      },
+      {
+        "idx": 100,
+        "token": "hours",
+        "status": "change"
+      },
+      {
+        "idx": 101,
+        "token": "a",
+        "status": "change"
+      },
+      {
+        "idx": 102,
+        "token": "gentle",
+        "status": "change"
+      },
+      {
+        "idx": 103,
+        "token": "structure",
+        "status": "change"
+      },
+      {
+        "idx": 104,
+        "token": ".",
+        "status": "keep"
+      },
+      {
+        "idx": 105,
+        "token": "In",
+        "status": "keep"
+      },
+      {
+        "idx": 106,
+        "token": "Western",
+        "status": "keep"
+      },
+      {
+        "idx": 107,
+        "token": "culture",
+        "status": "keep"
+      },
+      {
+        "idx": 108,
+        "token": ",",
+        "status": "keep"
+      },
+      {
+        "idx": 109,
+        "token": "the",
+        "status": "keep"
+      },
+      {
+        "idx": 110,
+        "token": "cardinal",
+        "status": "keep"
+      },
+      {
+        "idx": 111,
+        "token": "is",
+        "status": "keep"
+      },
+      {
+        "idx": 112,
+        "token": "a",
+        "status": "keep"
+      },
+      {
+        "idx": 113,
+        "token": "symbol",
+        "status": "keep"
+      },
+      {
+        "idx": 114,
+        "token": "of",
+        "status": "keep"
+      },
+      {
+        "idx": 115,
+        "token": "new",
+        "status": "keep"
+      },
+      {
+        "idx": 116,
+        "token": "hope",
+        "status": "keep"
+      },
+      {
+        "idx": 117,
+        "token": "and",
+        "status": "keep"
+      },
+      {
+        "idx": 118,
+        "token": "beginnings",
+        "status": "keep"
+      },
+      {
+        "idx": 119,
+        "token": ",",
+        "status": "keep"
+      },
+      {
+        "idx": 120,
+        "token": "and",
+        "status": "keep"
+      },
+      {
+        "idx": 121,
+        "token": "is",
+        "status": "keep"
+      },
+      {
+        "idx": 122,
+        "token": "often",
+        "status": "keep"
+      },
+      {
+        "idx": 123,
+        "token": "considered",
+        "status": "keep"
+      },
+      {
+        "idx": 124,
+        "token": "a",
+        "status": "keep"
+      },
+      {
+        "idx": 125,
+        "token": "spiritual",
+        "status": "keep"
+      },
+      {
+        "idx": 126,
+        "token": "messenger",
+        "status": "keep"
+      },
+      {
+        "idx": 127,
+        "token": "delivering",
+        "status": "keep"
+      },
+      {
+        "idx": 128,
+        "token": "signs",
+        "status": "keep"
+      },
+      {
+        "idx": 129,
+        "token": "from",
+        "status": "keep"
+      },
+      {
+        "idx": 130,
+        "token": "departed",
+        "status": "keep"
+      },
+      {
+        "idx": 131,
+        "token": "loved",
+        "status": "keep"
+      },
+      {
+        "idx": 132,
+        "token": "ones",
+        "status": "keep"
+      },
+      {
+        "idx": 133,
+        "token": ",",
+        "status": "add"
+      },
+      {
+        "idx": 134,
+        "token": "though",
+        "status": "add"
+      },
+      {
+        "idx": 135,
+        "token": "for",
+        "status": "add"
+      },
+      {
+        "idx": 136,
+        "token": "me",
+        "status": "add"
+      },
+      {
+        "idx": 137,
+        "token": "it",
+        "status": "add"
+      },
+      {
+        "idx": 138,
+        "token": "felt",
+        "status": "add"
+      },
+      {
+        "idx": 139,
+        "token": "less",
+        "status": "add"
+      },
+      {
+        "idx": 140,
+        "token": "like",
+        "status": "add"
+      },
+      {
+        "idx": 141,
+        "token": "a",
+        "status": "add"
+      },
+      {
+        "idx": 142,
+        "token": "message",
+        "status": "add"
+      },
+      {
+        "idx": 143,
+        "token": "and",
+        "status": "add"
+      },
+      {
+        "idx": 144,
+        "token": "more",
+        "status": "add"
+      },
+      {
+        "idx": 145,
+        "token": "like",
+        "status": "add"
+      },
+      {
+        "idx": 146,
+        "token": "a",
+        "status": "add"
+      },
+      {
+        "idx": 147,
+        "token": "reliable",
+        "status": "add"
+      },
+      {
+        "idx": 148,
+        "token": "presence",
+        "status": "add"
+      },
+      {
+        "idx": 149,
+        "token": ".",
+        "status": "keep"
+      },
+      {
+        "idx": 150,
+        "token": "Those",
+        "status": "change"
+      },
+      {
+        "idx": 151,
+        "token": "associations",
+        "status": "keep"
+      },
+      {
+        "idx": 152,
+        "token": ",",
+        "status": "keep"
+      },
+      {
+        "idx": 153,
+        "token": "braided",
+        "status": "change"
+      },
+      {
+        "idx": 154,
+        "token": "with",
+        "status": "keep"
+      },
+      {
+        "idx": 155,
+        "token": "the",
+        "status": "keep"
+      },
+      {
+        "idx": 156,
+        "token": "daily",
+        "status": "keep"
+      },
+      {
+        "idx": 157,
+        "token": "ritual",
+        "status": "keep"
+      },
+      {
+        "idx": 158,
+        "token": "of",
+        "status": "keep"
+      },
+      {
+        "idx": 159,
+        "token": "listening",
+        "status": "change"
+      },
+      {
+        "idx": 160,
+        "token": ",",
+        "status": "keep"
+      },
+      {
+        "idx": 161,
+        "token": "shaped",
+        "status": "keep"
+      },
+      {
+        "idx": 162,
+        "token": "the",
+        "status": "keep"
+      },
+      {
+        "idx": 163,
+        "token": "emotional",
+        "status": "keep"
+      },
+      {
+        "idx": 164,
+        "token": "memory",
+        "status": "keep"
+      },
+      {
+        "idx": 165,
+        "token": "behind",
+        "status": "keep"
+      },
+      {
+        "idx": 166,
+        "token": "this",
+        "status": "keep"
+      },
+      {
+        "idx": 167,
+        "token": "piece",
+        "status": "keep"
+      },
+      {
+        "idx": 168,
+        "token": ".",
+        "status": "keep"
+      }
+    ],
+    "deletions": [
+      {
+        "src_idx": 26,
+        "token": "there"
+      },
+      {
+        "src_idx": 27,
+        "token": "was"
+      },
+      {
+        "src_idx": 31,
+        "token": "where"
+      },
+      {
+        "src_idx": 51,
+        "token": "this"
+      },
+      {
+        "src_idx": 52,
+        "token": "bird"
+      },
+      {
+        "src_idx": 54,
+        "token": "its"
+      },
+      {
+        "src_idx": 56,
+        "token": "sounded"
+      },
+      {
+        "src_idx": 57,
+        "token": "the"
+      },
+      {
+        "src_idx": 58,
+        "token": "same"
+      },
+      {
+        "src_idx": 59,
+        "token": "every"
+      },
+      {
+        "src_idx": 60,
+        "token": "day"
+      },
+      {
+        "src_idx": 61,
+        "token": ","
+      },
+      {
+        "src_idx": 62,
+        "token": "which"
+      },
+      {
+        "src_idx": 63,
+        "token": "made"
+      },
+      {
+        "src_idx": 64,
+        "token": "me"
+      },
+      {
+        "src_idx": 72,
+        "token": "again"
+      },
+      {
+        "src_idx": 73,
+        "token": "and"
+      },
+      {
+        "src_idx": 74,
+        "token": "again"
+      },
+      {
+        "src_idx": 105,
+        "token": "These"
+      },
+      {
+        "src_idx": 108,
+        "token": "combined"
+      },
+      {
+        "src_idx": 111,
+        "token": "simple"
+      },
+      {
+        "src_idx": 115,
+        "token": "hearing"
+      },
+      {
+        "src_idx": 116,
+        "token": "the"
+      },
+      {
+        "src_idx": 117,
+        "token": "bird"
+      },
+      {
+        "src_idx": 118,
+        "token": "’"
+      },
+      {
+        "src_idx": 119,
+        "token": "s"
+      },
+      {
+        "src_idx": 120,
+        "token": "song"
+      }
+    ],
+    "opcodes": [
+      {
+        "op": "equal",
+        "pre": [
+          0,
+          26
+        ],
+        "post": [
+          0,
+          26
+        ]
+      },
+      {
+        "op": "delete",
+        "pre": [
+          26,
+          28
+        ]
+      },
+      {
+        "op": "equal",
+        "pre": [
+          28,
+          31
+        ],
+        "post": [
+          26,
+          29
+        ]
+      },
+      {
+        "op": "replace",
+        "pre": [
+          31,
+          32
+        ],
+        "post": [
+          29,
+          39
+        ]
+      },
+      {
+        "op": "equal",
+        "pre": [
+          32,
+          34
+        ],
+        "post": [
+          39,
+          41
+        ]
+      },
+      {
+        "op": "insert",
+        "post": [
+          41,
+          42
+        ]
+      },
+      {
+        "op": "equal",
+        "pre": [
+          34,
+          46
+        ],
+        "post": [
+          42,
+          54
+        ]
+      },
+      {
+        "op": "insert",
+        "post": [
+          54,
+          68
+        ]
+      },
+      {
+        "op": "equal",
+        "pre": [
+          46,
+          51
+        ],
+        "post": [
+          68,
+          73
+        ]
+      },
+      {
+        "op": "replace",
+        "pre": [
+          51,
+          53
+        ],
+        "post": [
+          73,
+          74
+        ]
+      },
+      {
+        "op": "equal",
+        "pre": [
+          53,
+          54
+        ],
+        "post": [
+          74,
+          75
+        ]
+      },
+      {
+        "op": "replace",
+        "pre": [
+          54,
+          55
+        ],
+        "post": [
+          75,
+          76
+        ]
+      },
+      {
+        "op": "equal",
+        "pre": [
+          55,
+          56
+        ],
+        "post": [
+          76,
+          77
+        ]
+      },
+      {
+        "op": "replace",
+        "pre": [
+          56,
+          65
+        ],
+        "post": [
+          77,
+          86
+        ]
+      },
+      {
+        "op": "equal",
+        "pre": [
+          65,
+          72
+        ],
+        "post": [
+          86,
+          93
+        ]
+      },
+      {
+        "op": "replace",
+        "pre": [
+          72,
+          75
+        ],
+        "post": [
+          93,
+          104
+        ]
+      },
+      {
+        "op": "equal",
+        "pre": [
+          75,
+          104
+        ],
+        "post": [
+          104,
+          133
+        ]
+      },
+      {
+        "op": "insert",
+        "post": [
+          133,
+          149
+        ]
+      },
+      {
+        "op": "equal",
+        "pre": [
+          104,
+          105
+        ],
+        "post": [
+          149,
+          150
+        ]
+      },
+      {
+        "op": "replace",
+        "pre": [
+          105,
+          106
+        ],
+        "post": [
+          150,
+          151
+        ]
+      },
+      {
+        "op": "equal",
+        "pre": [
+          106,
+          108
+        ],
+        "post": [
+          151,
+          153
+        ]
+      },
+      {
+        "op": "replace",
+        "pre": [
+          108,
+          109
+        ],
+        "post": [
+          153,
+          154
+        ]
+      },
+      {
+        "op": "equal",
+        "pre": [
+          109,
+          111
+        ],
+        "post": [
+          154,
+          156
+        ]
+      },
+      {
+        "op": "delete",
+        "pre": [
+          111,
+          112
+        ]
+      },
+      {
+        "op": "equal",
+        "pre": [
+          112,
+          115
+        ],
+        "post": [
+          156,
+          159
+        ]
+      },
+      {
+        "op": "replace",
+        "pre": [
+          115,
+          121
+        ],
+        "post": [
+          159,
+          160
+        ]
+      },
+      {
+        "op": "equal",
+        "pre": [
+          121,
+          130
+        ],
+        "post": [
+          160,
+          169
+        ]
+      }
+    ]
+  }
+}
