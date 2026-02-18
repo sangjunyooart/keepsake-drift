@@ -15,7 +15,7 @@
   const PERSONA = pageMap[currentPage] || 'human';
 
   const TICK_INTERVAL = 3600; // 1 hour in seconds
-  const WIPE_DURATION = 2000; // 2 seconds for wipe reveal
+  const WIPE_DURATION = 4000; // 4 seconds for wipe reveal
   const PAUSE_BETWEEN_SENTENCES = 6000; // 6 seconds pause between sentences
   const FADE_OUT_DURATION = 2000; // 2 seconds to fade out
 
@@ -212,82 +212,62 @@
   }
 
   // ─── WIPE REVEAL ANIMATION ────────────────────────────────────
-  // Wipe works directly on the subtitle element:
-  // 1. Set text, switch to inline-block + overflow:hidden
-  // 2. Animate max-width from 0 to scrollWidth
-  // 3. On finish, restore display:block
-  // LTR: element left-aligned, grows right. RTL: element right-aligned, grows left.
+  // Characters revealed one by one via textContent on inner span.
+  // LTR: first char to last. RTL: last char to first.
+  // Speed adapts to text length to fit within WIPE_DURATION.
 
   function wipeReveal(text, element, isRTL = false, duration = WIPE_DURATION) {
     return new Promise((resolve) => {
       if (!text || !text.trim()) {
-        element.textContent = '';
+        element.innerHTML = '';
         element.style.opacity = '1';
         resolve();
         return;
       }
 
-      // Set text content
-      element.textContent = text;
+      const chars = [...text]; // handles multi-byte (Arabic) correctly
+      const speed = Math.max(15, Math.floor(duration / chars.length));
+      let revealed = 0;
+
+      // Create inner span for per-line background styling
+      element.innerHTML = '';
+      const span = document.createElement('span');
+      span.textContent = '';
+      element.appendChild(span);
       element.style.opacity = '1';
 
-      // Switch to inline-block so max-width clips text visually
-      element.style.display = 'inline-block';
-      element.style.overflow = 'hidden';
-      element.style.whiteSpace = 'nowrap';
-      element.style.maxWidth = '0px';
+      const interval = setInterval(() => {
+        revealed++;
 
-      if (isRTL) {
-        // For RTL, float right so wipe reveals from right edge
-        element.style.float = 'right';
-      } else {
-        element.style.float = 'none';
-      }
+        if (revealed >= chars.length) {
+          clearInterval(interval);
+          span.textContent = text;
+          element._wipeInterval = null;
+          element._wipeResolve = null;
+          resolve();
+          return;
+        }
 
-      // Force layout to measure full width
-      element.style.maxWidth = 'none';
-      const fullWidth = element.scrollWidth;
-      element.style.maxWidth = '0px';
+        if (isRTL) {
+          // RTL: reveal from last character to first
+          span.textContent = chars.slice(chars.length - revealed).join('');
+        } else {
+          // LTR: reveal from first character to last
+          span.textContent = chars.slice(0, revealed).join('');
+        }
+      }, speed);
 
-      // Animate max-width from 0 to full width
-      const anim = element.animate(
-        [
-          { maxWidth: '0px' },
-          { maxWidth: fullWidth + 'px' }
-        ],
-        { duration, easing: 'ease-out', fill: 'forwards' }
-      );
-
-      anim.onfinish = () => {
-        // Restore normal display
-        element.style.display = 'block';
-        element.style.overflow = '';
-        element.style.whiteSpace = '';
-        element.style.maxWidth = '';
-        element.style.float = '';
-        element._wipeAnim = null;
-        element._wipeResolve = null;
-        resolve();
-      };
-
-      // Store for cancellation
-      element._wipeAnim = anim;
+      element._wipeInterval = interval;
       element._wipeResolve = resolve;
     });
   }
 
   // Cancel any running wipe animation
   function cancelWipe(element) {
-    if (element._wipeAnim) {
-      element._wipeAnim.cancel();
-      element._wipeAnim = null;
+    if (element._wipeInterval) {
+      clearInterval(element._wipeInterval);
+      element._wipeInterval = null;
     }
-    // Restore display
-    element.style.display = 'block';
-    element.style.overflow = '';
-    element.style.whiteSpace = '';
-    element.style.maxWidth = '';
-    element.style.float = '';
     if (element._wipeResolve) {
       element._wipeResolve();
       element._wipeResolve = null;
@@ -410,36 +390,31 @@
       for (let i = 0; i < displaySequence.length; i++) {
         const { en, l2 } = displaySequence[i];
 
-        // Clear previous
-        cancelWipe(subtitlePrimary);
-        cancelWipe(subtitleSecondary);
-        subtitlePrimary.textContent = '';
-        subtitleSecondary.textContent = '';
-        subtitlePrimary.style.opacity = '0';
-        subtitleSecondary.style.opacity = '0';
-
-        // Brief pause before next sentence
-        await new Promise(r => setTimeout(r, 300));
-
-        // Wipe reveal: LTR for English, RTL for Arabic
+        // 1. Wipe reveal: LTR for English, RTL for Arabic
         const isL2RTL = config.l2_dir === 'rtl';
         await Promise.all([
           wipeReveal(en, subtitlePrimary, false, WIPE_DURATION),
           wipeReveal(l2, subtitleSecondary, isL2RTL, WIPE_DURATION)
         ]);
 
-        // Hold: let viewer read (scale with text length)
+        // 2. Hold: let viewer read (scale with text length)
         const wordCount = (en + ' ' + l2).split(/\s+/).filter(w => w.length > 0).length;
         const readTime = Math.max(4000, Math.min(8000, wordCount * 350));
         await new Promise(r => setTimeout(r, readTime));
 
-        // Fade out
+        // 3. Fade out smoothly
         await Promise.all([
           fadeOut(subtitlePrimary),
           fadeOut(subtitleSecondary)
         ]);
 
-        // 6 second pause between sentences
+        // 4. Clear text after fade completes (screen is already blank)
+        cancelWipe(subtitlePrimary);
+        cancelWipe(subtitleSecondary);
+        subtitlePrimary.innerHTML = '';
+        subtitleSecondary.innerHTML = '';
+
+        // 5. Wait 6 seconds with blank screen before next sentence
         await new Promise(r => setTimeout(r, PAUSE_BETWEEN_SENTENCES));
       }
 
