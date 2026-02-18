@@ -212,9 +212,11 @@
   }
 
   // ─── WIPE REVEAL ANIMATION ────────────────────────────────────
-  // Wipe uses overflow:hidden + max-width animation on a wrapper.
-  // LTR: wrapper grows from 0 to full width (left-aligned).
-  // RTL: wrapper grows from 0 to full width (right-aligned via margin-left:auto).
+  // Wipe works directly on the subtitle element:
+  // 1. Set text, switch to inline-block + overflow:hidden
+  // 2. Animate max-width from 0 to scrollWidth
+  // 3. On finish, restore display:block
+  // LTR: element left-aligned, grows right. RTL: element right-aligned, grows left.
 
   function wipeReveal(text, element, isRTL = false, duration = WIPE_DURATION) {
     return new Promise((resolve) => {
@@ -225,43 +227,46 @@
         return;
       }
 
-      // Clear element and create wrapper structure:
-      // <element> → <div.wipe-wrapper style="overflow:hidden; max-width:0">
-      //               <span.wipe-inner style="white-space:nowrap / normal">text</span>
-      //             </div>
-      element.textContent = '';
+      // Set text content
+      element.textContent = text;
       element.style.opacity = '1';
 
-      const wrapper = document.createElement('div');
-      wrapper.style.overflow = 'hidden';
-      wrapper.style.maxWidth = '0';
-      wrapper.style.display = 'inline-block';
+      // Switch to inline-block so max-width clips text visually
+      element.style.display = 'inline-block';
+      element.style.overflow = 'hidden';
+      element.style.whiteSpace = 'nowrap';
+      element.style.maxWidth = '0px';
+
       if (isRTL) {
-        wrapper.style.marginLeft = 'auto'; // push to right for RTL reveal
-        wrapper.style.direction = 'rtl';
+        // For RTL, float right so wipe reveals from right edge
+        element.style.float = 'right';
+      } else {
+        element.style.float = 'none';
       }
 
-      const inner = document.createElement('span');
-      inner.style.display = 'inline-block';
-      inner.style.whiteSpace = 'normal';
-      inner.style.width = '90vw'; // wide enough for full text
-      inner.textContent = text;
+      // Force layout to measure full width
+      element.style.maxWidth = 'none';
+      const fullWidth = element.scrollWidth;
+      element.style.maxWidth = '0px';
 
-      wrapper.appendChild(inner);
-      element.appendChild(wrapper);
-
-      // Animate max-width from 0 to 100%
-      const anim = wrapper.animate(
+      // Animate max-width from 0 to full width
+      const anim = element.animate(
         [
           { maxWidth: '0px' },
-          { maxWidth: '90vw' }
+          { maxWidth: fullWidth + 'px' }
         ],
         { duration, easing: 'ease-out', fill: 'forwards' }
       );
 
       anim.onfinish = () => {
-        // Clean up: replace wrapper structure with plain text
-        element.textContent = text;
+        // Restore normal display
+        element.style.display = 'block';
+        element.style.overflow = '';
+        element.style.whiteSpace = '';
+        element.style.maxWidth = '';
+        element.style.float = '';
+        element._wipeAnim = null;
+        element._wipeResolve = null;
         resolve();
       };
 
@@ -277,6 +282,12 @@
       element._wipeAnim.cancel();
       element._wipeAnim = null;
     }
+    // Restore display
+    element.style.display = 'block';
+    element.style.overflow = '';
+    element.style.whiteSpace = '';
+    element.style.maxWidth = '';
+    element.style.float = '';
     if (element._wipeResolve) {
       element._wipeResolve();
       element._wipeResolve = null;
