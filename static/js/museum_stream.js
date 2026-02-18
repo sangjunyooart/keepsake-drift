@@ -15,7 +15,6 @@
   const PERSONA = pageMap[currentPage] || 'human';
 
   const TICK_INTERVAL = 3600; // 1 hour in seconds
-  const WIPE_SPEED = 35; // ms per character for wipe reveal
   const PAUSE_BETWEEN_SENTENCES = 6000; // 6 seconds pause between sentences
   const FADE_OUT_DURATION = 2000; // 2 seconds to fade out
 
@@ -211,61 +210,12 @@
     return sentences.map(s => s.trim()).filter(s => s.length > 0);
   }
 
-  // ─── WIPE REVEAL ANIMATION ────────────────────────────────────
-  // Characters reveal one-by-one via textContent updates.
-  // LTR: reveals from left. RTL: reveals from right (CSS direction handles layout).
+  // ─── TEXT DISPLAY ────────────────────────────────────────────
+  // Show text instantly (all at once)
 
-  function wipeReveal(text, element, isRTL = false, speed = WIPE_SPEED) {
-    return new Promise((resolve) => {
-      if (!text || !text.trim()) {
-        element.textContent = '';
-        element.style.opacity = '1';
-        resolve();
-        return;
-      }
-
-      const chars = [...text]; // handles multi-byte (Arabic) correctly
-      let revealed = 0;
-      element.style.opacity = '1';
-      element.textContent = '';
-
-      const interval = setInterval(() => {
-        revealed++;
-
-        if (revealed >= chars.length) {
-          clearInterval(interval);
-          element.textContent = text;
-          element._wipeInterval = null;
-          element._wipeResolve = null;
-          resolve();
-          return;
-        }
-
-        if (isRTL) {
-          // RTL: show last N characters (grows from right edge)
-          element.textContent = chars.slice(chars.length - revealed).join('');
-        } else {
-          // LTR: show first N characters (grows from left edge)
-          element.textContent = chars.slice(0, revealed).join('');
-        }
-      }, speed);
-
-      // Store for cleanup
-      element._wipeInterval = interval;
-      element._wipeResolve = resolve;
-    });
-  }
-
-  // Cancel any running wipe animation — also resolves the pending Promise
-  function cancelWipe(element) {
-    if (element._wipeInterval) {
-      clearInterval(element._wipeInterval);
-      element._wipeInterval = null;
-    }
-    if (element._wipeResolve) {
-      element._wipeResolve();
-      element._wipeResolve = null;
-    }
+  function showText(text, element) {
+    element.textContent = text || '';
+    element.style.opacity = '1';
   }
 
   // Fade out element using Web Animations API (no CSS transition needed)
@@ -384,24 +334,9 @@
       for (let i = 0; i < displaySequence.length; i++) {
         const { en, l2 } = displaySequence[i];
 
-        // Clear previous
-        cancelWipe(subtitlePrimary);
-        cancelWipe(subtitleSecondary);
-        subtitlePrimary.textContent = '';
-        subtitleSecondary.textContent = '';
-        subtitlePrimary.style.opacity = '0';
-        subtitleSecondary.style.opacity = '0';
-
-        // Small pre-wipe pause (let screen breathe)
-        await new Promise(r => setTimeout(r, 500));
-
-        // Wipe reveal both languages simultaneously
-        // English: LTR wipe, Arabic: RTL wipe
-        const isL2RTL = config.l2_dir === 'rtl';
-
-        const enPromise = wipeReveal(en, subtitlePrimary, false, WIPE_SPEED);
-        const l2Promise = wipeReveal(l2, subtitleSecondary, isL2RTL, WIPE_SPEED);
-        await Promise.all([enPromise, l2Promise]);
+        // Show text instantly (all at once)
+        showText(l2, subtitleSecondary);
+        showText(en, subtitlePrimary);
 
         // Hold: let viewer read (scale with text length)
         const wordCount = (en + ' ' + l2).split(/\s+/).filter(w => w.length > 0).length;
