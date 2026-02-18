@@ -27,12 +27,8 @@
   // Elements
   const subtitlePrimary = document.getElementById('subtitlePrimary');
   const subtitleSecondary = document.getElementById('subtitleSecondary');
-  const qrCode = document.getElementById('qrCode');
   const tempLabel = document.getElementById('tempLabel');
   const bgImage = document.getElementById('bgImage');
-
-  // Cancellation flag for current animation loop
-  let animationAbortController = null;
 
   // ─── API FETCHES ───────────────────────────────────────────────
 
@@ -216,7 +212,8 @@
   }
 
   // ─── WIPE REVEAL ANIMATION ────────────────────────────────────
-  // Characters reveal one-by-one: LTR for English, RTL for Arabic
+  // Characters reveal one-by-one via textContent updates.
+  // LTR: reveals from left. RTL: reveals from right (CSS direction handles layout).
 
   function wipeReveal(text, element, isRTL = false, speed = WIPE_SPEED) {
     return new Promise((resolve) => {
@@ -230,84 +227,58 @@
       const chars = [...text]; // handles multi-byte (Arabic) correctly
       let revealed = 0;
       element.style.opacity = '1';
-
-      // For RTL: we still append chars left-to-right in DOM order,
-      // but CSS direction:rtl handles visual rendering.
-      // So we reveal in logical order (first char to last) for both.
       element.textContent = '';
-
-      // Use a span-based approach: visible chars + invisible remaining
-      const visibleSpan = document.createElement('span');
-      const hiddenSpan = document.createElement('span');
-      hiddenSpan.style.opacity = '0';
-
-      // Set full text in hidden span initially
-      if (isRTL) {
-        hiddenSpan.textContent = text;
-        element.textContent = '';
-        element.appendChild(hiddenSpan);
-      } else {
-        hiddenSpan.textContent = text;
-        element.textContent = '';
-        element.appendChild(visibleSpan);
-        element.appendChild(hiddenSpan);
-      }
 
       const interval = setInterval(() => {
         revealed++;
 
         if (revealed >= chars.length) {
           clearInterval(interval);
-          // Replace with plain text for clean rendering
           element.textContent = text;
-          element.style.opacity = '1';
+          element._wipeInterval = null;
+          element._wipeResolve = null;
           resolve();
           return;
         }
 
         if (isRTL) {
-          // RTL: reveal from end of string (rightmost character first)
-          const revealedFromEnd = chars.slice(chars.length - revealed).join('');
-          const stillHidden = chars.slice(0, chars.length - revealed).join('');
-
-          element.textContent = '';
-          const hSpan = document.createElement('span');
-          hSpan.style.opacity = '0';
-          hSpan.textContent = stillHidden;
-
-          const vSpan = document.createElement('span');
-          vSpan.textContent = revealedFromEnd;
-
-          element.appendChild(hSpan);
-          element.appendChild(vSpan);
+          // RTL: show last N characters (grows from right edge)
+          element.textContent = chars.slice(chars.length - revealed).join('');
         } else {
-          // LTR: reveal from start of string (leftmost character first)
-          const revealedText = chars.slice(0, revealed).join('');
-          const stillHidden = chars.slice(revealed).join('');
-
-          visibleSpan.textContent = revealedText;
-          hiddenSpan.textContent = stillHidden;
+          // LTR: show first N characters (grows from left edge)
+          element.textContent = chars.slice(0, revealed).join('');
         }
       }, speed);
 
-      // Store interval for cleanup
+      // Store for cleanup
       element._wipeInterval = interval;
+      element._wipeResolve = resolve;
     });
   }
 
-  // Cancel any running wipe animation on an element
+  // Cancel any running wipe animation — also resolves the pending Promise
   function cancelWipe(element) {
     if (element._wipeInterval) {
       clearInterval(element._wipeInterval);
       element._wipeInterval = null;
     }
+    if (element._wipeResolve) {
+      element._wipeResolve();
+      element._wipeResolve = null;
+    }
   }
 
-  // Fade out element
+  // Fade out element using Web Animations API (no CSS transition needed)
   function fadeOut(element, duration = FADE_OUT_DURATION) {
     return new Promise((resolve) => {
-      element.style.opacity = '0';
-      setTimeout(resolve, duration);
+      const anim = element.animate(
+        [{ opacity: 1 }, { opacity: 0 }],
+        { duration, fill: 'forwards' }
+      );
+      anim.onfinish = () => {
+        element.style.opacity = '0';
+        resolve();
+      };
     });
   }
 
@@ -453,19 +424,10 @@
     }
   }
 
-  // ─── QR CODE ──────────────────────────────────────────────────
-
-  function generateQRCode() {
-    const targetUrl = window.location.origin + '/chat?persona=' + PERSONA;
-    const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=180x180&data=${encodeURIComponent(targetUrl)}`;
-    qrCode.src = qrUrl;
-  }
-
   // ─── INIT ─────────────────────────────────────────────────────
 
   async function startStream() {
     await fetchLangConfig();
-    generateQRCode();
 
     console.log(`[Museum] Stream initialized for ${PERSONA}`);
 
