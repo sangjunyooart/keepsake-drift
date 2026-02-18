@@ -212,8 +212,9 @@
   }
 
   // ─── WIPE REVEAL ANIMATION ────────────────────────────────────
-  // Text wipes in using CSS clip-path animation.
-  // LTR: reveals left-to-right. RTL: reveals right-to-left.
+  // Wipe uses overflow:hidden + max-width animation on a wrapper.
+  // LTR: wrapper grows from 0 to full width (left-aligned).
+  // RTL: wrapper grows from 0 to full width (right-aligned via margin-left:auto).
 
   function wipeReveal(text, element, isRTL = false, duration = WIPE_DURATION) {
     return new Promise((resolve) => {
@@ -224,34 +225,43 @@
         return;
       }
 
-      // Set full text immediately (hidden by clip-path)
-      element.textContent = text;
+      // Clear element and create wrapper structure:
+      // <element> → <div.wipe-wrapper style="overflow:hidden; max-width:0">
+      //               <span.wipe-inner style="white-space:nowrap / normal">text</span>
+      //             </div>
+      element.textContent = '';
       element.style.opacity = '1';
 
-      // Define clip-path keyframes based on direction
-      let keyframes;
+      const wrapper = document.createElement('div');
+      wrapper.style.overflow = 'hidden';
+      wrapper.style.maxWidth = '0';
+      wrapper.style.display = 'inline-block';
       if (isRTL) {
-        // RTL: reveal from right edge to left
-        keyframes = [
-          { clipPath: 'inset(0 0 0 100%)' },
-          { clipPath: 'inset(0 0 0 0%)' }
-        ];
-      } else {
-        // LTR: reveal from left edge to right
-        keyframes = [
-          { clipPath: 'inset(0 100% 0 0)' },
-          { clipPath: 'inset(0 0% 0 0)' }
-        ];
+        wrapper.style.marginLeft = 'auto'; // push to right for RTL reveal
+        wrapper.style.direction = 'rtl';
       }
 
-      const anim = element.animate(keyframes, {
-        duration,
-        easing: 'ease-out',
-        fill: 'forwards'
-      });
+      const inner = document.createElement('span');
+      inner.style.display = 'inline-block';
+      inner.style.whiteSpace = 'normal';
+      inner.style.width = '90vw'; // wide enough for full text
+      inner.textContent = text;
+
+      wrapper.appendChild(inner);
+      element.appendChild(wrapper);
+
+      // Animate max-width from 0 to 100%
+      const anim = wrapper.animate(
+        [
+          { maxWidth: '0px' },
+          { maxWidth: '90vw' }
+        ],
+        { duration, easing: 'ease-out', fill: 'forwards' }
+      );
 
       anim.onfinish = () => {
-        element.style.clipPath = 'none';
+        // Clean up: replace wrapper structure with plain text
+        element.textContent = text;
         resolve();
       };
 
