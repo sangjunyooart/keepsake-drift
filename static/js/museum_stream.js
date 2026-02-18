@@ -15,6 +15,7 @@
   const PERSONA = pageMap[currentPage] || 'human';
 
   const TICK_INTERVAL = 3600; // 1 hour in seconds
+  const WIPE_DURATION = 2000; // 2 seconds for wipe reveal
   const PAUSE_BETWEEN_SENTENCES = 6000; // 6 seconds pause between sentences
   const FADE_OUT_DURATION = 2000; // 2 seconds to fade out
 
@@ -210,12 +211,66 @@
     return sentences.map(s => s.trim()).filter(s => s.length > 0);
   }
 
-  // ─── TEXT DISPLAY ────────────────────────────────────────────
-  // Show text instantly (all at once)
+  // ─── WIPE REVEAL ANIMATION ────────────────────────────────────
+  // Text wipes in using CSS clip-path animation.
+  // LTR: reveals left-to-right. RTL: reveals right-to-left.
 
-  function showText(text, element) {
-    element.textContent = text || '';
-    element.style.opacity = '1';
+  function wipeReveal(text, element, isRTL = false, duration = WIPE_DURATION) {
+    return new Promise((resolve) => {
+      if (!text || !text.trim()) {
+        element.textContent = '';
+        element.style.opacity = '1';
+        resolve();
+        return;
+      }
+
+      // Set full text immediately (hidden by clip-path)
+      element.textContent = text;
+      element.style.opacity = '1';
+
+      // Define clip-path keyframes based on direction
+      let keyframes;
+      if (isRTL) {
+        // RTL: reveal from right edge to left
+        keyframes = [
+          { clipPath: 'inset(0 0 0 100%)' },
+          { clipPath: 'inset(0 0 0 0%)' }
+        ];
+      } else {
+        // LTR: reveal from left edge to right
+        keyframes = [
+          { clipPath: 'inset(0 100% 0 0)' },
+          { clipPath: 'inset(0 0% 0 0)' }
+        ];
+      }
+
+      const anim = element.animate(keyframes, {
+        duration,
+        easing: 'ease-out',
+        fill: 'forwards'
+      });
+
+      anim.onfinish = () => {
+        element.style.clipPath = 'none';
+        resolve();
+      };
+
+      // Store for cancellation
+      element._wipeAnim = anim;
+      element._wipeResolve = resolve;
+    });
+  }
+
+  // Cancel any running wipe animation
+  function cancelWipe(element) {
+    if (element._wipeAnim) {
+      element._wipeAnim.cancel();
+      element._wipeAnim = null;
+    }
+    if (element._wipeResolve) {
+      element._wipeResolve();
+      element._wipeResolve = null;
+    }
   }
 
   // Fade out element using Web Animations API (no CSS transition needed)
@@ -334,9 +389,23 @@
       for (let i = 0; i < displaySequence.length; i++) {
         const { en, l2 } = displaySequence[i];
 
-        // Show text instantly (all at once)
-        showText(l2, subtitleSecondary);
-        showText(en, subtitlePrimary);
+        // Clear previous
+        cancelWipe(subtitlePrimary);
+        cancelWipe(subtitleSecondary);
+        subtitlePrimary.textContent = '';
+        subtitleSecondary.textContent = '';
+        subtitlePrimary.style.opacity = '0';
+        subtitleSecondary.style.opacity = '0';
+
+        // Brief pause before next sentence
+        await new Promise(r => setTimeout(r, 300));
+
+        // Wipe reveal: LTR for English, RTL for Arabic
+        const isL2RTL = config.l2_dir === 'rtl';
+        await Promise.all([
+          wipeReveal(en, subtitlePrimary, false, WIPE_DURATION),
+          wipeReveal(l2, subtitleSecondary, isL2RTL, WIPE_DURATION)
+        ]);
 
         // Hold: let viewer read (scale with text length)
         const wordCount = (en + ' ' + l2).split(/\s+/).filter(w => w.length > 0).length;
