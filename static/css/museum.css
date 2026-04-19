@@ -27,20 +27,20 @@ body {
   z-index: 0;
 }
 
-/* All foreground content above background */
+/* All foreground content above background (bg images use z-index 0-1 for crossfade) */
 .narration-zone, .temp-label {
   position: relative;
-  z-index: 1;
+  z-index: 2;
 }
 
 /* Narration container - positioned at top */
 .narration-zone {
   position: absolute;
-  top: 8vh;
+  top: 18vh;
   left: 0;
   right: 0;
-  padding: 0 4vw;
-  z-index: 1;
+  padding: 0 2vw;
+  z-index: 2;
 }
 
 .subtitle-block {
@@ -49,46 +49,126 @@ body {
 
 /* Secondary language (Arabic) - on top */
 .subtitle-secondary {
-  font-size: clamp(14px, 2.5vw, 44px);
-  line-height: 1.8;
-  color: #f5f5f7;
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-  margin-bottom: 1.5vh;
+  font-size: 20px;
+  line-height: 1.7;
+  color: #F5A627;
+  font-family: 'Noto Sans Arabic', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  margin-bottom: 4vh;
   display: block;
+  padding-bottom: 0;
 }
 
-/* Primary language (English) - italic, below */
+/* Primary language (English) - italic, below, smaller */
 .subtitle-primary {
-  font-size: clamp(12px, 2vw, 36px);
-  line-height: 1.8;
-  color: rgba(245, 245, 247, 0.85);
+  font-size: 10px;
+  line-height: 1.6;
+  color: #FFE2B3;
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
   font-style: italic;
   display: block;
+  clear: both;
+  margin-top: 0;
 }
 
-/* Per-line text background (hugs the letters, not full row) */
-.subtitle-secondary span,
-.subtitle-primary span {
-  background: rgba(0, 0, 0, 0.75);
+/* L2 outer span — no backing (character spans provide it) */
+.subtitle-secondary > span {
+  background: none;
+  display: inline;
+  padding: 0;
+}
+
+/* English outer span — translucent backing, no vertical padding to avoid overlap */
+.subtitle-primary > span {
+  background: rgba(0, 0, 0, 0.55);
   box-decoration-break: clone;
   -webkit-box-decoration-break: clone;
-  padding: 0.3vh 1vw;
+  padding: 0 0.8vw;
+  display: inline;
+}
+
+/* Each character — translucent backing that fades with each letter */
+.subtitle-secondary span span,
+.subtitle-primary span span {
+  background: rgba(0, 0, 0, 0.55);
+  padding: 0;
+  display: inline;
+}
+
+/* Per-line containers — block elements, height set by JS, clipped */
+.subtitle-line {
+  display: block;
+  margin: 0;
+  padding: 0;
+  overflow: hidden;
+}
+.subtitle-line > span {
+  background: none;
+  padding: 0;
+  display: inline;
+}
+.subtitle-line span span {
+  background: rgba(0, 0, 0, 0.55);
+  padding: 0;
   display: inline;
 }
 
 /* RTL override for Arabic */
 .rtl { direction: rtl; text-align: right; }
 
-/* Temporality label at top */
+/* Teleprompter: departing subtitle clone — scaled down */
+.subtitle-clone-departing {
+  position: absolute;
+  top: 18vh;
+  left: 0;
+  right: 0;
+  padding: 0 2vw;
+  z-index: 2;
+  pointer-events: none;
+  will-change: transform, opacity;
+  /* Mask gradient is driven by JS (startGradientSync) so it intensifies
+     gradually in lockstep with the opacity transition — no sudden jump. */
+}
+
+/* Temporality label at bottom */
 .temp-label {
   position: absolute;
-  top: 2vh;
+  bottom: 3vh;
   left: 50%;
   transform: translateX(-50%);
-  font-size: clamp(10px, 1.5vw, 18px);
+  font-size: 14px;
   letter-spacing: 0.15em;
   text-transform: uppercase;
-  color: rgba(245, 245, 247, 0.35);
+  color: rgba(245, 166, 39, 0.5);
   white-space: nowrap;
+  padding: 0.4em 1.2em;
+  background: rgba(0, 0, 0, 0.4);
+  border-radius: 4px;
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+}
+
+/* QR code badge at bottom center */
+.qr-badge {
+  position: absolute;
+  bottom: 8vh;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 10;
+  width: 72px;
+  height: 72px;
+  border-radius: 0;
+  border: none;
+  background: rgba(0, 0, 0, 0.35);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  overflow: hidden;
+}
+.qr-badge img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
 }

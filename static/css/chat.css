@@ -20,12 +20,12 @@
 
   /* persona-tinted variables (JS sets these per temporality) */
   --persona-accent: #E6C15A;
-  --persona-accent-rgb: 230, 193, 90;
+  --persona-accent-rgb: 142, 214, 255;
 
-  --persona-btn-bg: rgba(230, 193, 90, 0.5);
-  --persona-btn-border: rgba(230, 193, 90, 0.42);
-  --persona-btn-bg-active: rgba(230, 193, 90, 1);
-  --persona-btn-border-active: rgba(230, 193, 90, 1);
+  --persona-btn-bg: rgba(142, 214, 255, 0.5);
+  --persona-btn-border: rgba(142, 214, 255, 0.35);
+  --persona-btn-bg-active: rgba(142, 214, 255, 0.7);
+  --persona-btn-border-active: rgba(142, 214, 255, 0.7);
 }
 
 *{ box-sizing:border-box; }
@@ -142,11 +142,6 @@ body::-webkit-scrollbar {
   inset:0;
   overflow:hidden;
   background:#05070d;
-  opacity:0;
-  transition: opacity 1.6s ease-in-out;
-}
-.stage.revealed{
-  opacity:1;
 }
 .bg-wrap{
   position:absolute;
@@ -207,7 +202,6 @@ body::-webkit-scrollbar {
 .bg-layer-current{
   opacity:1;
   filter:saturate(1.15) brightness(1.0);
-  transition: opacity 1.8s ease-in-out;
   animation:
     layer-current-hue    30s ease-in-out infinite;
 }
@@ -220,7 +214,7 @@ body::-webkit-scrollbar {
   100% { filter: saturate(1.15) brightness(1.00) hue-rotate(0deg); }
 }
 .bg-layer-current.loading{
-  opacity:0;
+  opacity:1;
 }
 
 /* ── Shimmer overlay: slow drifting light (no scale) ── */
@@ -245,12 +239,7 @@ body::-webkit-scrollbar {
 }
 
 .bg-vignette{
-  position:absolute;
-  inset:0;
-  background:
-    radial-gradient(circle at 50% 30%, rgba(0,0,0,0.05) 0%, rgba(0,0,0,0.35) 70%, rgba(0,0,0,0.50) 100%),
-    linear-gradient(to bottom, rgba(0,0,0,0.0) 0%, rgba(5,7,13,0.45) 70%, rgba(5,7,13,0.70) 100%);
-  pointer-events:none;
+  display:none;
 }
 
 /* MIDDLE AREA BUTTONS + CONTENT */
@@ -313,6 +302,7 @@ body::-webkit-scrollbar {
 
 /* TOP content: drift panel extends downward from drift button */
 .top-content{
+  position: relative;
   pointer-events:none;
   width: var(--midW);
   margin-top: 0;
@@ -320,12 +310,29 @@ body::-webkit-scrollbar {
   align-items:flex-start;
   justify-content:center;
 }
+.top-content::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 50px;
+  background: linear-gradient(to bottom, transparent, rgba(0,0,0,0.5));
+  pointer-events: none;
+  border-radius: 0 0 12px 12px;
+  z-index: 1;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+.top-content.has-scroll:has(.text-panel.open)::after {
+  opacity: 1;
+}
 
 /* Panels — extend from button edge, growing in the same direction */
 .text-panel{
   width: 100%;
   padding: 14px 16px;
-  background: rgba(0,0,0,0.55);
+  background: rgba(0,0,0,0.7);
   border: 1px solid rgba(255,255,255,0.10);
   box-shadow: 0 10px 30px rgba(0,0,0,0.35);
   backdrop-filter: blur(10px);
@@ -381,17 +388,34 @@ body::-webkit-scrollbar {
   margin:0;
   padding-bottom: 10px; /* Ensure bottom text is fully scrollable */
   color: rgba(245,245,247,0.86);   /* default light grey text */
-  font-size: 15px;
+  font-size: 16px;
   line-height: 1.7;
   font-weight: 300;
   white-space: pre-wrap;
   word-wrap: break-word;
   overflow-wrap: break-word;
+  /* Resonance-driven subtle looseness: low resonance → words drift apart, opacity softens */
+  letter-spacing: calc((1 - var(--resonance, 0.5)) * 0.025em);
+  opacity: calc(0.72 + var(--resonance, 0.5) * 0.28);
+  transition: letter-spacing 10s ease, opacity 10s ease;
 }
 .text-panel.rtl .body{
   direction: rtl;
   text-align:right;
-  font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  font-family: "Noto Sans Arabic", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+}
+
+.drift-meta{
+  margin-top: 12px;
+  padding: 10px 0 6px;
+  border-top: 1px solid rgba(255,255,255,0.08);
+  font-size: 11px;
+  letter-spacing: 0.04em;
+  color: rgba(245,245,247,0.5);
+  font-weight: 300;
+  text-align: center;
+  position: relative;
+  z-index: 3;
 }
 
 /* Headlines fold inside keepsake panel */
@@ -445,6 +469,16 @@ body::-webkit-scrollbar {
   content:"– ";
   opacity:0.4;
 }
+.rt-source-note{
+  color:rgba(245,245,247,0.30);
+  font-size:10px;
+  font-style:italic;
+  padding:3px 0 0 0;
+  letter-spacing:0.02em;
+}
+.rt-source-note.hidden{
+  display:none;
+}
 
 /* ============================================================
    KEEPSAKE SHELL — archive of past keepsake narrations
@@ -478,6 +512,10 @@ body::-webkit-scrollbar {
   transition: height 0.45s cubic-bezier(0.25, 0.46, 0.45, 0.94), max-height 0.45s cubic-bezier(0.25, 0.46, 0.45, 0.94);
   will-change: height;
   z-index: 3; /* Below mid-layer (5) and drift-btn (10) */
+}
+.keepsake-shell.has-tag{
+  height: clamp(118px, 22vh, 140px);
+  min-height: 118px;
 }
 .keepsake-shell.expanded{
   /* Expanded to fill available space but stay below drift button */
@@ -593,12 +631,53 @@ body::-webkit-scrollbar {
 .keepsake-entry-text{
   margin:0;
   color: rgba(245,245,247,0.82);
-  font-size: 14px;
+  font-size: 16px;
   line-height: 1.7;
   font-weight: 300;
   font-family: "Georgia", "Times New Roman", serif;
   white-space: pre-wrap;
 }
+/* Arabic text: use Noto Sans Arabic for keepsake entries and all RTL content */
+[dir="rtl"] .keepsake-entry-text,
+.keepsake-entry-text[dir="rtl"]{
+  font-family: "Noto Sans Arabic", system-ui, sans-serif;
+  font-weight: 400;
+  line-height: 1.9;
+}
+
+/* Confidence / hallucination state indicator */
+.keepsake-confidence{
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 8px;
+  font-size: 10px;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  opacity: 0.55;
+}
+.confidence-dot{
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+.confidence-label{
+  font-family: system-ui, sans-serif;
+  font-weight: 500;
+}
+.confidence-pct{
+  font-family: system-ui, sans-serif;
+  font-weight: 400;
+  opacity: 0.7;
+}
+/* State colors */
+.keepsake-confidence.grounded .confidence-dot{ background: rgba(120, 220, 140, 0.8); }
+.keepsake-confidence.grounded .confidence-label{ color: rgba(120, 220, 140, 0.9); }
+.keepsake-confidence.drifting .confidence-dot{ background: rgba(230, 193, 90, 0.8); }
+.keepsake-confidence.drifting .confidence-label{ color: rgba(230, 193, 90, 0.9); }
+.keepsake-confidence.hallucinating .confidence-dot{ background: rgba(220, 100, 100, 0.8); }
+.keepsake-confidence.hallucinating .confidence-label{ color: rgba(220, 100, 100, 0.9); }
 
 /* Headlines fold inside keepsake entry */
 .keepsake-entry .headlines-fold{
@@ -609,7 +688,7 @@ body::-webkit-scrollbar {
   background:none;
   border:none;
   color:rgba(245,245,247,0.30);
-  font-size:10px;
+  font-size:14px;
   cursor:pointer;
   padding:2px 0;
   display:inline-flex;
@@ -670,11 +749,50 @@ body::-webkit-scrollbar {
   font-style:italic;
 }
 
+/* Tagged #text suffix in keepsake AI narration */
+.keepsake-tag-suffix{
+  color: rgba(var(--persona-accent-rgb), 0.45);
+  font-size: 0.9em;
+}
+
+/* Fragment tag — shown when user taps drifted text */
+.fragment-tag{
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 2px;
+  background: none;
+  width: 100%;
+  flex-basis: 100%;
+}
+.fragment-tag-text{
+  font-size: 13px;
+  color: rgba(var(--persona-accent-rgb), 0.70);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: calc(100% - 28px);
+}
+.fragment-tag-text::before{
+  content: "#";
+}
+.fragment-tag-close{
+  background: none;
+  border: none;
+  color: rgba(var(--persona-accent-rgb), 0.50);
+  font-size: 16px;
+  cursor: pointer;
+  padding: 0 2px;
+  line-height: 1;
+  flex-shrink: 0;
+}
+
 /* Fragment composer — always visible below handle */
 .fragment-composer{
   border-top: 1px solid rgba(120,130,160,0.12);
   padding: 8px 12px 14px;
   display:flex;
+  flex-wrap: wrap;
   gap: 10px;
   align-items:center;
   flex-shrink:0;
@@ -869,23 +987,67 @@ body::-webkit-scrollbar {
 /* JS wraps changed runs with <span class="drift-new">...</span> */
 /* Drifted text takes the persona accent color at reduced opacity */
 #driftText .drift-new{
-  color: rgba(var(--persona-accent-rgb), 0.50) !important;
+  display: inline-block;
+  vertical-align: baseline;
+  color: rgba(var(--persona-accent-rgb), 0.75) !important;
+  font-weight: 430;
   text-decoration: none !important;
   border-bottom: none !important;
+  cursor: pointer;
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: rgba(var(--persona-accent-rgb), 0.15);
+  pointer-events: auto;
 }
+#driftText .drift-new:active{
+  opacity: 0.7;
+}
+
+/* ===== Drift text animation ===== */
+
+/* Invisible holding state — hides the span instantly, no animation */
+#driftText .drift-new.kd-pre-enter {
+  opacity: 0;
+}
+
+/* Exit: colored spans fade out when new drift arrives while panel is open */
+@keyframes kd-word-exit {
+  from { opacity: 1; }
+  to   { opacity: 0; }
+}
+#driftText .drift-new.kd-exiting {
+  animation: kd-word-exit 0.7s ease-out forwards;
+  pointer-events: none;
+}
+
+#driftText .drift-new .kd-letter { display: inline; }
 
 /* Persona tint for Drift button */
 #driftBtn{
   background: var(--persona-btn-bg);
   border-color: var(--persona-btn-border);
-  color: rgba(245,245,247,0.6);
+  color: rgb(40, 40, 40);
   font-size: 14pt;
+}
+#driftBtn .drift-arrow{
+  display: inline-block;
+  margin-left: 4px;
+  font-size: 1.3em;
+  vertical-align: middle;
+  animation: arrowBounce 2s ease-in-out infinite;
+}
+@keyframes arrowBounce{
+  0%, 100%{ transform: translateY(0); opacity: 0.7; }
+  50%{ transform: translateY(3px); opacity: 1; }
 }
 
 #driftBtn.active{
   background: var(--persona-btn-bg-active);
   border-color: var(--persona-btn-border-active);
-  color: #000;
+  color: rgb(40, 40, 40);
+}
+#driftBtn.active .drift-arrow{
+  transform: rotate(180deg);
+  animation: none;
 }
 
 /* ===== RESPONSIVE DESIGN ===== */
@@ -1175,6 +1337,8 @@ button, .drift-btn, .lang-toggle, .menu-icon {
   padding: clamp(12px, 2.5vw, 14px);
   display: flex;
   flex-direction: column;
+  justify-content: center;
+  min-height: 72px;
   cursor: pointer;
   touch-action: manipulation;
   -webkit-tap-highlight-color: transparent;
@@ -1205,11 +1369,33 @@ button, .drift-btn, .lang-toggle, .menu-icon {
   line-height: 1.4;
 }
 
-@media (min-width: 500px) {
-  .home-persona-grid {
-    grid-template-columns: repeat(3, 1fr);
-    max-width: 600px;
-  }
+/* 2x3 grid stays at all widths — no 3-column breakpoint */
+
+.home-project-desc {
+  font-size: clamp(0.8rem, 1.8vw, 0.88rem);
+  color: #9ca0b5;
+  text-align: left;
+  line-height: 1.55;
+  max-width: 400px;
+  margin: 0 auto 20px;
+  padding: 0 12px;
+}
+
+.home-privacy-line {
+  font-size: 11px;
+  color: rgba(156, 160, 181, 0.5);
+  text-align: center;
+  line-height: 1.5;
+  margin-top: 24px;
+  padding: 0 12px;
+}
+.home-privacy-line a {
+  color: rgba(156, 160, 181, 0.6);
+  text-decoration: underline;
+  text-decoration-color: rgba(156, 160, 181, 0.25);
+}
+.home-privacy-line a:hover {
+  color: rgba(156, 160, 181, 0.8);
 }
 
 /* Safe area support for notched devices */
@@ -1296,4 +1482,127 @@ button, .drift-btn, .lang-toggle, .menu-icon {
   .app-header {
     padding-top: calc(14px + env(safe-area-inset-top));
   }
+}
+
+/* ── Network disruption mode ──
+   Triggered when the backend is unreachable (2+ consecutive fetch failures).
+   Makes the installation's network dependency visible as aesthetics. */
+.kd-disrupted .bg-img {
+  filter: grayscale(0.7) contrast(1.2);
+  transition: filter 2s ease;
+}
+.kd-disrupted .bg-prev1,
+.kd-disrupted .bg-prev2 {
+  opacity: 0 !important;
+}
+.kd-disrupted .text-panel .body {
+  opacity: 0.5;
+  letter-spacing: 0.02em;
+  transition: opacity 1.5s ease, letter-spacing 1.5s ease;
+}
+.kd-disrupted .text-panel::after {
+  content: "infrastructural fluctuation";
+  display: block;
+  text-align: center;
+  font-size: 9px;
+  letter-spacing: 0.25em;
+  text-transform: uppercase;
+  color: rgba(255, 107, 107, 0.5);
+  margin-top: 12px;
+}
+
+/* ══════════════════════════════════════════════
+   Drift Atmosphere — a living progression
+   Opacity deepens via --drift-opacity (set by JS).
+   Animations are fixed-duration, never interrupted.
+   ══════════════════════════════════════════════ */
+
+.drift-atmosphere {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  overflow: hidden;
+  z-index: 0;
+  opacity: var(--drift-opacity, 0.15);
+  transition: opacity 8s cubic-bezier(0.25, 0.1, 0.25, 1);
+}
+
+/* Base flowing gradient — teal to amber diagonal */
+.drift-atmosphere::before {
+  content: '';
+  position: absolute;
+  inset: -30%;
+  width: 160%;
+  height: 160%;
+  background:
+    linear-gradient(135deg,
+      rgba(20, 40, 58, 0.9) 0%,
+      rgba(35, 55, 65, 0.7) 25%,
+      rgba(60, 55, 35, 0.5) 55%,
+      rgba(180, 140, 60, 0.4) 80%,
+      rgba(200, 160, 70, 0.3) 100%);
+  animation: drift-flow 45s ease-in-out infinite alternate;
+  filter: blur(40px);
+}
+
+/* Wind streak overlay */
+.drift-atmosphere::after {
+  content: '';
+  position: absolute;
+  inset: -20%;
+  width: 140%;
+  height: 140%;
+  background:
+    repeating-linear-gradient(140deg,
+      transparent 0%,
+      rgba(180, 160, 90, 0.06) 3%,
+      transparent 6%,
+      rgba(30, 50, 70, 0.08) 9%,
+      transparent 12%);
+  animation: drift-streaks 25s linear infinite;
+  filter: blur(8px);
+}
+
+@keyframes drift-flow {
+  0%   { transform: translate(0, 0) rotate(-2deg) scale(1); }
+  33%  { transform: translate(-3%, 2%) rotate(0deg) scale(1.03); }
+  66%  { transform: translate(-7%, 4%) rotate(1deg) scale(1.01); }
+  100% { transform: translate(-10%, 6%) rotate(2deg) scale(1); }
+}
+
+@keyframes drift-streaks {
+  0%   { transform: translate(0, 0); }
+  100% { transform: translate(-15%, 8%); }
+}
+
+/* Popup overlay atmosphere override */
+.home-overlay .drift-atmosphere {
+  position: absolute;
+  border-radius: 0;
+}
+
+/* Popup countdown clock */
+.home-tick-wrap {
+  text-align: center;
+  margin-bottom: 8px;
+  user-select: none;
+}
+.home-tick-label {
+  font-size: 10px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: rgba(156, 160, 181, 0.3);
+  margin-bottom: 2px;
+}
+.home-tick-clock {
+  font-size: 18px;
+  font-weight: 300;
+  letter-spacing: 0.06em;
+  color: rgba(156, 160, 181, 0.4);
+  font-variant-numeric: tabular-nums;
+}
+.home-tick-clock.drifting {
+  color: rgba(230, 193, 90, 0.5);
+  font-size: 14px;
+  letter-spacing: 0.08em;
 }

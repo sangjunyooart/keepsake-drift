@@ -19,6 +19,11 @@
     let secondLangDirection = "rtl";
     let enableTranslation = CFG.ENABLE_ARABIC;
 
+    // Strip emoji, wingdings, dingbats, symbols, and other decorative Unicode from headlines
+    function stripEmoji(str) {
+      return str.replace(/[\u{1F000}-\u{1FFFF}\u{2600}-\u{27BF}\u{FE00}-\u{FE0F}\u{200D}\u{20E3}\u{E0020}-\u{E007F}\u{2300}-\u{23FF}\u{2B50}\u{2B55}\u{2934}\u{2935}\u{25A0}-\u{25FF}\u{2700}-\u{27BF}\u{2190}-\u{21FF}\u{2022}\u{2023}\u{25AA}\u{25AB}\u{25B6}\u{25C0}\u{25FB}-\u{25FE}\u{2602}-\u{2660}\u{2663}\u{2665}\u{2666}\u{2668}\u{267B}\u{267F}\u{2692}-\u{269F}\u{26A0}-\u{26FF}\u{2702}-\u{27B0}\u{3297}\u{3299}\u{FE0F}\u{200B}-\u{200F}\u{2028}\u{2029}\u{202A}-\u{202E}\u{2060}-\u{206F}]/gu, "").replace(/\s{2,}/g, " ").trim();
+    }
+
     const savedLang = localStorage.getItem(CFG.STORAGE_LANG_KEY);
     let currentLangView = (enableTranslation && savedLang && savedLang !== "en") ? savedLang : "en";
 
@@ -38,8 +43,17 @@
           currentLangView = "en";
           localStorage.setItem(CFG.STORAGE_LANG_KEY, currentLangView);
         }
+        // Default to L2 when translation is enabled and user has no saved preference
+        if (enableTranslation && !savedLang && currentLangView === "en") {
+          currentLangView = secondLang;
+          localStorage.setItem(CFG.STORAGE_LANG_KEY, currentLangView);
+        }
         setLanguageUI();
         setMidTextFromStateOrEmpty();
+        // Re-render archive entries if already fetched (lang may have changed)
+        if (archiveFetched && archiveData.length > 0) {
+          renderArchive(archiveData);
+        }
       }
     }).catch(() => {});
 
@@ -57,11 +71,11 @@
     // Accent colors (underline + buttons)
     const PERSONA_COLORS = {
       human: "#E6C15A",
-      liminal: "#8ED6FF",
-      environment: "#7BE3A1",
-      digital: "#B8A6FF",
-      infrastructure: "#FFB38A",
-      more_than_human: "#FFD6F3"
+      liminal: "#5BC0F0",
+      environment: "#4DD88A",
+      digital: "#A08EFF",
+      infrastructure: "#FF9A60",
+      more_than_human: "#F0A0D8"
     };
 
     function hexToRgb(hex) {
@@ -78,10 +92,10 @@
 
       document.documentElement.style.setProperty("--persona-accent", hex);
       document.documentElement.style.setProperty("--persona-accent-rgb", `${r}, ${g}, ${b}`);
-      document.documentElement.style.setProperty("--persona-btn-bg", `rgba(${r}, ${g}, ${b}, 0.22)`);
-      document.documentElement.style.setProperty("--persona-btn-border", `rgba(${r}, ${g}, ${b}, 0.45)`);
-      document.documentElement.style.setProperty("--persona-btn-bg-active", `rgba(${r}, ${g}, ${b}, 0.34)`);
-      document.documentElement.style.setProperty("--persona-btn-border-active", `rgba(${r}, ${g}, ${b}, 0.60)`);
+      document.documentElement.style.setProperty("--persona-btn-bg", `rgba(${r}, ${g}, ${b}, 0.5)`);
+      document.documentElement.style.setProperty("--persona-btn-border", `rgba(${r}, ${g}, ${b}, 0.35)`);
+      document.documentElement.style.setProperty("--persona-btn-bg-active", `rgba(${r}, ${g}, ${b}, 0.7)`);
+      document.documentElement.style.setProperty("--persona-btn-border-active", `rgba(${r}, ${g}, ${b}, 0.7)`);
     }
     setPersonaAccent(currentPersona);
 
@@ -113,20 +127,12 @@
     const fragmentSendBtn = document.getElementById("fragmentSendBtn");
     const fragmentComposer = document.getElementById("fragmentComposer");
 
-    // Fade-from-black: reveal stage once initial image loads
-    function revealStage() {
-      if (stageEl && !stageEl.classList.contains("revealed")) {
-        stageEl.classList.add("revealed");
-      }
-    }
+    // No-op: stage is always visible (no fade-in on load)
+    function revealStage() {}
 
-    // Set initial background per persona (before first poll)
+    // Set initial background per persona (loads asynchronously, fades in via CSS)
     if (bgImage && CFG.personaImageMap && CFG.personaImageMap[currentPersona]) {
       bgImage.src = CFG.personaImageMap[currentPersona];
-      bgImage.addEventListener("load", revealStage, { once: true });
-      if (bgImage.complete && bgImage.naturalWidth > 0) revealStage();
-    } else {
-      revealStage();
     }
 
     const stateCache = {
@@ -139,7 +145,8 @@
       keepsake_en: "",
       delta_json: "",
       delta_json_ar: "",
-      image_url: null
+      image_url: null,
+      drifted_at: ""
     };
 
     let driftCycle = 0;
@@ -166,7 +173,7 @@
     // Underline highlighting (EN + AR)
     // ======================================================
     const RE_EN = /([A-Za-z0-9]+(?:'[A-Za-z0-9]+)?)|([^A-Za-z0-9]+)/g;
-    const RE_U = /([^\W_]+)|([\W_]+)/gu;
+    const RE_U = /([\p{L}\p{N}]+)|([^\p{L}\p{N}]+)/gu;
 
     function _parseDeltaOps(deltaJson) {
       if (!deltaJson) return null;
@@ -214,7 +221,63 @@
       return changed;
     }
 
+    // Small connecting words to skip highlighting
+    const _STOP_WORDS = new Set([
+      // English
+      "a", "an", "the", "and", "or", "but", "in", "on", "at", "to", "of",
+      "is", "it", "its", "my", "me", "i", "we", "he", "she", "they",
+      "this", "that", "with", "for", "by", "as", "if", "so", "no", "not",
+      "be", "am", "are", "was", "were", "has", "had", "do", "did",
+      "from", "up", "out", "all", "just", "our", "his", "her",
+      "off", "more", "where", "which", "when", "what", "who", "how",
+      "than", "then", "there", "here", "into", "over", "some", "such",
+      "been", "being", "have", "would", "could", "should", "will",
+      "about", "after", "before", "between", "through", "during",
+      "each", "every", "any", "own", "same", "other", "another",
+      "much", "many", "most", "very", "too", "also", "still", "even",
+      "only", "yet", "now", "back", "down", "away", "again",
+      // English contractions
+      "i'm", "i'd", "i'll", "i've", "it's", "he's", "she's", "we're", "we've", "we'd", "we'll",
+      "they're", "they've", "they'd", "they'll", "you're", "you've", "you'd", "you'll",
+      "there's", "there'd", "that's", "that'd", "what's", "who's", "who'd",
+      "isn't", "aren't", "wasn't", "weren't", "won't", "wouldn't", "couldn't", "shouldn't",
+      "doesn't", "didn't", "don't", "hasn't", "hadn't", "haven't", "can't",
+      // Arabic
+      "في", "من", "على", "إلى", "عن", "مع", "هذا", "هذه", "ذلك", "تلك",
+      "هو", "هي", "هم", "هن", "نحن", "أنا", "أنت", "أنتم",
+      "و", "أو", "لكن", "بل", "ثم", "أن", "إن", "لا", "لم", "لن",
+      "كان", "كانت", "كانوا", "يكون", "تكون",
+      "ما", "التي", "الذي", "الذين", "اللتي", "اللذين",
+      "قد", "بعد", "قبل", "بين", "حتى", "عند", "فوق", "تحت",
+      "كل", "بعض", "أي", "غير", "أكثر", "جدا",
+      "ال", "لل", "بال", "وال",
+      // Greek
+      "ο", "η", "το", "οι", "τα", "τον", "την", "του", "της", "των", "τους",
+      "και", "ή", "αλλά", "αν", "ότι", "όπως", "γιατί", "επειδή",
+      "σε", "από", "με", "για", "στο", "στη", "στον", "στην", "στα",
+      "είναι", "ήταν", "θα", "να", "δεν", "μη", "μην",
+      "αυτό", "αυτή", "αυτός", "αυτά", "αυτοί", "εκείνο", "εκείνη",
+      "εγώ", "εσύ", "εμείς", "εσείς", "αυτοί",
+      "πολύ", "πιο", "κάθε", "κάποιο", "όλα", "μόνο", "ακόμα",
+      "που", "πού", "πώς", "πότε", "τι",
+      // Portuguese
+      "o", "a", "os", "as", "um", "uma", "uns", "umas",
+      "e", "ou", "mas", "porém", "que", "se", "não", "nem",
+      "de", "do", "da", "dos", "das", "em", "no", "na", "nos", "nas",
+      "por", "para", "com", "sem", "sobre", "entre", "até",
+      "é", "são", "foi", "era", "eram", "ser", "estar",
+      "ele", "ela", "eles", "elas", "eu", "nós", "você", "vocês",
+      "esse", "essa", "este", "esta", "isso", "isto", "aquele", "aquela",
+      "seu", "sua", "seus", "suas", "meu", "minha",
+      "mais", "muito", "cada", "todo", "toda", "todos", "todas",
+      "onde", "como", "quando", "qual", "quem",
+      "já", "ainda", "também", "só", "apenas",
+    ]);
+
+    var _lastHighlightMeaningfulCount = 0;
+
     function highlightDriftText(rawText, deltaJson, lang) {
+      _lastHighlightMeaningfulCount = 0;
       const raw = String(rawText || "");
       if (!raw.trim()) return "";
       const ops = _parseDeltaOps(deltaJson);
@@ -223,40 +286,126 @@
       const changed = _collectChangedWordIndicesFromOps(ops);
       if (!changed || changed.size === 0) return escapeHtml(raw);
 
+      // Helper: is word index a "meaningful" drift (changed AND not a stop word)?
+      // A stop word counts as drifted if it bridges two meaningful drifted words
+      // within the same sentence.
+      // sentenceBreaks: Set of word indices that START a new sentence
+      // (i.e., the first word after a sentence-ending punctuation mark).
+      function _buildEffectiveSet(wordCount, isChangedFn, wordTextFn, sentenceBreaks) {
+        const meaningful = new Set();
+        for (let w = 0; w < wordCount; w++) {
+          if (isChangedFn(w) && !_STOP_WORDS.has(wordTextFn(w).toLowerCase())) {
+            meaningful.add(w);
+          }
+        }
+        // Bridge: a single stop word between two meaningful words joins the run,
+        // but NEVER across a sentence boundary.
+        const effective = new Set(meaningful);
+        for (let w = 1; w < wordCount - 1; w++) {
+          if (effective.has(w)) continue;
+          if (!_STOP_WORDS.has(wordTextFn(w).toLowerCase())) continue;
+          // Don't bridge if this word or the next starts a new sentence
+          if (sentenceBreaks.has(w) || sentenceBreaks.has(w + 1)) continue;
+          if (meaningful.has(w - 1) && meaningful.has(w + 1)) {
+            effective.add(w);
+          }
+        }
+        // Count = number of rendered `.drift-new` bundles (contiguous runs),
+        // not total words inside them. A multi-word bundle like
+        // "skillfully wheeled on" counts as 1, matching what the viewer sees.
+        // Sentence breaks split a run into separate bundles.
+        let runCount = 0;
+        let inRunCnt = false;
+        for (let w = 0; w < wordCount; w++) {
+          if (effective.has(w)) {
+            if (!inRunCnt || sentenceBreaks.has(w)) {
+              runCount++;
+              inRunCnt = true;
+            }
+          } else {
+            inRunCnt = false;
+          }
+        }
+        _lastHighlightMeaningfulCount = runCount;
+        return effective;
+      }
+
       try {
-        if (typeof Intl !== "undefined" && Intl.Segmenter) {
-          const locale = (lang === "en") ? "en" : (lang || "en");
+        // Intl.Segmenter disabled — it tokenizes differently from the backend
+        // regex ([^\W_]+), causing highlight indices to land on wrong words.
+        // All languages now use the regex path for consistent alignment.
+        if (false && lang === "en" && typeof Intl !== "undefined" && Intl.Segmenter) {
+          const locale = "en";
           const seg = new Intl.Segmenter(locale, { granularity: "word" });
           const parts = [...seg.segment(raw)];
           const wordIdxMap = new Map();
+          const wordParts = []; // wordIdx -> part index
           let wi = 0;
           for (let i = 0; i < parts.length; i++) {
-            if (parts[i].isWordLike) { wordIdxMap.set(i, wi); wi++; }
+            if (parts[i].isWordLike) { wordIdxMap.set(i, wi); wordParts.push(i); wi++; }
           }
+          // Find sentence breaks: word indices that follow sentence-ending punctuation
+          // A bare hyphen "-" between two word-like segments is a compound word (post-church, face-down),
+          // NOT a sentence break. Only emdash/endash or hyphen with surrounding space counts.
+          function _isCompoundHyphen(parts, idx) {
+            if (parts[idx].segment !== "-") return false;
+            let prevWord = false, nextWord = false;
+            for (let b = idx - 1; b >= 0; b--) { if (parts[b].isWordLike) { prevWord = true; break; } if (/\s/.test(parts[b].segment)) break; }
+            for (let a = idx + 1; a < parts.length; a++) { if (parts[a].isWordLike) { nextWord = true; break; } if (/\s/.test(parts[a].segment)) break; }
+            return prevWord && nextWord;
+          }
+          const _sentBreaks = new Set();
+          let _sawBreak = false;
+          for (let i = 0; i < parts.length; i++) {
+            if (!parts[i].isWordLike) {
+              if (/[.!?,;:\u2014\u2013]/.test(parts[i].segment)) _sawBreak = true;
+              else if (parts[i].segment === "-" && !_isCompoundHyphen(parts, i)) _sawBreak = true;
+            } else {
+              if (_sawBreak) { _sentBreaks.add(wordIdxMap.get(i)); _sawBreak = false; }
+            }
+          }
+          const effective = _buildEffectiveSet(
+            wi,
+            (w) => changed.has(w),
+            (w) => parts[wordParts[w]].segment,
+            _sentBreaks
+          );
           let out = "";
           let inRun = false;
+          let sawSentenceBreak = false;
           for (let i = 0; i < parts.length; i++) {
             const part = parts[i];
             const txt = part.segment;
             if (part.isWordLike) {
               const wordIdx = wordIdxMap.get(i);
-              const isChanged = changed.has(wordIdx);
-              if (isChanged) {
+              if (effective.has(wordIdx)) {
                 if (!inRun) { out += `<span class="drift-new">`; inRun = true; }
                 out += escapeHtml(txt);
               } else {
                 if (inRun) { out += `</span>`; inRun = false; }
                 out += escapeHtml(txt);
               }
+              sawSentenceBreak = false;
             } else {
-              if (inRun) {
-                let nextDrifted = false;
+              // Punctuation/whitespace: close run
+              if (inRun) { out += `</span>`; inRun = false; }
+              out += escapeHtml(txt);
+              // Track sentence-break punctuation across multiple non-word segments
+              // (e.g. "." and " " as separate segments)
+              // Bare hyphen between words = compound word (post-church), not a break
+              if (/[.!?,;:\u2014\u2013]/.test(txt)) sawSentenceBreak = true;
+              else if (txt === "-" && !_isCompoundHyphen(parts, i)) sawSentenceBreak = true;
+              // Reopen span if next word is effective, BUT not across sentence boundaries
+              if (!inRun && !sawSentenceBreak) {
+                let nextEffective = false;
                 for (let j = i + 1; j < parts.length; j++) {
-                  if (parts[j].isWordLike) { nextDrifted = changed.has(wordIdxMap.get(j)); break; }
+                  if (parts[j].isWordLike) {
+                    nextEffective = effective.has(wordIdxMap.get(j));
+                    break;
+                  }
                 }
-                if (nextDrifted) { out += escapeHtml(txt); }
-                else { out += `</span>`; inRun = false; out += escapeHtml(txt); }
-              } else { out += escapeHtml(txt); }
+                if (nextEffective) { out += `<span class="drift-new">`; inRun = true; }
+              }
             }
           }
           if (inRun) out += `</span>`;
@@ -273,33 +422,66 @@
         tokens.push({ text: m[0], isWord: (m[1] != null), index: m.index });
       }
       const wordIdxMap = new Map();
+      const wordTokens = [];
       let wordIdx = 0;
       for (let i = 0; i < tokens.length; i++) {
-        if (tokens[i].isWord) { wordIdxMap.set(i, wordIdx); wordIdx++; }
+        if (tokens[i].isWord) { wordIdxMap.set(i, wordIdx); wordTokens.push(i); wordIdx++; }
       }
+      // Sentence breaks for fallback path
+      // Bare hyphen between words = compound word, not a break
+      function _isCompoundHyphenFB(tokens, idx) {
+        if (tokens[idx].text !== "-") return false;
+        let prevWord = false, nextWord = false;
+        for (let b = idx - 1; b >= 0; b--) { if (tokens[b].isWord) { prevWord = true; break; } if (/\s/.test(tokens[b].text)) break; }
+        for (let a = idx + 1; a < tokens.length; a++) { if (tokens[a].isWord) { nextWord = true; break; } if (/\s/.test(tokens[a].text)) break; }
+        return prevWord && nextWord;
+      }
+      const _sentBreaks2 = new Set();
+      let _sawBreak2 = false;
+      for (let i = 0; i < tokens.length; i++) {
+        if (!tokens[i].isWord) {
+          if (/[.!?,;:\u2014\u2013]/.test(tokens[i].text)) _sawBreak2 = true;
+          else if (tokens[i].text === "-" && !_isCompoundHyphenFB(tokens, i)) _sawBreak2 = true;
+        } else {
+          if (_sawBreak2) { _sentBreaks2.add(wordIdxMap.get(i)); _sawBreak2 = false; }
+        }
+      }
+      const effective = _buildEffectiveSet(
+        wordIdx,
+        (w) => changed.has(w),
+        (w) => tokens[wordTokens[w]].text,
+        _sentBreaks2
+      );
       let out = "";
       let inRun = false;
+      let sawSentenceBreak2 = false;
       for (let i = 0; i < tokens.length; i++) {
         const tok = tokens[i];
         if (tok.isWord) {
           const wi2 = wordIdxMap.get(i);
-          const isChanged = changed.has(wi2);
-          if (isChanged) {
+          if (effective.has(wi2)) {
             if (!inRun) { out += `<span class="drift-new">`; inRun = true; }
             out += escapeHtml(tok.text);
           } else {
             if (inRun) { out += `</span>`; inRun = false; }
             out += escapeHtml(tok.text);
           }
+          sawSentenceBreak2 = false;
         } else {
-          if (inRun) {
-            let nextDrifted = false;
+          if (inRun) { out += `</span>`; inRun = false; }
+          out += escapeHtml(tok.text);
+          if (/[.!?,;:\u2014\u2013]/.test(tok.text)) sawSentenceBreak2 = true;
+          else if (tok.text === "-" && !_isCompoundHyphenFB(tokens, i)) sawSentenceBreak2 = true;
+          if (!inRun && !sawSentenceBreak2) {
+            let nextEffective = false;
             for (let j = i + 1; j < tokens.length; j++) {
-              if (tokens[j].isWord) { nextDrifted = changed.has(wordIdxMap.get(j)); break; }
+              if (tokens[j].isWord) {
+                nextEffective = effective.has(wordIdxMap.get(j));
+                break;
+              }
             }
-            if (nextDrifted) { out += escapeHtml(tok.text); }
-            else { out += `</span>`; inRun = false; out += escapeHtml(tok.text); }
-          } else { out += escapeHtml(tok.text); }
+            if (nextEffective) { out += `<span class="drift-new">`; inRun = true; }
+          }
         }
       }
       if (inRun) out += `</span>`;
@@ -331,11 +513,31 @@
       if (langLabel) langLabel.textContent = (t.langButton || "Language");
       setPersonaTitle();
       applyTextDirection();
+      // Hide lang toggle when translation is disabled
+      if (langToggle) langToggle.style.display = enableTranslation ? "" : "none";
+      // Also hide home overlay lang toggle
+      const homeLangEl = document.getElementById("homeLangToggle");
+      if (homeLangEl) homeLangEl.style.display = enableTranslation ? "" : "none";
       // Update keepsake handle and fragment input placeholder
       const handleLabel = keepsakeShell && keepsakeShell.querySelector(".keepsake-handle-label");
       if (handleLabel) handleLabel.textContent = (t.keepsakeBtn || "Keepsake");
       if (fragmentInput) fragmentInput.placeholder = (t.placeholder || "leave a memory fragment...");
       updateButtonsAndPanels();
+    }
+
+    function _checkScrollGradient(panel, predictive) {
+      const wrapper = panel && panel.closest('.top-content');
+      if (!wrapper) return;
+      let scrollable;
+      if (predictive) {
+        // Panel is collapsed — compare full content height vs target open max-height
+        const openMaxHeight = window.innerHeight - 260;
+        scrollable = panel.scrollHeight > openMaxHeight;
+      } else {
+        // Panel is open — standard check
+        scrollable = panel.scrollHeight > panel.clientHeight + 2;
+      }
+      wrapper.classList.toggle('has-scroll', scrollable);
     }
 
     function _slidePanel(panel, shouldOpen) {
@@ -348,6 +550,8 @@
         if (!wasAlreadyOpen) {
           panel.scrollTop = 0;
         }
+        // Pre-calculate if content will overflow when fully expanded
+        _checkScrollGradient(panel, true);
         requestAnimationFrame(() => {
           requestAnimationFrame(() => {
             panel.classList.add("open");
@@ -360,6 +564,8 @@
       } else {
         if (panel.classList.contains("hidden") && !panel.classList.contains("open")) return;
         panel.classList.remove("open");
+        const wrapper = panel.closest('.top-content');
+        if (wrapper) wrapper.classList.remove('has-scroll');
         const onEnd = () => {
           if (!panel.classList.contains("open")) panel.classList.add("hidden");
           panel.removeEventListener("transitionend", onEnd);
@@ -374,7 +580,89 @@
       _slidePanel(driftPanel, midMode === "drift");
       if (driftBtn) driftBtn.classList.toggle("active", midMode === "drift");
       const t = T();
-      if (driftBtn) driftBtn.textContent = `${t.driftBtnPrefix || "Drift"} ${driftCycle}`;
+      if (driftBtn) {
+        const lbl = driftBtn.querySelector(".drift-label");
+        if (lbl) lbl.textContent = formatDriftLabel(stateCache.drifted_at, t);
+      }
+    }
+
+    // Format drift timestamp for display: always "Apr 12, 14:32"
+    function formatDriftLabel(isoStr, t) {
+      if (!isoStr) return "";
+      try {
+        const d = new Date(isoStr.replace(" ", "T") + (isoStr.includes("Z") ? "" : "Z"));
+        if (isNaN(d)) return "";
+        const hh = String(d.getHours()).padStart(2, "0");
+        const mm = String(d.getMinutes()).padStart(2, "0");
+        const months = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
+        return `${months[d.getMonth()]} ${d.getDate()}, ${hh}:${mm}`;
+      } catch (e) { return ""; }
+    }
+
+    // Version tracking for word-slide animation
+    let _lastRenderedDriftVersion = 0;
+    let _lastAnimatedVersion = 0;  // version last shown WITH enter animation
+    let _driftAnimPending = false;
+    let _hasPlayedEnterAnim = false; // animate only once per page load
+
+    function _applyDriftEnterAnim() {
+      const spans = Array.from(driftText.querySelectorAll('.drift-new'));
+      if (!spans.length) return;
+
+      // Letters cascade within each word in order, words cascade in reading order.
+      // cursor tracks when the next word can start (after the previous word's last letter).
+      const LETTER_STAGGER = 45;  // ms between letters within a word
+      const WORD_GAP       = 80;  // ms gap after each word before the next begins
+
+      let cursor = 0;
+
+      spans.forEach(s => {
+        s.classList.remove('kd-pre-enter');
+
+        // Split into per-letter spans
+        const text = s.textContent;
+        s.innerHTML = '';
+
+        const letterEls = [];
+        for (const char of text) {
+          const el = document.createElement('span');
+          el.className = 'kd-letter';
+          el.textContent = char;
+          if (char.trim() === '') {
+            el.style.opacity = '1'; // spaces always visible
+          } else {
+            el.style.opacity = '0';
+            letterEls.push(el);
+          }
+          s.appendChild(el);
+        }
+
+        // Schedule each letter in sequence starting at cursor
+        letterEls.forEach((el, i) => {
+          const t = cursor + i * LETTER_STAGGER;
+          setTimeout(() => { el.style.opacity = '1'; }, t);
+        });
+
+        // Advance cursor: wait for last letter of this word, then add gap
+        cursor += letterEls.length * LETTER_STAGGER + WORD_GAP;
+      });
+
+      _lastAnimatedVersion = stateCache.version;
+      _hasPlayedEnterAnim = true;
+    }
+
+    function _renderDriftHtml(html, playAnim) {
+      if (playAnim) {
+        // kd-pre-enter is CSS-only (no animation) — spans are invisible the instant they land.
+        html = html.replace(/class="drift-new"/g, 'class="drift-new kd-pre-enter"');
+      }
+      driftText.innerHTML = html;
+      _lastRenderedDriftVersion = stateCache.version || _lastRenderedDriftVersion;
+      if (playAnim) {
+        // rAF lets the invisible frame commit before the animation starts — no flash.
+        requestAnimationFrame(_applyDriftEnterAnim);
+      }
+      if (driftPanel) _checkScrollGradient(driftPanel);
     }
 
     function setMidTextFromStateOrEmpty() {
@@ -389,19 +677,100 @@
         ? (stateCache.delta_json_ar && stateCache.delta_json_ar.trim() ? stateCache.delta_json_ar : (stateCache.delta_json || ""))
         : (stateCache.delta_json || "");
 
-      driftText.innerHTML = (drift && drift.trim())
+      const newHtml = (drift && drift.trim())
         ? highlightDriftText(drift, patch, currentLangView)
         : "";
+
+      // Real-time animate: panel is open, version just changed, spans to exit
+      const versionChanged = stateCache.version > 0
+        && stateCache.version !== _lastRenderedDriftVersion
+        && _lastRenderedDriftVersion > 0;
+      const panelOpen = driftPanel && !driftPanel.classList.contains('hidden');
+      const exitSpans = versionChanged && !_driftAnimPending && panelOpen
+        ? Array.from(driftText.querySelectorAll('.drift-new'))
+        : [];
+
+      if (exitSpans.length > 0) {
+        _driftAnimPending = true;
+        exitSpans.forEach(s => s.classList.add('kd-exiting'));
+        setTimeout(() => {
+          _driftAnimPending = false;
+          _renderDriftHtml(newHtml, _hasPlayedEnterAnim ? false : true);  // enter anim only first time
+        }, 920);
+      } else if (!_driftAnimPending) {
+        _renderDriftHtml(newHtml, false);   // silent update (panel closed or no change)
+      }
+
+      // Update drift-meta footer
+      const metaEl = document.getElementById("driftMeta");
+      if (metaEl) {
+        var driftWordCount = _lastHighlightMeaningfulCount;
+        const ver = stateCache.version || 0;
+        let dateStr = "";
+        if (stateCache.drifted_at) {
+          const d = new Date(stateCache.drifted_at.replace(" ", "T") + "Z");
+          if (!isNaN(d)) {
+            const dd = d.toISOString().slice(0, 10).replace(/-/g, ".");
+            const hh = String(d.getHours()).padStart(2, "0");
+            const mm = String(d.getMinutes()).padStart(2, "0");
+            dateStr = dd + " " + hh + ":" + mm;
+          }
+        }
+        const t = T();
+        const rtl = (currentLangView !== "en" && secondLangDirection === "rtl");
+        const wLabel = driftWordCount === 1 ? (t.wordDrifted || "word drifted") : (t.wordsDrifted || "words drifted");
+        const dLabel = t.driftLabel || "drift";
+        metaEl.innerHTML = "";
+        if (rtl) {
+          // Two separate lines to avoid BiDi reordering issues
+          // Line 1: word count + drift label
+          var line1 = document.createElement("div");
+          line1.dir = "rtl";
+          line1.style.textAlign = "center";
+          var wcParts = [];
+          if (driftWordCount > 0) wcParts.push(wLabel + " " + driftWordCount);
+          if (ver > 0) wcParts.push(dLabel + " " + ver);
+          line1.textContent = wcParts.join(" \u00b7 ");
+          metaEl.appendChild(line1);
+          // Line 2: timestamp
+          if (dateStr) {
+            var line2 = document.createElement("div");
+            line2.dir = "ltr";
+            line2.style.textAlign = "center";
+            line2.style.marginTop = "2px";
+            line2.textContent = dateStr;
+            metaEl.appendChild(line2);
+          }
+        } else {
+          // Line 1: word count + drift label
+          var line1 = document.createElement("div");
+          line1.style.textAlign = "center";
+          var parts = [];
+          if (driftWordCount > 0) parts.push(driftWordCount + " " + wLabel);
+          if (ver > 0) parts.push(dLabel + " " + ver);
+          line1.textContent = parts.join(" \u00b7 ");
+          metaEl.appendChild(line1);
+          // Line 2: timestamp
+          if (dateStr) {
+            var line2 = document.createElement("div");
+            line2.style.textAlign = "center";
+            line2.style.marginTop = "2px";
+            line2.textContent = dateStr;
+            metaEl.appendChild(line2);
+          }
+        }
+      }
+
     }
 
     // ======================================================
     // HOME OVERLAY — Main page as popup
     // ======================================================
+
     function openHomeOverlay() {
       if (!homeOverlay) return;
       homeOverlay.classList.add("visible");
       homeOverlay.setAttribute("aria-hidden", "false");
-      // Update home overlay language labels
       updateHomeLanguageUI();
     }
 
@@ -413,9 +782,9 @@
 
     function updateHomeLanguageUI() {
       if (!homeLangLabel) return;
-      // Show opposite language in toggle button (PT for Portuguese)
+      // Show opposite language in toggle button
       const langLabel = (currentLangView === "en")
-        ? (secondLang === "pt-br" ? "PT" : secondLang.toUpperCase())
+        ? (CFG.uiText.en.langButton || secondLang.toUpperCase())
         : "EN";
       homeLangLabel.textContent = langLabel;
 
@@ -440,6 +809,24 @@
           subEl.textContent = uiText.personas[`${p.toLowerCase()}Sub`];
         }
       });
+
+      // Update project description
+      const homeProjectDesc = document.getElementById("homeProjectDesc");
+      if (homeProjectDesc && uiText.projectDesc) {
+        homeProjectDesc.textContent = uiText.projectDesc;
+      }
+
+      // Update privacy line
+      const homePrivacyLine = document.getElementById("homePrivacyLine");
+      if (homePrivacyLine && uiText.privacyLine) {
+        homePrivacyLine.innerHTML = "";
+        homePrivacyLine.appendChild(document.createTextNode(uiText.privacyLine + " "));
+        const link = document.createElement("a");
+        link.href = "/privacy";
+        link.id = "homePrivacyLink";
+        link.textContent = uiText.privacyLinkText || "Data & privacy";
+        homePrivacyLine.appendChild(link);
+      }
     }
 
     if (menuIcon) {
@@ -527,6 +914,11 @@
         }
         setMidTextFromStateOrEmpty();
         updateButtonsAndPanels();
+        // Animate .drift-new spans on first panel open only (once per page load).
+        if (opening && !_driftAnimPending && !_hasPlayedEnterAnim) {
+          driftText.querySelectorAll('.drift-new').forEach(s => s.classList.add('kd-pre-enter'));
+          setTimeout(_applyDriftEnterAnim, 200);
+        }
       });
     }
 
@@ -546,6 +938,9 @@
       if (expanded && !archiveFetched) {
         fetchArchive();
       }
+
+      // Clear tag when closing keepsake without submitting
+      if (!expanded) setFragmentTag(null);
     }
     function isKeepsakeExpanded() {
       return !!(keepsakeShell && keepsakeShell.classList.contains("expanded"));
@@ -651,6 +1046,116 @@
       });
     }
 
+    // --- Drift-text tagging: tap highlighted word → keepsake tag ---
+    const fragmentTag = document.getElementById("fragmentTag");
+    const fragmentTagText = document.getElementById("fragmentTagText");
+    const fragmentTagClose = document.getElementById("fragmentTagClose");
+    let activeTag = null; // the tagged drift text, or null
+
+    function setFragmentTag(text) {
+      activeTag = text || null;
+      if (fragmentTag && fragmentTagText) {
+        if (activeTag) {
+          fragmentTagText.textContent = activeTag;
+          fragmentTag.style.display = "";
+          // RTL-aware tag direction
+          const rtl = (currentLangView !== "en" && secondLangDirection === "rtl");
+          fragmentTag.dir = rtl ? "rtl" : "ltr";
+        } else {
+          fragmentTag.style.display = "none";
+          fragmentTagText.textContent = "";
+        }
+      }
+      // Adjust collapsed shell height when tag is active
+      if (keepsakeShell) {
+        keepsakeShell.classList.toggle("has-tag", !!activeTag);
+      }
+    }
+
+    if (fragmentTagClose) {
+      fragmentTagClose.addEventListener("click", (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        setFragmentTag(null);
+      });
+    }
+
+    // Delegate click on .drift-new spans inside driftText
+    // Walks siblings to collect the full connected highlighted phrase
+    const driftTextEl = document.getElementById("driftText");
+    if (driftTextEl) {
+      driftTextEl.addEventListener("click", (e) => {
+        const span = e.target.closest(".drift-new");
+        if (!span) return;
+        e.stopPropagation(); // prevent document click from closing keepsake
+
+        // Collect connected phrase: walk backward then forward from clicked span
+        // A "connected" region is adjacent .drift-new spans with only whitespace/punctuation text nodes between them
+        const isConnector = (node) => {
+          if (!node) return false;
+          if (node.nodeType === Node.TEXT_NODE) {
+            // Allow whitespace and punctuation between highlighted spans
+            return /^[\s,.\-;:!?'"""''—–]+$/.test(node.textContent);
+          }
+          return false;
+        };
+
+        const collected = [span];
+
+        // Walk backward
+        let prev = span.previousSibling;
+        while (prev) {
+          if (prev.nodeType === Node.ELEMENT_NODE && prev.classList && prev.classList.contains("drift-new")) {
+            collected.unshift(prev);
+            prev = prev.previousSibling;
+          } else if (isConnector(prev)) {
+            // Check if the node before this connector is also drift-new
+            const before = prev.previousSibling;
+            if (before && before.nodeType === Node.ELEMENT_NODE && before.classList && before.classList.contains("drift-new")) {
+              collected.unshift(prev);
+              prev = before;
+            } else {
+              break;
+            }
+          } else {
+            break;
+          }
+        }
+
+        // Walk forward
+        let next = span.nextSibling;
+        while (next) {
+          if (next.nodeType === Node.ELEMENT_NODE && next.classList && next.classList.contains("drift-new")) {
+            collected.push(next);
+            next = next.nextSibling;
+          } else if (isConnector(next)) {
+            const after = next.nextSibling;
+            if (after && after.nodeType === Node.ELEMENT_NODE && after.classList && after.classList.contains("drift-new")) {
+              collected.push(next);
+              next = after;
+            } else {
+              break;
+            }
+          } else {
+            break;
+          }
+        }
+
+        // Build phrase from collected nodes
+        const phrase = collected.map(n => n.textContent).join("").trim();
+        if (!phrase) return;
+        setFragmentTag(phrase);
+        // Open keepsake and focus input
+        setKeepsakeExpanded(true);
+        if (fragmentInput) {
+          setTimeout(() => {
+            fragmentInput.focus();
+            fragmentInput.scrollIntoView({ behavior: "smooth", block: "nearest" });
+          }, 350);
+        }
+      });
+    }
+
     // Send button
     if (fragmentSendBtn) {
       fragmentSendBtn.addEventListener("click", (e) => {
@@ -691,11 +1196,12 @@
       try {
         const d = new Date(isoStr.includes("T") ? isoStr : isoStr.replace(" ", "T") + "Z");
         const diff = (Date.now() - d.getTime()) / 1000;
-        if (diff < 60) return "just now";
-        if (diff < 3600) return `${Math.floor(diff / 60)}m ago`;
-        if (diff < 86400) return `${Math.floor(diff / 3600)}h ago`;
-        if (diff < 604800) return `${Math.floor(diff / 86400)}d ago`;
-        return d.toLocaleDateString();
+        const t = T();
+        if (diff < 60) return t.timeJustNow || "just now";
+        if (diff < 3600) return `${Math.floor(diff / 60)}${t.timeMinAgo || "m ago"}`;
+        if (diff < 86400) return `${Math.floor(diff / 3600)}${t.timeHrAgo || "h ago"}`;
+        if (diff < 604800) return `${Math.floor(diff / 86400)}${t.timeDayAgo || "d ago"}`;
+        return d.toLocaleDateString(currentLangView === "en" ? "en" : secondLang);
       } catch (_) { return isoStr; }
     }
 
@@ -744,7 +1250,7 @@
       versionBadge.className = "keepsake-entry-version";
       versionBadge.textContent = isVisitor
         ? (isL2 ? (t.you || "Visitor") : "Visitor")
-        : `${t.driftBtnPrefix || "Drift"} ${entry.version}`;
+        : formatDriftLabel(entry.created_at, t);
 
       const timeEl = document.createElement("span");
       timeEl.className = "keepsake-entry-time";
@@ -758,14 +1264,60 @@
       textEl.className = "keepsake-entry-text";
       const displayText = getEntryText(entry);
       textEl.textContent = displayText;
+      // Append #tag at the end, translated for current language view
+      const tagEn = (entry.tagged_text || "").trim();
+      const tagAr = (entry.tagged_text_ar || "").trim();
+      const tagDisplay = (isL2 && tagAr) ? tagAr : tagEn;
+      if (tagDisplay) {
+        textEl.appendChild(document.createTextNode(" "));
+        const suffix = document.createElement("span");
+        suffix.className = "keepsake-tag-suffix";
+        suffix.textContent = "#" + tagDisplay;
+        textEl.appendChild(suffix);
+      }
       if (isRTL) textEl.dir = "rtl";
 
       el.appendChild(header);
       el.appendChild(textEl);
 
+      // Confidence / hallucination state
+      if (typeof entry.resonance === "number") {
+        const res = entry.resonance;
+        const stateEl = document.createElement("div");
+        stateEl.className = "keepsake-confidence";
+        let stateCls;
+        if (res < 0.3) {
+          stateCls = "hallucinating";
+        } else if (res < 0.6) {
+          stateCls = "drifting";
+        } else {
+          stateCls = "grounded";
+        }
+        const stateLabel = stateCls === "grounded" ? (t.confidenceGrounded || "grounded")
+          : stateCls === "drifting" ? (t.confidenceDrifting || "drifting")
+          : (t.confidenceHallucinating || "hallucinating");
+        stateEl.classList.add(stateCls);
+        const dot = document.createElement("span");
+        dot.className = "confidence-dot";
+        const lbl = document.createElement("span");
+        lbl.className = "confidence-label";
+        lbl.textContent = stateLabel;
+        const pct = document.createElement("span");
+        pct.className = "confidence-pct";
+        pct.textContent = Math.round(res * 100) + "%";
+        stateEl.appendChild(dot);
+        stateEl.appendChild(lbl);
+        stateEl.appendChild(pct);
+        el.appendChild(stateEl);
+      }
+
       // Headlines fold (only for drift entries)
       if (!isVisitor) {
-        const headlines = entry.curated_headlines || [];
+        const headlines_en = entry.curated_headlines || [];
+        const headlines_ar = entry.curated_headlines_ar || [];
+        const isL2 = (currentLangView !== "en");
+        const headlines = (isL2 && headlines_ar.length > 0) ? headlines_ar : headlines_en;
+        console.log('[KD] headlines:', currentLangView, 'isL2:', isL2, 'ar:', headlines_ar.length, 'using:', isL2 && headlines_ar.length > 0 ? 'L2' : 'EN');
         if (headlines.length > 0) {
           const fold = document.createElement("div");
           fold.className = "headlines-fold";
@@ -779,16 +1331,19 @@
 
           const label = document.createElement("span");
           label.className = "fold-label";
-          label.textContent = "source";
+          label.textContent = T().sourceLabel || "source";
 
           toggle.appendChild(arrow);
           toggle.appendChild(label);
 
           const list = document.createElement("ul");
           list.className = "headlines-list hidden";
+          if (isL2 && secondLangDirection === "rtl") list.setAttribute("dir", "rtl");
           headlines.forEach((h) => {
+            const clean = stripEmoji(h);
+            if (!clean) return;
             const li = document.createElement("li");
-            li.textContent = h;
+            li.textContent = clean;
             list.appendChild(li);
           });
 
@@ -800,6 +1355,21 @@
 
           fold.appendChild(toggle);
           fold.appendChild(list);
+
+          // Note when AI-interpreted non-headline data contributed
+          const rtCount = entry.realtime_source_count || (entry.realtime_interpretations || []).length || 0;
+          if (rtCount > 0) {
+            const rtNote = document.createElement("div");
+            rtNote.className = "rt-source-note hidden";
+            rtNote.textContent = "AI-interpreted non-headline data";
+            list.parentNode.insertBefore(rtNote, list.nextSibling);
+            // Show/hide with the fold
+            const origToggle = toggle.onclick;
+            toggle.addEventListener("click", () => {
+              rtNote.classList.toggle("hidden", list.classList.contains("hidden"));
+            });
+          }
+
           el.appendChild(fold);
         }
       }
@@ -815,6 +1385,16 @@
 
     function renderArchive(entries) {
       if (!archiveEntries) return;
+
+      // Snapshot which folds are open (by index) before destroying DOM
+      const openFolds = new Set();
+      archiveEntries.querySelectorAll(".keepsake-entry").forEach((el, idx) => {
+        const list = el.querySelector(".headlines-list");
+        if (list && list.classList.contains("visible")) {
+          openFolds.add(idx);
+        }
+      });
+
       archiveEntries.innerHTML = "";
 
       if (!entries || entries.length === 0) {
@@ -823,8 +1403,19 @@
       }
 
       // Entries are already oldest-first from backend
-      entries.forEach((entry) => {
-        archiveEntries.appendChild(buildEntryEl(entry));
+      entries.forEach((entry, idx) => {
+        const el = buildEntryEl(entry);
+        // Restore fold state if it was open before re-render
+        if (openFolds.has(idx)) {
+          const list = el.querySelector(".headlines-list");
+          const arrow = el.querySelector(".fold-arrow");
+          if (list) {
+            list.classList.remove("hidden");
+            list.classList.add("visible");
+          }
+          if (arrow) arrow.classList.add("open");
+        }
+        archiveEntries.appendChild(el);
       });
 
       // Scroll to bottom to show newest entry
@@ -931,14 +1522,20 @@
         const controller = new AbortController();
         const timeoutId = setTimeout(() => controller.abort(), 60000);
 
-        const r = await fetch(`${apiBase}/leave_fragment`, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
+        const fragBody = {
             persona: currentPersona,
             text: text,
             session_id: sessionId,
-          }),
+        };
+        if (activeTag) {
+          fragBody.tagged_text = activeTag;
+          fragBody.tagged_lang = currentLangView;
+        }
+
+        const r = await fetch(`${apiBase}/leave_fragment`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(fragBody),
           signal: controller.signal,
         });
 
@@ -946,6 +1543,7 @@
         const data = await r.json();
 
         if (data.ok) {
+          setFragmentTag(null); // clear tag after successful submit
           // Show the reframed visitor entry in the archive immediately
           const reframed = data.reframed || text;
           const reframedAr = data.reframed_ar || "";
@@ -954,6 +1552,9 @@
             version: null,
             keepsake_text: reframed,
             keepsake_text_ar: reframedAr,
+            tagged_text: data.tagged_text || "",
+            tagged_text_ar: data.tagged_text_ar || "",
+            resonance: (typeof data.resonance === "number") ? data.resonance : undefined,
             created_at: new Date().toISOString(),
             curated_headlines: [],
           };
@@ -998,32 +1599,50 @@
     // ======================================================
     function isFiniteNumber(v) { return typeof v === "number" && Number.isFinite(v); }
 
+    let _kdConsecutiveFailures = 0;
+
+    function _kdUpdateFeedIndicator(feedStatus, latencyMs) {
+      let ind = document.getElementById('kdFeedIndicator');
+      if (!ind) {
+        ind = document.createElement('div');
+        ind.id = 'kdFeedIndicator';
+        ind.style.cssText = 'position:fixed;top:10px;right:10px;width:7px;height:7px;border-radius:50%;opacity:0.7;z-index:9999;transition:background-color 0.5s ease;';
+        document.body.appendChild(ind);
+      }
+      const colors = { live: '#7BE3A1', cached: '#E6C15A', offline: '#FF6B6B', unknown: 'rgba(255,255,255,0.2)' };
+      ind.style.backgroundColor = colors[feedStatus] || colors.unknown;
+      ind.title = (feedStatus || 'unknown').toUpperCase() + ' / ' + latencyMs + 'ms';
+    }
+
     async function pollStateOnce() {
+      const t0 = performance.now();
       try {
         const apiBase = window.KD_API_CONFIG?.API_BASE_URL || '';
         const r = await fetch(`${apiBase}/state?persona=${encodeURIComponent(currentPersona)}`, { cache: "no-store" });
-        if (!r.ok) return;
+        const latencyMs = Math.round(performance.now() - t0);
+
+        if (!r.ok) {
+          _kdConsecutiveFailures++;
+          if (_kdConsecutiveFailures >= 2) document.body.classList.add('kd-disrupted');
+          return;
+        }
+        _kdConsecutiveFailures = 0;
+        document.body.classList.remove('kd-disrupted');
+
         const s = await r.json();
         if (!s) return;
+
+        // Network visibility: feed status indicator
+        _kdUpdateFeedIndicator(s.feed_status || 'unknown', latencyMs);
+
+        // Resonance-driven CSS variable (drives subtle text looseness)
+        const resonance = (typeof s.resonance === "number") ? s.resonance : 0.5;
+        document.documentElement.style.setProperty('--resonance', resonance.toFixed(3));
 
         const prevVersion = stateCache.version;
         stateCache.hasState = true;
 
-        // Gate: if the server has a newer version but the countdown clock
-        // hasn't reached 00:00 yet, silently pre-load the image but do NOT
-        // update text or UI — the page reload at clock-zero will display it.
-        const serverVersion = isFiniteNumber(s.version) ? Math.max(0, Number(s.version)) : prevVersion;
-        const clockGate = typeof window.kdNextTickMs === "number" ? window.kdNextTickMs : 0;
-        const isNewVersion = serverVersion > prevVersion && prevVersion > 0;
-        const clockNotReady = clockGate > 0 && Date.now() < (clockGate - 2000); // 2s grace
-
-        if (isNewVersion && clockNotReady) {
-          // Pre-load image into browser cache so it's instant on reload
-          const earlyImg = (typeof s.image_url === "string" && s.image_url) ? s.image_url : null;
-          if (earlyImg) { const p = new Image(); p.src = earlyImg + (earlyImg.includes("?") ? "&" : "?") + "t=" + Date.now(); }
-          return; // Skip UI update — let the clock-zero reload handle it
-        }
-
+        // Continuous drift: no clock-boundary gating. Apply updates as they arrive.
         if (isFiniteNumber(s.version)) {
           stateCache.version = Math.max(0, Number(s.version));
           driftCycle = stateCache.version;
@@ -1037,19 +1656,37 @@
         if (imgUrl) {
           stateCache.image_url = imgUrl;
           if (bgImage && imgUrl !== lastImageUrl) {
+            const isFirstLoad = !lastImageUrl;
             lastImageUrl = imgUrl;
-            const ts = Date.now();
-            const newSrc = imgUrl + (imgUrl.includes("?") ? "&" : "?") + "t=" + ts;
-            bgImage.classList.add("loading");
-            const tmpImg = new Image();
-            tmpImg.onload = () => { bgImage.src = newSrc; bgImage.classList.remove("loading"); revealStage(); };
-            tmpImg.onerror = () => { bgImage.classList.remove("loading"); };
-            tmpImg.src = newSrc;
+            // Mobile: request smaller JPEG via mobile=1 param
+            const isMobile = window.innerWidth <= 768;
+            const mobileSuffix = isMobile ? (imgUrl.includes("?") ? "&mobile=1" : "?mobile=1") : "";
+            // No extra ?t= — the version number in the filename (human_v67.png) is the
+            // cache key. Cloudflare caches the JPEG at the edge; when a new image is
+            // generated the filename changes, busting the cache automatically.
+            const newSrc = imgUrl + mobileSuffix;
 
             const prev1 = (typeof s.image_prev1 === "string" && s.image_prev1) ? apiBase + s.image_prev1 : null;
             const prev2 = (typeof s.image_prev2 === "string" && s.image_prev2) ? apiBase + s.image_prev2 : null;
-            if (bgPrev1 && prev1) bgPrev1.src = prev1 + (prev1.includes("?") ? "&" : "?") + "t=" + ts;
-            if (bgPrev2 && prev2) bgPrev2.src = prev2 + (prev2.includes("?") ? "&" : "?") + "t=" + ts;
+
+            if (isFirstLoad) {
+              bgImage.src = newSrc;
+              if (!isMobile) {
+                bgImage.addEventListener("load", function _loadPrev() {
+                  bgImage.removeEventListener("load", _loadPrev);
+                  if (bgPrev1 && prev1) bgPrev1.src = prev1;
+                  if (bgPrev2 && prev2) bgPrev2.src = prev2;
+                }, { once: true });
+              }
+            } else {
+              bgImage.classList.add("loading");
+              const tmpImg = new Image();
+              tmpImg.onload = () => { bgImage.src = newSrc; bgImage.classList.remove("loading"); };
+              tmpImg.onerror = () => { bgImage.classList.remove("loading"); };
+              tmpImg.src = newSrc;
+              if (!isMobile && bgPrev1 && prev1) bgPrev1.src = prev1;
+              if (!isMobile && bgPrev2 && prev2) bgPrev2.src = prev2;
+            }
           }
         }
 
@@ -1059,9 +1696,11 @@
         if (typeof s.recap_ar === "string") stateCache.recap_ar = s.recap_ar;
         if (typeof s.keepsake_en === "string") stateCache.keepsake_en = s.keepsake_en;
         if (Array.isArray(s.curated_headlines)) stateCache.curated_headlines = s.curated_headlines;
+        if (typeof s.realtime_source_count === "number") stateCache.realtime_source_count = s.realtime_source_count;
 
         if (typeof s.delta_json === "string") stateCache.delta_json = s.delta_json;
         if (typeof s.delta_json_ar === "string") stateCache.delta_json_ar = s.delta_json_ar;
+        if (typeof s.drifted_at === "string") stateCache.drifted_at = s.drifted_at;
 
         setMidTextFromStateOrEmpty();
         updateButtonsAndPanels();
@@ -1084,25 +1723,9 @@
       setInterval(pollStateOnce, CFG.STATE_POLL_MS || 10000);
     }
 
-    // Check if config is already ready (localhost case) or wait for event (pages.dev)
-    if (window.KD_API_CONFIG?.API_BASE_URL) {
-      // Config already set (localhost), start immediately
-      startPolling();
-    } else {
-      // Wait for dynamic config to load (Cloudflare Pages)
-      window.addEventListener('kd-config-ready', () => {
-        console.log('[Keepsake Drift] Config ready, starting state polling');
-        startPolling();
-      }, { once: true });
-
-      // Fallback: if event doesn't fire within 5 seconds, start anyway
-      setTimeout(() => {
-        if (!window.KD_API_CONFIG?.API_BASE_URL) {
-          console.warn('[Keepsake Drift] Config timeout, starting polling with potentially incomplete config');
-        }
-        startPolling();
-      }, 5000);
-    }
+    // Start polling immediately — KD_API_CONFIG is set synchronously by api_config.js
+    // (API_BASE_URL can be '' for same-origin on keepsake-drift.net, which is valid)
+    startPolling();
 
     // Prevent pull-to-refresh on mobile browsers
     let lastTouchY = 0;
