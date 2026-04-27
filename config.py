@@ -60,6 +60,10 @@ LANG_CONFIG = {
 OPENAI_API_KEY = os.getenv("OPENAI_API_KEY", "").strip()
 CHAT_MODEL = os.getenv("OPENAI_CHAT_MODEL", os.getenv("OPENAI_MODEL", "gpt-5.2"))
 
+# Ollama — local fallback when OpenAI is unreachable
+# Set OLLAMA_MODEL to whichever model you have pulled (e.g. qwen2.5:14b, llama3.1:8b)
+OLLAMA_MODEL = os.getenv("OLLAMA_MODEL", "qwen2.5:14b")
+
 # Limits
 MAX_VISITOR_CHARS = int(os.getenv("MAX_VISITOR_CHARS", "280"))
 

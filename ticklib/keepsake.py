@@ -132,12 +132,34 @@ Do not use the words "memory" or "remembers" or "recalls" in your output.
 
 What surfaces:""".strip()
 
-    client = OpenAI()
-    resp = client.responses.create(
-        model=(model or os.getenv("OPENAI_MODEL", "gpt-4.1")),
-        input=prompt,
-        timeout=30.0,
-    )
-    out = (resp.output_text or "").strip()
+    def _call_openai() -> str:
+        client = OpenAI()
+        resp = client.responses.create(
+            model=(model or os.getenv("OPENAI_MODEL", "gpt-4.1")),
+            input=prompt,
+            timeout=30.0,
+        )
+        return (resp.output_text or "").strip()
+
+    def _call_ollama() -> str:
+        try:
+            import urllib.request as _ur
+            _ur.urlopen("http://localhost:11434/api/tags", timeout=3)
+        except Exception:
+            return ""
+        ollama_model = os.getenv("OLLAMA_MODEL", "qwen2.5:14b")
+        client = OpenAI(base_url="http://localhost:11434/v1", api_key="ollama")
+        resp = client.chat.completions.create(
+            model=ollama_model,
+            messages=[{"role": "user", "content": prompt}],
+            timeout=30.0,
+        )
+        return (resp.choices[0].message.content or "").strip() if resp.choices else ""
+
+    try:
+        out = _call_openai()
+    except Exception:
+        out = _call_ollama()
+
     out = re.sub(r"\s+", " ", out).strip()
     return out[:1200] if out else ""

@@ -593,33 +593,82 @@ def _client() -> OpenAI:
     return OpenAI()
 
 
-def _openai_json(prompt: str, model: str, timeout_seconds: float) -> Dict[str, Any]:
-    client = _client()
-    resp = client.responses.create(
+def _ollama_available() -> bool:
+    """Check if Ollama is reachable at localhost:11434."""
+    try:
+        import urllib.request
+        urllib.request.urlopen("http://localhost:11434/api/tags", timeout=3)
+        return True
+    except Exception:
+        return False
+
+
+def _ollama_json(prompt: str, timeout_seconds: float) -> Dict[str, Any]:
+    """Call Ollama's OpenAI-compatible API and return parsed JSON."""
+    import sys
+    model = os.getenv("OLLAMA_MODEL", "qwen2.5:14b")
+    client = OpenAI(
+        base_url="http://localhost:11434/v1",
+        api_key="ollama",
+    )
+    print(f"[Ollama fallback] Using model={model}", file=sys.stderr)
+    resp = client.chat.completions.create(
         model=model,
-        input=prompt,
+        messages=[{"role": "user", "content": prompt}],
         timeout=timeout_seconds,
     )
+    text = (resp.choices[0].message.content or "").strip() if resp.choices else ""
+    if not text:
+        raise RuntimeError("Ollama response had no text output.")
 
-    text = None
+    t = text
+    if t.startswith("```"):
+        t = re.sub(r"^```[a-zA-Z0-9_-]*\s*", "", t)
+        t = re.sub(r"\s*```$", "", t).strip()
+
     try:
-        text = resp.output_text
-    except Exception:
-        pass
+        return json.loads(t)
+    except json.JSONDecodeError:
+        t = re.sub(r',\s*}', '}', t)
+        t = re.sub(r',\s*]', ']', t)
+        return json.loads(t)
 
-    if not text:
+
+def _openai_json(prompt: str, model: str, timeout_seconds: float) -> Dict[str, Any]:
+    import sys
+    try:
+        client = _client()
+        resp = client.responses.create(
+            model=model,
+            input=prompt,
+            timeout=timeout_seconds,
+        )
+
+        text = None
         try:
-            parts = []
-            for item in (resp.output or []):
-                for c in getattr(item, "content", []) or []:
-                    if getattr(c, "type", None) in ("output_text", "text"):
-                        parts.append(getattr(c, "text", ""))
-            text = "\n".join(parts).strip()
+            text = resp.output_text
         except Exception:
-            text = None
+            pass
 
-    if not text:
-        raise RuntimeError("OpenAI response had no text output to parse as JSON.")
+        if not text:
+            try:
+                parts = []
+                for item in (resp.output or []):
+                    for c in getattr(item, "content", []) or []:
+                        if getattr(c, "type", None) in ("output_text", "text"):
+                            parts.append(getattr(c, "text", ""))
+                text = "\n".join(parts).strip()
+            except Exception:
+                text = None
+
+        if not text:
+            raise RuntimeError("OpenAI response had no text output to parse as JSON.")
+
+    except Exception as openai_err:
+        print(f"[OpenAI failed] {openai_err} — trying Ollama fallback", file=sys.stderr)
+        if _ollama_available():
+            return _ollama_json(prompt, timeout_seconds)
+        raise RuntimeError(f"OpenAI failed and Ollama is not available: {openai_err}") from openai_err
 
     t = text.strip()
     if t.startswith("```"):
@@ -629,18 +678,12 @@ def _openai_json(prompt: str, model: str, timeout_seconds: float) -> Dict[str, A
     try:
         return json.loads(t)
     except json.JSONDecodeError as e:
-        # Try to fix common JSON issues from OpenAI (trailing commas, unterminated strings, etc.)
         try:
             fixed = t
-            # Remove trailing commas before closing braces/brackets
             fixed = re.sub(r',\s*}', '}', fixed)
             fixed = re.sub(r',\s*]', ']', fixed)
-
-            # Try parsing the repaired JSON
             return json.loads(fixed)
         except json.JSONDecodeError as repair_err:
-            # If still failing, try to salvage what we can by using Python's ast.literal_eval
-            # or just fail with detailed error
             import sys
             print(f"[ERROR _openai_json] JSON parse failed. Error: {str(repair_err)}", file=sys.stderr)
             print(f"[ERROR _openai_json] Full response text ({len(t)} chars):", file=sys.stderr)
