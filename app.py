@@ -64,7 +64,7 @@ app = FastAPI()
 # Use regex pattern to allow all Cloudflare Pages domains (with or without subdomain hash)
 app.add_middleware(
     CORSMiddleware,
-    allow_origin_regex=r"https://([a-zA-Z0-9-]+\.)?keepsake-drift\.pages\.dev",
+    allow_origin_regex=r"https://([a-zA-Z0-9-]+\.)?keepsake-drift\.(pages\.dev|net)",
     allow_credentials=True,
     allow_methods=["*"],  # Allow all methods including OPTIONS
     allow_headers=["*"],
