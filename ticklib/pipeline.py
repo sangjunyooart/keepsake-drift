@@ -888,16 +888,18 @@ def run_tick(
                     prev_drift_text,
                     all_anchors,
                     infil_imagery,
+                    rec.get("keepsake_en", ""),
                 ))
 
             def _gen_one(job):
-                mk, ver, did, dtxt, ddir, persp, prev_dtxt, anchors, infil = job
+                mk, ver, did, dtxt, ddir, persp, prev_dtxt, anchors, infil, kp_en = job
                 path, img_prompt = image_gen.generate_drift_image(
                     mind_key=mk, version=ver,
                     drift_text=dtxt, drift_direction=ddir, perspective=persp,
                     prev_drift_text=prev_dtxt,
                     sensory_anchors=anchors,
                     infiltrating_imagery=infil,
+                    keepsake_en=kp_en,
                 )
                 return mk, ver, did, path, img_prompt
 

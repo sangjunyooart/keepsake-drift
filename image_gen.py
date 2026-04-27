@@ -102,6 +102,7 @@ def _build_image_prompt(
     prev_visual_description: str = "",
     sensory_anchors: Optional[list] = None,
     infiltrating_imagery: Optional[List[str]] = None,
+    keepsake_en: Optional[str] = None,
 ) -> str:
     """
     Build an image prompt from drift state.
@@ -120,6 +121,13 @@ def _build_image_prompt(
     """
     lens_visual = LENS_VISUAL.get(mind_key, LENS_VISUAL["human"])
     drift_excerpt = _truncate_drift(drift_text, max_words=200)
+
+    # Load lens axes for visual deep-refraction
+    try:
+        import lens as _lens_mod
+        ldef = _lens_mod.LENS_DEFINITIONS.get(mind_key, _lens_mod.LENS_DEFINITIONS.get("human", {}))
+    except Exception:
+        ldef = {}
 
     # Format anchors with category tags — cap at 8 to prevent dominance
     anchor_lines = []
@@ -199,8 +207,37 @@ def _build_image_prompt(
         f"MEMORY CONTEXT (narrative shape — not a scene description):",
         f"{drift_excerpt}",
         "",
-        f"Scene framing: {lens_visual}",
-        "",
+    ])
+
+    # Lens axes → visual translation
+    if ldef:
+        obj_attn = ldef.get("object_of_attention", "")
+        t_scale = ldef.get("temporal_scale", "")
+        c_struct = ldef.get("causal_structure", "")
+        parts.extend([
+            "LENS AXES (these govern what the camera attends to, the compositional weight, and what the image implies is 'at work'):",
+            f"  Object of attention: {obj_attn}",
+            f"    → The camera is drawn to subjects from this world. Let the image be OF this domain, not merely decorated by it.",
+            f"  Temporal scale: {t_scale}",
+            f"    → The composition should carry the weight of this duration. A geological scale implies mass and permanence; a human scale implies transience and body-closeness; a days-to-lifetimes scale feels like accumulated time visible in a single frame.",
+            f"  Causal structure: {c_struct}",
+            f"    → The relationship between elements in the frame should imply this kind of force at work — not stated, but felt in how the scene is arranged.",
+            f"  Scene framing: {lens_visual}",
+            "",
+        ])
+    else:
+        parts.extend([f"Scene framing: {lens_visual}", ""])
+
+    # Align image with museum narration (keepsake_en)
+    if keepsake_en and keepsake_en.strip():
+        keepsake_excerpt = keepsake_en.strip()[:400]
+        parts.extend([
+            "MUSEUM NARRATION (the text displayed alongside this image on the museum screen — the image should feel like it belongs to the same visual world as these words):",
+            f"{keepsake_excerpt}",
+            "",
+        ])
+
+    parts.extend([
         "Portrait orientation (2:3). No text, no words, no letters, no writing.",
         "",
         "GUARDRAILS:",
@@ -238,6 +275,7 @@ def generate_drift_image(
     prev_drift_text: str = "",
     sensory_anchors: Optional[list] = None,
     infiltrating_imagery: Optional[List[str]] = None,
+    keepsake_en: Optional[str] = None,
 ) -> Optional[str]:
     """
     Generate an image for a temporality's current drift state.
@@ -287,6 +325,7 @@ def generate_drift_image(
         prev_visual_description=prev_visual,
         sensory_anchors=sensory_anchors,
         infiltrating_imagery=infiltrating_imagery,
+        keepsake_en=keepsake_en,
     )
 
     log.info("Generating image for %s v%d (model=%s, size=%s)", mind_key, version, IMAGE_MODEL, IMAGE_SIZE)
