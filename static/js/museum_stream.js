@@ -7,14 +7,17 @@
   const IS_BILINGUAL = document.documentElement.lang !== 'en';
   console.log('[Museum] v2 loaded — IS_BILINGUAL:', IS_BILINGUAL, '| lang:', document.documentElement.lang);
 
-  // Read persona from current page filename
+  // Read persona from current page filename or production route number
   const pageMap = {
     'museum_human.html': 'human',
     'museum_human': 'human',
+    'museum1': 'human',
     'museum_liminal.html': 'liminal',
     'museum_liminal': 'liminal',
+    'museum2': 'liminal',
     'museum_environment.html': 'environment',
-    'museum_environment': 'environment'
+    'museum_environment': 'environment',
+    'museum3': 'environment'
   };
   const currentPage = window.location.pathname.split('/').pop();
   const PERSONA = pageMap[currentPage] || 'human';
@@ -478,9 +481,10 @@
     }, TICK_INTERVAL * 1000);
   }
 
-  // Start on load — on Pages, wait for tunnel URL before fetching backend data
+  // Start on load — wait for kd-config-ready (all environments now fire it)
   document.addEventListener('DOMContentLoaded', () => {
-    if (window.KD_API_CONFIG && window.KD_API_CONFIG.API_BASE_URL) {
+    if (window.KD_API_CONFIG && window.KD_API_CONFIG.API_BASE_URL != null) {
+      // Config already resolved (local dev fires the event synchronously)
       startStream();
     } else {
       window.addEventListener('kd-config-ready', () => startStream(), { once: true });
