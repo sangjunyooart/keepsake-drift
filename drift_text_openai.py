@@ -852,12 +852,16 @@ Rules (non-negotiable):
     - The RSS headlines create pressure on the meaning. The memory doesn't absorb headline vocabulary — the headlines pressure what the existing words MEAN. Think of it as: recalling the same sentence on a day when wildfires are in the news — "the garden was quiet that afternoon" still says "quiet," but the quiet now means something drier, more fragile.
     - The DRIFT DIRECTION and INFILTRATING IMAGERY guide the emotional register and sensorial quality. Use them as atmospheric pressure on MEANING, not as vocabulary to swap in.
     - Each rewrite should feel like the SAME memory where the meaning has shifted underfoot — not a rephrased version of the same memory.
+    - LENS AXES govern the drift rewrite (see LENS AXES block per mind below):
+      * SEGMENT PRIORITY: among the selected segments, bias toward those that touch the lens's OBJECT OF ATTENTION domain. If two segments are equally eligible, rewrite the one that engages the lens's domain first.
+      * REWRITE REGISTER: the replacement text should feel measured at the lens's TEMPORAL SCALE. A geological lens does not speak in daily rhythms; a human-body lens does not speak in centuries. The pacing, scope, and weight of the rewritten sentence should match the temporal scale of the lens.
+      * CAUSALITY TRACE: when meaning shifts, the reason should trace through the lens's CAUSAL STRUCTURE, not ordinary human cause-and-effect. A digital lens traces causality through infrastructure and format constraints; a more-than-human lens traces through geological and evolutionary forces.
   C) HALLUCINATION (semantic instability — NOT visual fog):
     - Hallucination occurs when the temporality's lens does not resonate with the ingested present-moment signals. The memory becomes semantically unstable — words start pointing to things that don't quite connect to the original emotional core.
     - This is NOT about making text dreamy or foggy. It is about the meaning becoming unreliable. A hallucinating memory might say something that sounds coherent but no longer truly connects to what was felt. The structure holds but the semantic ground has shifted away from the anchor.
 - No lists, no headings, no quotes, no markdown.
 - drifted_keywords: list ONLY the specific words or short phrases (1-4 words each) in the replacement text that represent the SEMANTIC drift — the words whose meaning or emotional quality changed, not mere spelling variants. Typically 3-8 keywords per mind.
-- justification_en/ar: 1-3 sentences explaining WHY these specific segments drifted. Reference the temporality's unique perspective (its lens) and how the RSS event context pressured the drift. Write in present tense.
+- justification_en/ar: 1-3 sentences explaining WHY these specific segments drifted. Reference the temporality's unique perspective (its lens) and how the RSS event context pressured the drift. Trace the causal logic through the lens's CAUSAL STRUCTURE — not ordinary cause-and-effect. Write in present tense.
 - keepsake_en: 4–8 sentences. Deep refraction — what surfaces when this temporal lens, and only this lens, attends to the original memory right now.
   You are NOT translating, NOT paraphrasing, NOT describing the drift text or the axis memory.
   Six anti-paraphrase rules (non-negotiable):
@@ -918,7 +922,7 @@ Event IDs (may be empty): {event_ids}
         else:
             imagery_block = ""
 
-        # Lens definition for deep-refraction keepsake
+        # Lens definition governs both drift rewriting and keepsake_en
         try:
             import lens as _lens_mod
             ldef = _lens_mod.LENS_DEFINITIONS.get(m.mind_key, _lens_mod.LENS_DEFINITIONS.get("human", {}))
@@ -926,10 +930,13 @@ Event IDs (may be empty): {event_ids}
             ldef = {}
         if ldef:
             lens_def_block = (
-                f"\nLENS DEFINITION (governs keepsake_en — what this mind attends to):\n"
+                f"\nLENS AXES (governs segment selection, rewrite register, causality, AND keepsake_en):\n"
                 f"  Object of attention: {ldef.get('object_of_attention', '')}\n"
+                f"    → Prioritize rewriting segments that engage this domain.\n"
                 f"  Temporal scale: {ldef.get('temporal_scale', '')}\n"
+                f"    → Replacement sentences must feel measured at this scale — not human-daily unless this IS human.\n"
                 f"  Causal structure: {ldef.get('causal_structure', '')}\n"
+                f"    → When meaning shifts, trace causality through this structure, not ordinary cause-effect.\n"
             )
         else:
             lens_def_block = ""
