@@ -116,21 +116,11 @@
     if (state.drift_direction) {
       pairs.push({
         en: state.drift_direction,
-        l2: '' // drift_direction is meta-text, no L2 equivalent typically
-      });
-    }
-
-    // ── PART 4: Infiltrating imagery ──
-    const imagery = state.infiltrating_imagery || [];
-    if (imagery.length > 0) {
-      const imageryText = `New imagery emerges: ${imagery.slice(0, 4).join(', ')}.`;
-      pairs.push({
-        en: imageryText,
         l2: ''
       });
     }
 
-    // ── PART 5: The current drift text (the transformed memory) ──
+    // ── PART 4: The current drift text (the transformed memory) ──
     if (state.drift_en) {
       pairs.push({
         en: state.drift_en,
@@ -138,7 +128,7 @@
       });
     }
 
-    // ── PART 6: Recap / summary ──
+    // ── PART 5: Recap / summary ──
     if (state.recap_en) {
       pairs.push({
         en: state.recap_en,
@@ -146,7 +136,7 @@
       });
     }
 
-    // ── PART 7: Evolutionary context from history ──
+    // ── PART 6: Evolutionary context from history ──
     if (allDrifts && allDrifts.length > 1) {
       // Origin anchor
       const drift0 = allDrifts[0];
@@ -191,7 +181,7 @@
       }
     }
 
-    // ── PART 8: Transitional bridge (enables seamless loop) ──
+    // ── PART 7: Transitional bridge (enables seamless loop) ──
     pairs.push({
       en: 'The memory continues to drift...',
       l2: 'الذاكرة تستمر في الانجراف...'

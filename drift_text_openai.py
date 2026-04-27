@@ -829,7 +829,6 @@ Return ONLY strict JSON with this structure:
       "justification_en": "...",
       "justification_ar": "...",
       "keepsake_en": "...",
-      "keepsake_ar": "...",
       "summary_en": "...",
       "summary_ar": "..."
     }},
@@ -859,13 +858,16 @@ Rules (non-negotiable):
 - No lists, no headings, no quotes, no markdown.
 - drifted_keywords: list ONLY the specific words or short phrases (1-4 words each) in the replacement text that represent the SEMANTIC drift — the words whose meaning or emotional quality changed, not mere spelling variants. Typically 3-8 keywords per mind.
 - justification_en/ar: 1-3 sentences explaining WHY these specific segments drifted. Reference the temporality's unique perspective (its lens) and how the RSS event context pressured the drift. Write in present tense.
-- keepsake_en/ar: 1-2 SHORT sentences. First person — spoken by the temporality itself ("I") about what it just felt shift.
-  Rules:
-  - Write as "I" — the perceiver noting what changed in its own sensing. Not about "the memory" as an object.
-  - Name one concrete shift (sensory, emotional, spatial) and what present-moment signal caused it.
-  - NEVER start with "The memory", "Memory holds", "Memory feels", "My memory", or any form of "memory" as subject.
-  - NEVER use the same sentence opening across different minds. Each entry must start differently.
-  - Keep it under 30 words. Brief, direct, like a field note written mid-drift.
+- keepsake_en: 4–8 sentences. Deep refraction — what surfaces when this temporal lens, and only this lens, attends to the original memory right now.
+  You are NOT translating, NOT paraphrasing, NOT describing the drift text or the axis memory.
+  Six anti-paraphrase rules (non-negotiable):
+  1. Do not use the axis memory's nouns or verbs as the spine of your output. The memory is the trigger; what surfaces comes from elsewhere in this lens's domain.
+  2. Do not describe what the memory or drift text contains. The content is given; restating it has no value.
+  3. What rises must come from the world of this lens's OBJECT OF ATTENTION — not from the memory itself.
+  4. Operate at this lens's TEMPORAL SCALE. Do not narrate at human-daily scale unless this is human time.
+  5. Trace causality through this lens's CAUSAL STRUCTURE. Do not explain in ordinary cause and effect.
+  6. The DRIFT DIRECTION and PREV text show this lens's current vocabulary imprint. Go deeper — same temporality, deeper attention. You may diverge in subject from the drift direction; they share lens, not topic.
+  Additional: Do not use first person ("I"). Do not address the memory's holder. Do not use "memory", "remembers", or "recalls" anywhere in your output. 4 to 8 sentences, specific and grounded, not generalizing.
 Tick: {tick_id}
 Event IDs (may be empty): {event_ids}
 """.strip()
@@ -916,6 +918,22 @@ Event IDs (may be empty): {event_ids}
         else:
             imagery_block = ""
 
+        # Lens definition for deep-refraction keepsake
+        try:
+            import lens as _lens_mod
+            ldef = _lens_mod.LENS_DEFINITIONS.get(m.mind_key, _lens_mod.LENS_DEFINITIONS.get("human", {}))
+        except Exception:
+            ldef = {}
+        if ldef:
+            lens_def_block = (
+                f"\nLENS DEFINITION (governs keepsake_en — what this mind attends to):\n"
+                f"  Object of attention: {ldef.get('object_of_attention', '')}\n"
+                f"  Temporal scale: {ldef.get('temporal_scale', '')}\n"
+                f"  Causal structure: {ldef.get('causal_structure', '')}\n"
+            )
+        else:
+            lens_def_block = ""
+
         # Resonance-based hallucination pressure
         resonance_val = getattr(m, "resonance", 0.5)
         if resonance_val < 0.3:
@@ -955,7 +973,7 @@ AXIS (the ORIGINAL memory — drift 0 — the emotional anchor everything drifts
 
 INVARIABLES (emotional anchors — [sensory] ones must survive VERBATIM as exact words; [proper_noun] and [temporal] can lose resolution but must remain recognizable):
 {inv_lines}
-
+{lens_def_block}
 EVENT CONTEXT (RSS headlines this mind resonates with):
 {evt_lines}
 {resonance_block}{direction_block}{imagery_block}

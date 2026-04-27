@@ -6,6 +6,43 @@ import re
 from typing import List, Optional
 
 
+# Deep-refraction lens definitions — mirrors lens.LENS_DEFINITIONS.
+# Defined locally to avoid import-time dependency on embeddings_local.
+_LENS_DEFINITIONS = {
+    "human": {
+        "object_of_attention": "daily routines, body rhythms, communal patterns, generational habits, lived practice, the texture of how a day is spent",
+        "temporal_scale": "days to lifetimes — the duration of habits, generations, daily and yearly cycles of bodies",
+        "causal_structure": "habitual, communal, biographical — what bodies do daily, what communities reinforce, what shapes a life across years",
+    },
+    "liminal": {
+        "object_of_attention": "thresholds, transitions, in-between spaces, passage rituals, the paperwork and movement of crossing",
+        "temporal_scale": "the duration of crossing — moments to years, the suspended time between states",
+        "causal_structure": "transitional, ritual, transformative — what thresholds do, what passages produce, what cannot return",
+    },
+    "environment": {
+        "object_of_attention": "seasonal cycles, watershed dynamics, atmospheric movements, biological dormancy and activity, geological substrate",
+        "temporal_scale": "weeks to centuries — the duration of seasons, sediment shifts, ecosystem turnover",
+        "causal_structure": "hydrological, atmospheric, biological — what water does, what wind does, what microbial communities do",
+    },
+    "digital": {
+        "object_of_attention": "media ecologies, technological generations, format obsolescence, signal infrastructure, screen time",
+        "temporal_scale": "media generations — years to decades, the lifespan of formats and platforms",
+        "causal_structure": "technical, infrastructural, generational — what hardware enables, what format constrains, what each generation encounters",
+    },
+    "infrastructure": {
+        "object_of_attention": "policy frames, ordinance language, administrative boundaries, institutional procedure, document forms",
+        "temporal_scale": "policy epochs — years to decades, the lifespan of regulations and reforms",
+        "causal_structure": "regulatory, procedural, jurisdictional — what authority does, what classification does, what document does",
+    },
+    "more_than_human": {
+        "object_of_attention": "geological substrate, multispecies relations, deep-time formations, non-human durations",
+        "temporal_scale": "centuries to millennia — geological, evolutionary, ecological deep time",
+        "causal_structure": "geological, evolutionary, multispecies — what stone does, what species do across deep time, what non-human entities make",
+    },
+}
+_LENS_DEFINITIONS["environmental"] = _LENS_DEFINITIONS["environment"]
+
+
 def generate_keepsake_narration_openai(
     *,
     mind_key: str,
@@ -15,61 +52,90 @@ def generate_keepsake_narration_openai(
     invariants_phrases: List[str],
     evidence_fragments_en: List[str],
     model: Optional[str] = None,
+    version: int = 1,
 ) -> str:
+    """
+    Generate deep-refraction keepsake narration for museum display.
+
+    Implements the Stage B deep-refraction from REFRACTION_PROMPT_DESIGN.md:
+    - original_en  = memory_blurb (the axis memory, drift 0)
+    - cur_en       = stage_a_output (current drift text — the lens's vocabulary-biased output)
+    - prev_en      = trajectory context (previous drift state)
+    - Produces 4–8 sentences operating on object of attention, temporal scale, causal structure
+    """
     if not os.getenv("OPENAI_API_KEY"):
         return ""
     from openai import OpenAI
 
     original_en = (original_en or "").strip()[:900]
-    prev_en = (prev_en or "").strip()[:900]
+    prev_en = (prev_en or "").strip()[:600]
     cur_en = (cur_en or "").strip()[:900]
 
-    inv = [re.sub(r"\s+", " ", (x or "").strip()) for x in (invariants_phrases or [])]
-    inv = [x for x in inv if x][:10]
+    ldef = _LENS_DEFINITIONS.get(mind_key, _LENS_DEFINITIONS["human"])
+    obj_attn = ldef["object_of_attention"]
+    t_scale = ldef["temporal_scale"]
+    c_struct = ldef["causal_structure"]
 
-    frags = [f.strip() for f in (evidence_fragments_en or []) if f and f.strip()][:8]
+    trajectory = f"Version {version} drift."
+    if prev_en:
+        trajectory += f" Previously: {prev_en[:250]}"
 
-    inv_block = "\n".join([f"- {x}" for x in inv]) if inv else "- (none)"
-    frags_block = "\n".join([f"- {f[:220]}" for f in frags]) if frags else "- (none)"
+    prompt = f"""You are reading a memory through one of six temporal lenses.
+You are NOT translating, NOT paraphrasing, NOT describing the memory.
+You produce what surfaces when this lens, and only this lens, attends.
 
-    prompt = f"""
-You are writing a short archive entry for a keepsake log in an artwork installation.
+LENS DEFINITION:
 
-Mind lens: {mind_key}
+Lens: {mind_key}
 
-Write exactly ONE paragraph in English, 40–80 words.
-No headings, no bullet points, no labels.
+Object of attention:
+{obj_attn}
 
-Rules:
-- Describe what shifted in THIS drift only — what is the main change from the previous state?
-- Name the specific present-moment source that influenced this shift (the evidence fragments / world events).
-- State how the temporality feels right now — its current emotional register.
-- Third-person, observational. Honest, precise, slightly melancholic.
-- Do NOT retell the full history or reference the origin. Each entry is one timestamped log entry in a scrollable archive.
-- Never mention axis, prompt, model, instructions, or missing input.
-- No profanity.
-- Avoid religious or political claims, judgments, or provocations.
-- Do not quote evidence fragments verbatim.
+Temporal scale:
+{t_scale}
 
-Previous drift:
-{prev_en}
+Causal structure:
+{c_struct}
 
-Current drift:
-{cur_en}
+This lens has been formed by the following trajectory:
+{trajectory}
 
-Invariants that should stay recognizable:
-{inv_block}
+LOCAL LENS FIRST RESPONSE:
+The lens's current drift output (vocabulary-weighted toward {mind_key}):
+"{cur_en}"
 
-Present-moment signals (context only — name these as the source of the shift):
-{frags_block}
-""".strip()
+THE MEMORY:
+"{original_en}"
+
+INSTRUCTIONS:
+
+Refract this memory through the lens. Six rules:
+
+1. Do not use the memory's nouns or verbs as the spine of your response.
+   The memory is the trigger; what surfaces is elsewhere.
+2. Do not describe what the memory contains. The memory is given;
+   restating it has no value.
+3. What rises must come from the world of {mind_key}, not from the memory itself.
+4. Operate at the temporal scale of {t_scale}.
+   Do not narrate at human-daily scale unless this is human time.
+5. Trace causality through {c_struct}.
+   Do not explain in ordinary cause and effect.
+6. The local lens first response shows you the lens's vocabulary imprint.
+   Go deeper than that response. Same temporality, deeper attention.
+   You may diverge in subject from the first response — they share lens, not topic.
+
+Length: 4 to 8 sentences. Specific, not generalizing.
+Do not use first person. Do not address the memory's holder.
+Do not use the words "memory" or "remembers" or "recalls" in your output.
+
+What surfaces:""".strip()
 
     client = OpenAI()
     resp = client.responses.create(
-        model=(model or os.getenv("OPENAI_MODEL", "gpt-5.2")),
+        model=(model or os.getenv("OPENAI_MODEL", "gpt-4.1")),
         input=prompt,
-        timeout=25.0,
+        timeout=30.0,
     )
     out = (resp.output_text or "").strip()
     out = re.sub(r"\s+", " ", out).strip()
-    return out[:800] if out else ""
+    return out[:1200] if out else ""

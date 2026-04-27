@@ -119,6 +119,43 @@ DECAY_POLICIES: Dict[str, Dict[str, List[str]]] = {
 DECAY_POLICIES["environmental"] = DECAY_POLICIES["environment"]
 
 
+# Deep-refraction lens definitions (from REFRACTION_PROMPT_DESIGN.md)
+# Used to govern keepsake_en deep-refraction and museum narration generation.
+LENS_DEFINITIONS: Dict[str, Dict[str, str]] = {
+    "human": {
+        "object_of_attention": "daily routines, body rhythms, communal patterns, generational habits, lived practice, the texture of how a day is spent",
+        "temporal_scale": "days to lifetimes — the duration of habits, generations, daily and yearly cycles of bodies",
+        "causal_structure": "habitual, communal, biographical — what bodies do daily, what communities reinforce, what shapes a life across years",
+    },
+    "liminal": {
+        "object_of_attention": "thresholds, transitions, in-between spaces, passage rituals, the paperwork and movement of crossing",
+        "temporal_scale": "the duration of crossing — moments to years, the suspended time between states",
+        "causal_structure": "transitional, ritual, transformative — what thresholds do, what passages produce, what cannot return",
+    },
+    "environment": {
+        "object_of_attention": "seasonal cycles, watershed dynamics, atmospheric movements, biological dormancy and activity, geological substrate",
+        "temporal_scale": "weeks to centuries — the duration of seasons, sediment shifts, ecosystem turnover",
+        "causal_structure": "hydrological, atmospheric, biological — what water does, what wind does, what microbial communities do",
+    },
+    "digital": {
+        "object_of_attention": "media ecologies, technological generations, format obsolescence, signal infrastructure, screen time",
+        "temporal_scale": "media generations — years to decades, the lifespan of formats and platforms",
+        "causal_structure": "technical, infrastructural, generational — what hardware enables, what format constrains, what each generation encounters",
+    },
+    "infrastructure": {
+        "object_of_attention": "policy frames, ordinance language, administrative boundaries, institutional procedure, document forms",
+        "temporal_scale": "policy epochs — years to decades, the lifespan of regulations and reforms",
+        "causal_structure": "regulatory, procedural, jurisdictional — what authority does, what classification does, what document does",
+    },
+    "more_than_human": {
+        "object_of_attention": "geological substrate, multispecies relations, deep-time formations, non-human durations",
+        "temporal_scale": "centuries to millennia — geological, evolutionary, ecological deep time",
+        "causal_structure": "geological, evolutionary, multispecies — what stone does, what species do across deep time, what non-human entities make",
+    },
+}
+LENS_DEFINITIONS["environmental"] = LENS_DEFINITIONS["environment"]
+
+
 def decay_policy_for(mind_key: str) -> Dict[str, List[str]]:
     return DECAY_POLICIES.get(mind_key, DECAY_POLICIES["human"])
 
