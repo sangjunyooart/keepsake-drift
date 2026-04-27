@@ -1,10 +1,11 @@
-// Museum Stream Runtime
+// Museum Stream Runtime v2
 // Displays drift dialogue with wipe-reveal animation, 6s pauses, seamless looping
 // Set lang="en" on <html> for EN-only display; any other value enables bilingual L2.
 
 (function() {
   // EN-only when page lang is "en"; bilingual otherwise (future AR screens use lang="ar")
   const IS_BILINGUAL = document.documentElement.lang !== 'en';
+  console.log('[Museum] v2 loaded — IS_BILINGUAL:', IS_BILINGUAL, '| lang:', document.documentElement.lang);
 
   // Read persona from current page filename
   const pageMap = {
@@ -406,32 +407,42 @@
 
         // Clear previous
         cancelWipe(subtitlePrimary);
-        cancelWipe(subtitleSecondary);
         subtitlePrimary.textContent = '';
-        subtitleSecondary.textContent = '';
         subtitlePrimary.style.opacity = '0';
-        subtitleSecondary.style.opacity = '0';
+        if (IS_BILINGUAL) {
+          cancelWipe(subtitleSecondary);
+          subtitleSecondary.textContent = '';
+          subtitleSecondary.style.opacity = '0';
+        }
 
         // Brief pause before next sentence
         await new Promise(r => setTimeout(r, 300));
 
         // Wipe reveal: LTR for English, RTL for Arabic
-        const isL2RTL = config.l2_dir === 'rtl';
-        await Promise.all([
-          wipeReveal(en, subtitlePrimary, false, WIPE_DURATION),
-          wipeReveal(l2, subtitleSecondary, isL2RTL, WIPE_DURATION)
-        ]);
+        if (IS_BILINGUAL) {
+          const isL2RTL = config.l2_dir === 'rtl';
+          await Promise.all([
+            wipeReveal(en, subtitlePrimary, false, WIPE_DURATION),
+            wipeReveal(l2, subtitleSecondary, isL2RTL, WIPE_DURATION)
+          ]);
+        } else {
+          await wipeReveal(en, subtitlePrimary, false, WIPE_DURATION);
+        }
 
         // Hold: let viewer read (scale with text length)
-        const wordCount = (en + ' ' + l2).split(/\s+/).filter(w => w.length > 0).length;
+        const wordCount = en.split(/\s+/).filter(w => w.length > 0).length;
         const readTime = Math.max(4000, Math.min(8000, wordCount * 350));
         await new Promise(r => setTimeout(r, readTime));
 
         // Fade out
-        await Promise.all([
-          fadeOut(subtitlePrimary),
-          fadeOut(subtitleSecondary)
-        ]);
+        if (IS_BILINGUAL) {
+          await Promise.all([
+            fadeOut(subtitlePrimary),
+            fadeOut(subtitleSecondary)
+          ]);
+        } else {
+          await fadeOut(subtitlePrimary);
+        }
 
         // 6 second pause between sentences
         await new Promise(r => setTimeout(r, PAUSE_BETWEEN_SENTENCES));
@@ -446,6 +457,11 @@
   // ─── INIT ─────────────────────────────────────────────────────
 
   async function startStream() {
+    // Hide secondary subtitle entirely for EN-only screens
+    if (!IS_BILINGUAL) {
+      subtitleSecondary.style.display = 'none';
+    }
+
     await fetchLangConfig();
 
     console.log(`[Museum] Stream initialized for ${PERSONA}`);
