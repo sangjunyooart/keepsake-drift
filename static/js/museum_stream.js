@@ -1,7 +1,11 @@
 // Museum Stream Runtime
-// Displays bilingual drift dialogue with wipe-reveal animation, 6s pauses, seamless looping
+// Displays drift dialogue with wipe-reveal animation, 6s pauses, seamless looping
+// Set lang="en" on <html> for EN-only display; any other value enables bilingual L2.
 
 (function() {
+  // EN-only when page lang is "en"; bilingual otherwise (future AR screens use lang="ar")
+  const IS_BILINGUAL = document.documentElement.lang !== 'en';
+
   // Read persona from current page filename
   const pageMap = {
     'museum_human.html': 'human',
@@ -100,7 +104,7 @@
     if (state.keepsake_en) {
       pairs.push({
         en: state.keepsake_en,
-        l2: state[`keepsake_${config.l2_lang}`] || state.keepsake_ar || ''
+        l2: IS_BILINGUAL ? (state[`keepsake_${config.l2_lang}`] || state.keepsake_ar || '') : ''
       });
     }
 
@@ -108,7 +112,7 @@
     if (state.justification_en) {
       pairs.push({
         en: state.justification_en,
-        l2: state.justification_l2 || ''
+        l2: IS_BILINGUAL ? (state.justification_l2 || '') : ''
       });
     }
 
@@ -124,7 +128,7 @@
     if (state.drift_en) {
       pairs.push({
         en: state.drift_en,
-        l2: state[l2Field] || state.drift_ar || ''
+        l2: IS_BILINGUAL ? (state[l2Field] || state.drift_ar || '') : ''
       });
     }
 
@@ -132,7 +136,7 @@
     if (state.recap_en) {
       pairs.push({
         en: state.recap_en,
-        l2: state[recapL2Field] || state.recap_ar || ''
+        l2: IS_BILINGUAL ? (state[recapL2Field] || state.recap_ar || '') : ''
       });
     }
 
@@ -145,7 +149,7 @@
         const anchorText = `This memory began with ${anchors.slice(0, 3).join(', ')}.`;
         pairs.push({
           en: anchorText,
-          l2: drift0[recapL2Field] || drift0.recap_ar || ''
+          l2: IS_BILINGUAL ? (drift0[recapL2Field] || drift0.recap_ar || '') : ''
         });
       }
 
