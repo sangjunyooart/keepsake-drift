@@ -184,7 +184,7 @@
     // ── PART 7: Transitional bridge (enables seamless loop) ──
     pairs.push({
       en: 'The memory continues to drift...',
-      l2: 'الذاكرة تستمر في الانجراف...'
+      l2: ''
     });
 
     // Filter out pairs where both languages are empty
