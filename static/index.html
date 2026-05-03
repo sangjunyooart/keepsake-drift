@@ -549,22 +549,15 @@
       if (currentLang !== "en" && currentLang !== secondLang) currentLang = "en";
       updateUILanguage(currentLang);
 
-      // Start clock immediately — independent of language/API
-      updateClock();
-      setInterval(updateClock, 250);
-
       // Fetch active second language from server (non-blocking)
       fetch("/lang_config").then(r => r.json()).then(data => {
-        // Only show toggle if translation is enabled on this deployment
         if (!data.enable_translation) return;
         if (data && data.second_lang && uiText[data.second_lang]) {
           secondLang = data.second_lang;
           secondLangDirection = data.direction || "ltr";
-          // Update EN's toggle button label to show the active L2 toggle label
           if (data.toggle_label) {
             uiText.en.langButton = data.toggle_label;
           }
-          // If user had a stale L2 stored, reset to "en"
           if (currentLang !== "en" && currentLang !== secondLang) {
             currentLang = "en";
             localStorage.setItem(STORAGE_LANG_KEY, currentLang);
@@ -614,6 +607,9 @@
         if (e.key === "Escape") closeMenu();
       });
 
+      // Start clock
+      updateClock();
+      setInterval(updateClock, 250);
     });
   </script>
 </body>
