@@ -9,7 +9,13 @@
     'museum_liminal.html': 'liminal',
     'museum_liminal': 'liminal',
     'museum_environment.html': 'environment',
-    'museum_environment': 'environment'
+    'museum_environment': 'environment',
+    'museum_digital.html': 'digital',
+    'museum_digital': 'digital',
+    'museum_infrastructure.html': 'infrastructure',
+    'museum_infrastructure': 'infrastructure',
+    'museum_more_than_human.html': 'more_than_human',
+    'museum_more_than_human': 'more_than_human'
   };
   const currentPage = window.location.pathname.split('/').pop();
   const PERSONA = pageMap[currentPage] || 'human';
