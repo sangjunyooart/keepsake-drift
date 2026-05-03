@@ -1,5 +1,5 @@
-// Museum Stream Runtime
-// Sequence: L2 wipes in → English fades in after → hold → both fade out → 6s blank → loop
+// Museum Stream Runtime v2
+// Bilingual: L2 wipes in → English fades in after. EN-only: English wipes in. 6s pauses. Seamless loop.
 
 (function() {
   let IS_BILINGUAL = false; // set from lang_config API after fetch
@@ -7,10 +7,13 @@
   const pageMap = {
     'museum_human.html': 'human',
     'museum_human': 'human',
+    'museum1': 'human',
     'museum_liminal.html': 'liminal',
     'museum_liminal': 'liminal',
+    'museum2': 'liminal',
     'museum_environment.html': 'environment',
     'museum_environment': 'environment',
+    'museum3': 'environment',
     'museum_digital.html': 'digital',
     'museum_digital': 'digital',
     'museum_infrastructure.html': 'infrastructure',
@@ -41,49 +44,27 @@
       const apiBase = window.KD_API_CONFIG?.API_BASE_URL || '';
       const res = await fetch(`${apiBase}/lang_config`);
       const data = await res.json();
+      IS_BILINGUAL   = data.enable_translation === true;
       config.l2_lang = data.second_lang || 'ar';
       config.l2_dir  = data.direction   || 'rtl';
-      IS_BILINGUAL   = data.enable_translation === true;
       if (config.l2_dir === 'rtl') {
         subtitleSecondary.classList.add('rtl');
       } else {
         subtitleSecondary.classList.remove('rtl');
       }
+      console.log('[Museum] lang_config — IS_BILINGUAL:', IS_BILINGUAL, '| l2:', config.l2_lang);
     } catch (e) {
       console.error('Failed to fetch lang config:', e);
     }
   }
 
-  async function fetchState() {
+  async function fetchStateWithHistory() {
     try {
       const apiBase = window.KD_API_CONFIG?.API_BASE_URL || '';
-      const res = await fetch(`${apiBase}/state?persona=${PERSONA}`);
+      const res = await fetch(`${apiBase}/state_with_history?persona=${PERSONA}&history=5`);
       return await res.json();
     } catch (e) {
-      console.error('Failed to fetch state:', e);
-      return null;
-    }
-  }
-
-  async function fetchVersionHistory() {
-    try {
-      const apiBase = window.KD_API_CONFIG?.API_BASE_URL || '';
-      const res = await fetch(`${apiBase}/versions?persona=${PERSONA}`);
-      const data = await res.json();
-      return data.versions || [];
-    } catch (e) {
-      console.error('Failed to fetch version history:', e);
-      return [];
-    }
-  }
-
-  async function fetchStateAt(version) {
-    try {
-      const apiBase = window.KD_API_CONFIG?.API_BASE_URL || '';
-      const res = await fetch(`${apiBase}/state_at?persona=${PERSONA}&version=${version}`);
-      return await res.json();
-    } catch (e) {
-      console.error(`Failed to fetch version ${version}:`, e);
+      console.error('Failed to fetch state_with_history:', e);
       return null;
     }
   }
@@ -94,61 +75,41 @@
     const pairs = [];
     if (!state) return pairs;
 
-    const l2Field     = `drift_${config.l2_lang}`;
+    const l2Field      = `drift_${config.l2_lang}`;
     const recapL2Field = `recap_${config.l2_lang}`;
 
     if (state.keepsake_en) {
-      pairs.push({
-        en: state.keepsake_en,
-        l2: IS_BILINGUAL ? (state[`keepsake_${config.l2_lang}`] || state.keepsake_ar || '') : ''
-      });
+      pairs.push({ en: state.keepsake_en, l2: IS_BILINGUAL ? (state[`keepsake_${config.l2_lang}`] || state.keepsake_ar || '') : '' });
     }
     if (state.justification_en) {
-      pairs.push({
-        en: state.justification_en,
-        l2: IS_BILINGUAL ? (state.justification_l2 || '') : ''
-      });
+      pairs.push({ en: state.justification_en, l2: IS_BILINGUAL ? (state.justification_l2 || '') : '' });
     }
     if (state.drift_direction) {
       pairs.push({ en: state.drift_direction, l2: '' });
     }
     if (state.drift_en) {
-      pairs.push({
-        en: state.drift_en,
-        l2: IS_BILINGUAL ? (state[l2Field] || state.drift_ar || '') : ''
-      });
+      pairs.push({ en: state.drift_en, l2: IS_BILINGUAL ? (state[l2Field] || state.drift_ar || '') : '' });
     }
     if (state.recap_en) {
-      pairs.push({
-        en: state.recap_en,
-        l2: IS_BILINGUAL ? (state[recapL2Field] || state.recap_ar || '') : ''
-      });
+      pairs.push({ en: state.recap_en, l2: IS_BILINGUAL ? (state[recapL2Field] || state.recap_ar || '') : '' });
     }
 
     if (allDrifts && allDrifts.length > 1) {
       const drift0  = allDrifts[0];
       const anchors = drift0.sensory_anchors || [];
       if (anchors.length > 0) {
-        pairs.push({
-          en: `This memory began with ${anchors.slice(0, 3).join(', ')}.`,
-          l2: IS_BILINGUAL ? (drift0[recapL2Field] || drift0.recap_ar || '') : ''
-        });
+        pairs.push({ en: `This memory began with ${anchors.slice(0, 3).join(', ')}.`, l2: IS_BILINGUAL ? (drift0[recapL2Field] || drift0.recap_ar || '') : '' });
       }
       if (allDrifts.length >= 4) {
         const allImagery = allDrifts.slice(1, -1).flatMap(d => Array.isArray(d.infiltrating_imagery) ? d.infiltrating_imagery : []);
         const unique = [...new Set(allImagery)].slice(0, 4);
-        if (unique.length > 0) {
-          pairs.push({ en: `Over ${allDrifts.length - 1} drifts, imagery accumulated: ${unique.join(', ')}.`, l2: '' });
-        }
+        if (unique.length > 0) pairs.push({ en: `Over ${allDrifts.length - 1} drifts, imagery accumulated: ${unique.join(', ')}.`, l2: '' });
       }
       const headlines = allDrifts.slice(1).map(d => d.curated_headlines?.[0]).filter(Boolean);
-      if (headlines.length > 0) {
-        pairs.push({ en: `The world brought: ${headlines.slice(-3).join(' — ')}.`, l2: '' });
-      }
+      if (headlines.length > 0) pairs.push({ en: `The world brought: ${headlines.slice(-3).join(' — ')}.`, l2: '' });
     }
 
-    pairs.push({ en: 'The memory continues to drift...', l2: IS_BILINGUAL ? 'الذاكرة تستمر في الانجراف...' : '' });
-
+    pairs.push({ en: 'The memory continues to drift...', l2: '' });
     return pairs.filter(p => p.en || p.l2);
   }
 
@@ -159,17 +120,11 @@
   }
 
   // ─── ANIMATIONS ───────────────────────────────────────────────
-  // wipeReveal: max-width grows 0→full (LTR left-anchored, RTL right-anchored)
-  // fadeIn:     opacity 0→1 (used for English after L2 wipe completes)
-  // fadeOut:    opacity 1→0
-
-  function _cancelAnims(element) {
-    element.getAnimations().forEach(a => a.cancel());
-  }
 
   function wipeReveal(text, element, isRTL = false, duration = WIPE_DURATION) {
     return new Promise((resolve) => {
-      _cancelAnims(element);
+      // Cancel any active fill:forwards animation so opacity/display changes take effect
+      element.getAnimations().forEach(a => a.cancel());
 
       if (!text || !text.trim()) {
         element.textContent = '';
@@ -207,42 +162,34 @@
   }
 
   function cancelWipe(element) {
-    _cancelAnims(element);
-    element.style.display  = 'block';
-    element.style.overflow = '';
+    element.getAnimations().forEach(a => a.cancel());
+    element.style.display   = 'block';
+    element.style.overflow  = '';
     element.style.whiteSpace = '';
-    element.style.maxWidth = '';
-    element.style.float    = '';
+    element.style.maxWidth  = '';
+    element.style.float     = '';
     if (element._wipeResolve) { element._wipeResolve(); element._wipeResolve = null; }
   }
 
   function fadeIn(element, duration = EN_FADE_IN_DURATION) {
     return new Promise((resolve) => {
-      _cancelAnims(element);
+      element.getAnimations().forEach(a => a.cancel());
       const anim = element.animate(
         [{ opacity: 0 }, { opacity: 1 }],
         { duration, fill: 'forwards' }
       );
-      anim.onfinish = () => {
-        element.style.opacity = '1';
-        anim.cancel();
-        resolve();
-      };
+      anim.onfinish = () => { element.style.opacity = '1'; anim.cancel(); resolve(); };
     });
   }
 
   function fadeOut(element, duration = FADE_OUT_DURATION) {
     return new Promise((resolve) => {
-      _cancelAnims(element);
+      element.getAnimations().forEach(a => a.cancel());
       const anim = element.animate(
         [{ opacity: 1 }, { opacity: 0 }],
         { duration, fill: 'forwards' }
       );
-      anim.onfinish = () => {
-        element.style.opacity = '0';
-        anim.cancel();
-        resolve();
-      };
+      anim.onfinish = () => { element.style.opacity = '0'; anim.cancel(); resolve(); };
     });
   }
 
@@ -279,19 +226,15 @@
   // ─── MAIN DISPLAY LOOP ────────────────────────────────────────
 
   async function displayLoop() {
-    const [state, versions] = await Promise.all([fetchState(), fetchVersionHistory()]);
-    if (!state) {
+    const bundle = await fetchStateWithHistory();
+    if (!bundle || !bundle.state) {
       console.error('No state data');
       await new Promise(r => setTimeout(r, 30000));
       return;
     }
 
-    const recentVersions = versions.slice(-5);
-    const allDrifts = [];
-    for (const v of recentVersions) {
-      const d = await fetchStateAt(v);
-      if (d) allDrifts.push(d);
-    }
+    const state     = bundle.state;
+    const allDrifts = bundle.history || [];
 
     startImageCycling(state);
 
@@ -318,27 +261,26 @@
         // ── Clear ──
         cancelWipe(subtitlePrimary);
         cancelWipe(subtitleSecondary);
-        subtitlePrimary.textContent = '';
+        subtitlePrimary.textContent   = '';
         subtitleSecondary.textContent = '';
-        subtitlePrimary.style.opacity = '0';
+        subtitlePrimary.style.opacity   = '0';
         subtitleSecondary.style.opacity = '0';
 
         await new Promise(r => setTimeout(r, 300));
 
         if (IS_BILINGUAL && l2) {
-          // 1. L2 wipes in
-          const isL2RTL = config.l2_dir === 'rtl';
-          await wipeReveal(l2, subtitleSecondary, isL2RTL, WIPE_DURATION);
+          // 1. L2 wipes in (subtitleSecondary)
+          await wipeReveal(l2, subtitleSecondary, config.l2_dir === 'rtl', WIPE_DURATION);
 
-          // 2. English fades in after L2 completes
+          // 2. English fades in after L2 completes (subtitlePrimary)
           if (en) {
-            subtitlePrimary.textContent = en;
+            subtitlePrimary.textContent   = en;
             subtitlePrimary.style.opacity = '0';
             await fadeIn(subtitlePrimary, EN_FADE_IN_DURATION);
           }
         } else {
-          // EN-only: wipe English into secondary (primary-styled, large element)
-          await wipeReveal(en, subtitleSecondary, false, WIPE_DURATION);
+          // EN-only: English wipes into subtitlePrimary
+          await wipeReveal(en, subtitlePrimary, false, WIPE_DURATION);
         }
 
         // 3. Hold
@@ -347,10 +289,7 @@
         await new Promise(r => setTimeout(r, readTime));
 
         // 4. Fade out both
-        await Promise.all([
-          fadeOut(subtitlePrimary),
-          fadeOut(subtitleSecondary)
-        ]);
+        await Promise.all([fadeOut(subtitlePrimary), fadeOut(subtitleSecondary)]);
 
         // 5. 6s blank pause
         await new Promise(r => setTimeout(r, PAUSE_BETWEEN_SENTENCES));
@@ -364,9 +303,9 @@
   // ─── INIT ─────────────────────────────────────────────────────
 
   async function startStream() {
-    if (!IS_BILINGUAL) subtitlePrimary.style.display = 'none';
     await fetchLangConfig();
-    console.log(`[Museum] Stream initialized for ${PERSONA} | bilingual: ${IS_BILINGUAL}`);
+    if (!IS_BILINGUAL) subtitleSecondary.style.display = 'none';
+    console.log(`[Museum] Stream initialized for ${PERSONA} | IS_BILINGUAL: ${IS_BILINGUAL}`);
     displayLoop();
     setInterval(() => { window.location.reload(); }, TICK_INTERVAL * 1000);
   }
