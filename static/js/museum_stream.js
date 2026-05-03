@@ -445,7 +445,7 @@
 
   // Start on load — on Pages, wait for tunnel URL before fetching backend data
   document.addEventListener('DOMContentLoaded', () => {
-    if (window.KD_API_CONFIG && window.KD_API_CONFIG.API_BASE_URL) {
+    if (window.KD_API_CONFIG && window.KD_API_CONFIG.API_BASE_URL != null) {
       startStream();
     } else {
       window.addEventListener('kd-config-ready', () => startStream(), { once: true });
