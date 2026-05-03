@@ -1,11 +1,13 @@
-/* Museum Stream — Portrait 9:16 display */
+/* Museum Stream — Responsive portrait display */
 
 body {
-  margin: 0;
+  margin: 0 auto;
   padding: 0;
   background: #000;
   overflow: hidden;
   aspect-ratio: 9/16;
+  max-width: 100vw;
+  max-height: 100vh;
   height: 100vh;
   display: flex;
   flex-direction: column;
@@ -25,66 +27,143 @@ body {
   z-index: 0;
 }
 
-/* All foreground content above background */
+/* All foreground content above background (bg images use z-index 0-1 for crossfade) */
 .narration-zone, .temp-label {
   position: relative;
-  z-index: 1;
+  z-index: 2;
 }
 
-/* Narration container - positioned at bottom */
+/* Narration container - positioned at top */
 .narration-zone {
   position: absolute;
-  bottom: 80px;
+  top: 25vh;
   left: 0;
   right: 0;
-  padding: 0 48px;
-  z-index: 1;
+  padding: 0 2vw;
+  z-index: 2;
 }
 
 .subtitle-block {
   max-width: 100%;
 }
 
-/* Secondary language (L2/Arabic) - on top */
+/* Secondary language (Arabic) - on top */
 .subtitle-secondary {
-  font-size: 18px;
-  line-height: 1.5;
-  color: #f5f5f7;
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-  margin-bottom: 12px;
-  padding: 8px 20px;
-  background: rgba(0, 0, 0, 0.75);
-  box-decoration-break: clone;
-  -webkit-box-decoration-break: clone;
+  font-size: 20px;
+  line-height: 1.7;
+  color: #F5A627;
+  font-family: 'Noto Sans Arabic', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  margin-bottom: 4vh;
   display: block;
+  padding-bottom: 0;
 }
 
-/* Primary language (English) - below, italic */
+/* Primary language (English) - italic, below, smaller */
 .subtitle-primary {
-  font-size: 22px;
-  line-height: 1.5;
-  color: rgba(245, 245, 247, 0.85);
+  font-size: 10px;
+  line-height: 1.6;
+  color: #FFE2B3;
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
   font-style: italic;
-  padding: 6px 16px;
-  background: rgba(0, 0, 0, 0.75);
+  display: block;
+  clear: both;
+  margin-top: 0;
+}
+
+/* L2 outer span — no backing (character spans provide it) */
+.subtitle-secondary > span {
+  background: none;
+  display: inline;
+  padding: 0;
+}
+
+/* English outer span — subtle translucent backing, no vertical padding to avoid overlap */
+.subtitle-primary > span {
+  background: rgba(0, 0, 0, 0.35);
   box-decoration-break: clone;
   -webkit-box-decoration-break: clone;
+  padding: 0 0.8vw;
+  display: inline;
+}
+
+/* Each character — translucent backing that fades with each letter */
+.subtitle-secondary span span,
+.subtitle-primary span span {
+  background: rgba(0, 0, 0, 0.35);
+  padding: 0;
+  display: inline;
+}
+
+/* Per-line containers — block elements, height set by JS, clipped */
+.subtitle-line {
   display: block;
+  margin: 0;
+  padding: 0;
+  overflow: hidden;
+}
+.subtitle-line > span {
+  background: none;
+  padding: 0;
+  display: inline;
+}
+.subtitle-line span span {
+  background: rgba(0, 0, 0, 0.35);
+  padding: 0;
+  display: inline;
 }
 
 /* RTL override for Arabic */
 .rtl { direction: rtl; text-align: right; }
 
+/* Teleprompter: departing subtitle clone */
+.subtitle-clone-departing {
+  position: absolute;
+  top: 25vh;
+  left: 0;
+  right: 0;
+  padding: 0 2vw;
+  z-index: 2;
+  pointer-events: none;
+  will-change: transform, opacity;
+}
+
 /* Temporality label at bottom */
 .temp-label {
   position: absolute;
-  bottom: 24px;
+  bottom: 3vh;
   left: 50%;
   transform: translateX(-50%);
   font-size: 14px;
   letter-spacing: 0.15em;
   text-transform: uppercase;
-  color: rgba(245, 245, 247, 0.35);
+  color: rgba(245, 166, 39, 0.5);
   white-space: nowrap;
+  padding: 0.4em 1.2em;
+  background: rgba(0, 0, 0, 0.4);
+  border-radius: 4px;
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+}
+
+/* QR code badge */
+.qr-badge {
+  position: absolute;
+  bottom: 8vh;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 10;
+  width: 100px;
+  height: 100px;
+  background: rgba(0, 0, 0, 0.35);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+}
+.qr-badge img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
 }
