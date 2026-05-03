@@ -336,8 +336,8 @@
             await fadeIn(subtitlePrimary, EN_FADE_IN_DURATION);
           }
         } else {
-          // EN-only: just wipe English
-          await wipeReveal(en, subtitlePrimary, false, WIPE_DURATION);
+          // EN-only: wipe English into secondary (primary-styled, large element)
+          await wipeReveal(en, subtitleSecondary, false, WIPE_DURATION);
         }
 
         // 3. Hold
@@ -363,7 +363,7 @@
   // ─── INIT ─────────────────────────────────────────────────────
 
   async function startStream() {
-    if (!IS_BILINGUAL) subtitleSecondary.style.display = 'none';
+    if (!IS_BILINGUAL) subtitlePrimary.style.display = 'none';
     await fetchLangConfig();
     console.log(`[Museum] Stream initialized for ${PERSONA} | bilingual: ${IS_BILINGUAL}`);
     displayLoop();
