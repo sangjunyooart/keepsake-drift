@@ -318,7 +318,9 @@
       const l2Sentences = splitIntoSentences(pair.l2);
       const maxLen = Math.max(enSentences.length, l2Sentences.length);
       for (let i = 0; i < maxLen; i++) {
-        displaySequence.push({ en: enSentences[i] || '', l2: l2Sentences[i] || '' });
+        // Fall back to full pair.en when AR has more sentences than EN,
+        // so English always appears alongside Arabic.
+        displaySequence.push({ en: enSentences[i] || pair.en || '', l2: l2Sentences[i] || '' });
       }
     }
 
