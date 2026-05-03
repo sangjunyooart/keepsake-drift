@@ -87,10 +87,14 @@ body {
   line-height: 1.1;
 }
 
-/* Each character — translucent backing that fades with each letter */
+/* Each character — translucent backing that fades with each letter.
+   line-height:1.1 makes the backing smaller than line spacing so adjacent
+   lines have a visible gap (secondary: 22px backing / 34px spacing;
+   primary: 11px backing / 16px spacing). */
 .subtitle-secondary span span,
 .subtitle-primary span span {
   background: rgba(0, 0, 0, 0.35);
+  line-height: 1.1;
   padding: 0;
   display: inline;
 }
