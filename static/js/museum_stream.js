@@ -58,13 +58,36 @@
     }
   }
 
-  async function fetchStateWithHistory() {
+  async function fetchState() {
     try {
       const apiBase = window.KD_API_CONFIG?.API_BASE_URL || '';
-      const res = await fetch(`${apiBase}/state_with_history?persona=${PERSONA}&history=5`);
+      const res = await fetch(`${apiBase}/state?persona=${PERSONA}`);
       return await res.json();
     } catch (e) {
-      console.error('Failed to fetch state_with_history:', e);
+      console.error('Failed to fetch state:', e);
+      return null;
+    }
+  }
+
+  async function fetchVersionHistory() {
+    try {
+      const apiBase = window.KD_API_CONFIG?.API_BASE_URL || '';
+      const res = await fetch(`${apiBase}/versions?persona=${PERSONA}`);
+      const data = await res.json();
+      return data.versions || [];
+    } catch (e) {
+      console.error('Failed to fetch versions:', e);
+      return [];
+    }
+  }
+
+  async function fetchStateAt(version) {
+    try {
+      const apiBase = window.KD_API_CONFIG?.API_BASE_URL || '';
+      const res = await fetch(`${apiBase}/state_at?persona=${PERSONA}&version=${version}`);
+      return await res.json();
+    } catch (e) {
+      console.error(`Failed to fetch state_at ${version}:`, e);
       return null;
     }
   }
@@ -226,15 +249,19 @@
   // ─── MAIN DISPLAY LOOP ────────────────────────────────────────
 
   async function displayLoop() {
-    const bundle = await fetchStateWithHistory();
-    if (!bundle || !bundle.state) {
+    const [state, versions] = await Promise.all([fetchState(), fetchVersionHistory()]);
+    if (!state) {
       console.error('No state data');
       await new Promise(r => setTimeout(r, 30000));
       return;
     }
 
-    const state     = bundle.state;
-    const allDrifts = bundle.history || [];
+    const recentVersions = versions.slice(-5);
+    const allDrifts = [];
+    for (const v of recentVersions) {
+      const d = await fetchStateAt(v);
+      if (d) allDrifts.push(d);
+    }
 
     startImageCycling(state);
 
