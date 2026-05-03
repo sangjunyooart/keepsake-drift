@@ -549,8 +549,17 @@
       if (currentLang !== "en" && currentLang !== secondLang) currentLang = "en";
       updateUILanguage(currentLang);
 
+      // Start clock immediately — independent of language/API
+      updateClock();
+      setInterval(updateClock, 250);
+
       // Fetch active second language from server (non-blocking)
       fetch("/lang_config").then(r => r.json()).then(data => {
+        // Hide toggle entirely if this deployment has translation disabled
+        if (!data.enable_translation) {
+          langToggle.style.display = 'none';
+          return;
+        }
         if (data && data.second_lang && uiText[data.second_lang]) {
           secondLang = data.second_lang;
           secondLangDirection = data.direction || "ltr";
@@ -607,9 +616,6 @@
         if (e.key === "Escape") closeMenu();
       });
 
-      // Start clock
-      updateClock();
-      setInterval(updateClock, 250);
     });
   </script>
 </body>

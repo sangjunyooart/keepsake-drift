@@ -38,21 +38,7 @@
 
   } else {
     // Production custom domain (*.keepsake-drift.net):
-    // Each subdomain runs its own FastAPI — try relative URLs first (fastest path).
-    // Only fall back to tunnel URL lookup if the local API is unreachable.
-    fetch('/state?persona=human', { method: 'HEAD', signal: AbortSignal.timeout(2000) })
-      .then(() => _ready(''))  // local API works — use relative URLs, zero extra latency
-      .catch(() =>
-        // Local API unreachable — fall back to tunnel URL lookup
-        fetch(`${PRIMARY_SERVER}/tunnel_url`, { signal: AbortSignal.timeout(4000) })
-          .then(r => r.json())
-          .then(d => _ready(d.tunnel_url || ''))
-          .catch(() =>
-            fetch(`${FALLBACK_TUNNEL}/tunnel_url`, { signal: AbortSignal.timeout(4000) })
-              .then(r => r.json())
-              .then(d => _ready(d.tunnel_url || FALLBACK_TUNNEL))
-              .catch(() => _ready(''))
-          )
-      );
+    // Each subdomain runs its own FastAPI on the same origin — relative URLs always work.
+    _ready('');
   }
 })();

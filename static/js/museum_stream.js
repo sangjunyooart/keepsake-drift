@@ -3,9 +3,8 @@
 // Set lang="en" on <html> for EN-only display; any other value enables bilingual L2.
 
 (function() {
-  // EN-only when page lang is "en"; bilingual otherwise (future AR screens use lang="ar")
-  const IS_BILINGUAL = document.documentElement.lang !== 'en';
-  console.log('[Museum] v2 loaded — IS_BILINGUAL:', IS_BILINGUAL, '| lang:', document.documentElement.lang);
+  // IS_BILINGUAL is determined after fetching /lang_config — set by fetchLangConfig()
+  let IS_BILINGUAL = false;
 
   // Read persona from current page filename or production route number
   const pageMap = {
@@ -45,6 +44,7 @@
       const apiBase = window.KD_API_CONFIG?.API_BASE_URL || '';
       const res = await fetch(`${apiBase}/lang_config`);
       const data = await res.json();
+      IS_BILINGUAL = data.enable_translation === true;
       config.l2_lang = data.second_lang || 'ar';
       config.l2_dir = data.direction || 'rtl';
 
@@ -53,6 +53,7 @@
       } else {
         subtitleSecondary.classList.remove('rtl');
       }
+      console.log('[Museum] lang_config loaded — IS_BILINGUAL:', IS_BILINGUAL, '| l2:', config.l2_lang);
     } catch (e) {
       console.error('Failed to fetch lang config:', e);
     }
@@ -429,15 +430,14 @@
   // ─── INIT ─────────────────────────────────────────────────────
 
   async function startStream() {
-    // Hide secondary subtitle entirely for EN-only screens
+    // Fetch lang config first — sets IS_BILINGUAL before display loop starts
+    await fetchLangConfig();
+
     if (!IS_BILINGUAL) {
       subtitleSecondary.style.display = 'none';
     }
 
-    // Fetch lang config and start display loop in parallel — no reason to wait
-    fetchLangConfig();
-
-    console.log(`[Museum] Stream initialized for ${PERSONA}`);
+    console.log(`[Museum] Stream initialized for ${PERSONA} | IS_BILINGUAL: ${IS_BILINGUAL}`);
 
     // Start the seamless display loop
     displayLoop();
