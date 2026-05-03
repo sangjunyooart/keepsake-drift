@@ -663,22 +663,18 @@ def run_tick(
 
         # 2a: Paired drift translation
         drift_pairs: Dict[str, Dict[str, str]] = {}
-        for mind_key, rec in reconstructed.items():
-            if rec["drift_en"] and not rec["drift_ar"]:
-                drift_pairs[mind_key] = {
-                    "prev_en": rec["rt"].prev_en or "",
-                    "drift_en": rec["drift_en"],
-                }
-
-        # Import config at the beginning of Phase 2 (not inside conditionals)
-        # to avoid scope issues when used in both Phase 2a and 2b
         import config as _cfg
+        if _cfg.ENABLE_TRANSLATION:
+            for mind_key, rec in reconstructed.items():
+                if rec["drift_en"] and not rec["drift_ar"]:
+                    drift_pairs[mind_key] = {
+                        "prev_en": rec["rt"].prev_en or "",
+                        "drift_en": rec["drift_en"],
+                    }
 
-        # DEBUG LOGGING
         import sys
-        print(f"[DEBUG Phase 2a] drift_pairs count: {len(drift_pairs)}", file=sys.stderr)
-        print(f"[DEBUG Phase 2a] drift_pairs keys: {list(drift_pairs.keys())}", file=sys.stderr)
         print(f"[DEBUG Phase 2] SECOND_LANG={_cfg.SECOND_LANG}, ENABLE_ARABIC={_cfg.ENABLE_ARABIC}", file=sys.stderr)
+        print(f"[DEBUG Phase 2a] drift_pairs count: {len(drift_pairs)}", file=sys.stderr)
 
         if drift_pairs:
             try:
@@ -721,9 +717,10 @@ def run_tick(
 
         # 2b: Bundled recap translation (recaps are short, no pairing needed)
         recap_texts: Dict[str, str] = {}
-        for mind_key, rec in reconstructed.items():
-            if rec["recap_en"] and not rec["recap_ar"]:
-                recap_texts[f"{mind_key}__recap"] = rec["recap_en"]
+        if _cfg.ENABLE_TRANSLATION:
+            for mind_key, rec in reconstructed.items():
+                if rec["recap_en"] and not rec["recap_ar"]:
+                    recap_texts[f"{mind_key}__recap"] = rec["recap_en"]
 
         if recap_texts:
             try:
@@ -740,11 +737,12 @@ def run_tick(
                 if not rec["recap_ar"]:
                     rec["recap_ar"] = recap_results.get(f"{mind_key}__recap", "")
 
-        # 2c: Bundled keepsake translation (NEW - mirrors recap translation pattern)
+        # 2c: Bundled keepsake translation
         keepsake_texts: Dict[str, str] = {}
-        for mind_key, rec in reconstructed.items():
-            if rec["keepsake_en"] and not rec["keepsake_ar"]:
-                keepsake_texts[f"{mind_key}__keepsake"] = rec["keepsake_en"]
+        if _cfg.ENABLE_TRANSLATION:
+            for mind_key, rec in reconstructed.items():
+                if rec["keepsake_en"] and not rec["keepsake_ar"]:
+                    keepsake_texts[f"{mind_key}__keepsake"] = rec["keepsake_en"]
 
         if keepsake_texts:
             try:
