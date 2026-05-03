@@ -76,13 +76,13 @@ body {
 /* RTL override for Arabic */
 .rtl { direction: rtl; text-align: right; }
 
-/* Temporality label at top */
+/* Temporality label at bottom */
 .temp-label {
   position: absolute;
-  top: 40px;
+  bottom: 24px;
   left: 50%;
   transform: translateX(-50%);
-  font-size: 18px;
+  font-size: 14px;
   letter-spacing: 0.15em;
   text-transform: uppercase;
   color: rgba(245, 245, 247, 0.35);
