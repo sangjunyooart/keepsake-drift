@@ -84,7 +84,7 @@ body {
   -webkit-box-decoration-break: clone;
   padding: 0 0.8vw;
   display: inline;
-  line-height: 1.1;
+  line-height: 0.75;
 }
 
 /* Each character — translucent backing that fades with each letter.
@@ -94,7 +94,7 @@ body {
 .subtitle-secondary span span,
 .subtitle-primary span span {
   background: rgba(0, 0, 0, 0.35);
-  line-height: 1.1;
+  line-height: 0.75;
   padding: 0;
   display: inline;
 }
