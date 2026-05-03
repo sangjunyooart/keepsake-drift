@@ -2,7 +2,7 @@
 // Sequence: L2 wipes in → English fades in after → hold → both fade out → 6s blank → loop
 
 (function() {
-  const IS_BILINGUAL = document.documentElement.lang !== 'en';
+  let IS_BILINGUAL = false; // set from lang_config API after fetch
 
   const pageMap = {
     'museum_human.html': 'human',
@@ -43,6 +43,7 @@
       const data = await res.json();
       config.l2_lang = data.second_lang || 'ar';
       config.l2_dir  = data.direction   || 'rtl';
+      IS_BILINGUAL   = data.enable_translation === true;
       if (config.l2_dir === 'rtl') {
         subtitleSecondary.classList.add('rtl');
       } else {
