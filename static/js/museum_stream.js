@@ -279,7 +279,12 @@
         void incoming.offsetWidth;
         incoming.style.transition = 'opacity 3s ease-in-out';
         incoming.style.opacity    = '1';
-        setTimeout(() => { current.style.opacity = '0'; activeBg = activeBg === 'A' ? 'B' : 'A'; resolve(); }, 3000);
+        setTimeout(() => {
+          current.style.transition = 'none';
+          current.style.opacity    = '0';
+          activeBg = activeBg === 'A' ? 'B' : 'A';
+          resolve();
+        }, 3000);
       };
       preload.onload = onReady;
       preload.onerror = onReady;
@@ -369,8 +374,9 @@
           if (imageUrl) {
             const bg = activeBg === 'A' ? bgImageA : bgImageB;
             bg.style.transition = 'none';
-            bg.style.opacity    = '1';
+            bg.style.opacity    = '0';
             await new Promise(resolve => { bg.onload = resolve; bg.onerror = resolve; bg.src = imageUrl; });
+            bg.style.opacity = '1';
           }
           firstDrift = false;
         } else if (imageUrl) {

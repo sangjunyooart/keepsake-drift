@@ -14,7 +14,7 @@ body {
   position: relative;
 }
 
-/* Background image layer - full brightness */
+/* Background image layer - transitions managed entirely by JS */
 .bg-image {
   position: absolute;
   top: 0;
@@ -22,8 +22,7 @@ body {
   width: 100%;
   height: 100%;
   object-fit: cover;
-  opacity: 1;
-  transition: opacity 3s ease-in-out;
+  opacity: 0;
   z-index: 0;
 }
 
