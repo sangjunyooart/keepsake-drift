@@ -199,54 +199,35 @@
       if (!text || !text.trim()) {
         element.textContent = '';
         element.style.opacity = '1';
+        element.style.clipPath = '';
         resolve();
         return;
       }
 
-      // Set text content
+      // Set text and let it wrap naturally in block display — no display change.
+      // clip-path does the wipe without touching layout, so no height shift at end.
       element.textContent = text;
       element.style.opacity = '1';
 
-      // Switch to inline-block so max-width clips text visually
-      element.style.display = 'inline-block';
-      element.style.overflow = 'hidden';
-      element.style.whiteSpace = 'nowrap';
-      element.style.maxWidth = '0px';
+      // LTR: reveal left→right (clip right side, shrink right inset to 0)
+      // RTL: reveal right→left (clip left side, shrink left inset to 0)
+      const startClip = isRTL ? 'inset(0 100% 0 0)' : 'inset(0 0 0 100%)';
 
-      if (isRTL) {
-        // For RTL, float right so wipe reveals from right edge
-        element.style.float = 'right';
-      } else {
-        element.style.float = 'none';
-      }
-
-      // Force layout to measure full width
-      element.style.maxWidth = 'none';
-      const fullWidth = element.scrollWidth;
-      element.style.maxWidth = '0px';
-
-      // Animate max-width from 0 to full width
       const anim = element.animate(
         [
-          { maxWidth: '0px' },
-          { maxWidth: fullWidth + 'px' }
+          { clipPath: isRTL ? 'inset(0 100% 0 0)' : 'inset(0 0 0 100%)' },
+          { clipPath: 'inset(0 0 0 0)' }
         ],
         { duration, easing: 'ease-out', fill: 'forwards' }
       );
 
       anim.onfinish = () => {
-        // Restore normal display
-        element.style.display = 'block';
-        element.style.overflow = '';
-        element.style.whiteSpace = '';
-        element.style.maxWidth = '';
-        element.style.float = '';
+        element.style.clipPath = '';
         element._wipeAnim = null;
         element._wipeResolve = null;
         resolve();
       };
 
-      // Store for cancellation
       element._wipeAnim = anim;
       element._wipeResolve = resolve;
     });
@@ -258,12 +239,7 @@
       element._wipeAnim.cancel();
       element._wipeAnim = null;
     }
-    // Restore display
-    element.style.display = 'block';
-    element.style.overflow = '';
-    element.style.whiteSpace = '';
-    element.style.maxWidth = '';
-    element.style.float = '';
+    element.style.clipPath = '';
     if (element._wipeResolve) {
       element._wipeResolve();
       element._wipeResolve = null;
