@@ -58,36 +58,13 @@
     }
   }
 
-  async function fetchState() {
+  async function fetchStateWithHistory() {
     try {
       const apiBase = window.KD_API_CONFIG?.API_BASE_URL || '';
-      const res = await fetch(`${apiBase}/state?persona=${PERSONA}`);
+      const res = await fetch(`${apiBase}/state_with_history?persona=${PERSONA}&history=5`);
       return await res.json();
     } catch (e) {
-      console.error('Failed to fetch state:', e);
-      return null;
-    }
-  }
-
-  async function fetchVersionHistory() {
-    try {
-      const apiBase = window.KD_API_CONFIG?.API_BASE_URL || '';
-      const res = await fetch(`${apiBase}/versions?persona=${PERSONA}`);
-      const data = await res.json();
-      return data.versions || [];
-    } catch (e) {
-      console.error('Failed to fetch version history:', e);
-      return [];
-    }
-  }
-
-  async function fetchStateAt(version) {
-    try {
-      const apiBase = window.KD_API_CONFIG?.API_BASE_URL || '';
-      const res = await fetch(`${apiBase}/state_at?persona=${PERSONA}&version=${version}`);
-      return await res.json();
-    } catch (e) {
-      console.error(`Failed to fetch version ${version}:`, e);
+      console.error('Failed to fetch state_with_history:', e);
       return null;
     }
   }
@@ -355,25 +332,17 @@
   // ─── MAIN DISPLAY LOOP (SEAMLESS) ─────────────────────────────
 
   async function displayLoop() {
-    // Fetch all data
-    const [state, versions] = await Promise.all([
-      fetchState(),
-      fetchVersionHistory()
-    ]);
+    // Single round-trip replaces 3–7 sequential fetches
+    const bundle = await fetchStateWithHistory();
 
-    if (!state) {
+    if (!bundle || !bundle.state) {
       console.error('No state data');
       await new Promise(r => setTimeout(r, 30000));
       return;
     }
 
-    // Fetch historical drifts (limit to last 5 for performance)
-    const recentVersions = versions.slice(-5);
-    const allDrifts = [];
-    for (const v of recentVersions) {
-      const d = await fetchStateAt(v);
-      if (d) allDrifts.push(d);
-    }
+    const state = bundle.state;
+    const allDrifts = bundle.history || [];
 
     // Start background image cycling at full brightness
     startImageCycling(state);

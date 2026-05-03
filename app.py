@@ -1376,3 +1376,98 @@ async def state_at(persona: str, version: int):
         })
     finally:
         conn.close()
+
+
+@app.get("/state_with_history")
+async def state_with_history(persona: str, history: int = 5):
+    """Return current state + last N historical drift states in one call.
+    Replaces the museum screen's 3–7 sequential fetches with a single round-trip.
+    """
+    persona = (persona or "").strip()
+    if persona not in config.TEMPORALITIES:
+        return JSONResponse({"error": "Unknown persona"}, status_code=400)
+
+    db_path = getattr(config, "SQLITE_PATH", "./data/keepsake.sqlite")
+    conn = sqlite3.connect(db_path)
+    conn.row_factory = sqlite3.Row
+    try:
+        mind_id = storage.mind_id_for_temporality(conn, persona)
+
+        # Get all versions
+        rows = conn.execute(
+            "SELECT DISTINCT version FROM drift_memory WHERE mind_id = ? ORDER BY version ASC;",
+            (mind_id,),
+        ).fetchall()
+        all_versions = [int(r["version"]) for r in rows]
+        if not all_versions:
+            return JSONResponse({"persona": persona, "state": None, "history": [], "versions": []})
+
+        latest_version = all_versions[-1]
+        recent_versions = all_versions[-(history + 1):]  # +1 includes latest itself
+
+        def _fetch_version(ver):
+            row = conn.execute(
+                """SELECT dm.*, ms.last_tick_id
+                   FROM drift_memory dm
+                   LEFT JOIN mind_state ms ON ms.mind_id = dm.mind_id
+                   WHERE dm.mind_id = ? AND dm.version = ?
+                   ORDER BY dm.drift_id DESC LIMIT 1""",
+                (mind_id, ver),
+            ).fetchone()
+            if not row:
+                return None
+            raw_params = (row["params_json"] or "").strip() if "params_json" in row.keys() else ""
+            trigger = {
+                "event_ids": [], "event_titles": [], "selected_segments": [],
+                "sensory_anchors": [], "invariables": [], "drifted_keywords": [],
+                "justification_en": "", "justification_ar": "", "drift_direction": "",
+                "image_prompt": "", "infiltrating_imagery": [], "curated_headlines": [],
+            }
+            if raw_params:
+                try:
+                    pj = json.loads(raw_params)
+                    for k in trigger:
+                        if k in pj:
+                            trigger[k] = pj[k]
+                except Exception:
+                    pass
+            image_url = _resolve_image_url(conn, persona, ver, raw_params)
+            return {
+                "temporality": persona,
+                "version": ver,
+                "image_url": image_url,
+                "drift_en": (row["drift_text"] or "").strip(),
+                "drift_ar": (row["drift_text_ar"] or "").strip() if "drift_text_ar" in row.keys() else "",
+                "recap_en": (row["summary_text"] or "").strip(),
+                "recap_ar": (row["summary_text_ar"] or "").strip() if "summary_text_ar" in row.keys() else "",
+                "keepsake_en": (row["keepsake_text"] or "").strip() if "keepsake_text" in row.keys() else "",
+                "created_at": (row["created_at"] or "").strip(),
+                **trigger,
+            }
+
+        current_state = _fetch_version(latest_version)
+        history_states = []
+        for ver in recent_versions:
+            if ver == latest_version:
+                continue
+            s = _fetch_version(ver)
+            if s:
+                history_states.append(s)
+
+        # Attach image history to current state
+        if current_state:
+            img_history = _resolve_image_history(persona, latest_version)
+            api_base_prefix = ""
+            if img_history:
+                current_state["image_url"]   = img_history[0] if len(img_history) > 0 else current_state.get("image_url")
+                current_state["image_prev1"] = img_history[1] if len(img_history) > 1 else None
+                current_state["image_prev2"] = img_history[2] if len(img_history) > 2 else None
+
+        return JSONResponse({
+            "persona": persona,
+            "versions": all_versions,
+            "state": current_state,
+            "history": history_states,
+        })
+    finally:
+        conn.close()
