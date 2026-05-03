@@ -434,7 +434,8 @@
       subtitleSecondary.style.display = 'none';
     }
 
-    await fetchLangConfig();
+    // Fetch lang config and start display loop in parallel — no reason to wait
+    fetchLangConfig();
 
     console.log(`[Museum] Stream initialized for ${PERSONA}`);
 
