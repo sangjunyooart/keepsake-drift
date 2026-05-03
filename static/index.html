@@ -159,7 +159,7 @@
         <div class="header-title" id="headerTitle">Keepsakes ~ Drift</div>
       </div>
 
-      <div class="lang-toggle" id="langToggle" role="button" tabindex="0">
+      <div class="lang-toggle" id="langToggle" role="button" tabindex="0" style="display:none">
         <span id="langLabel"></span>
       </div>
     </div>
@@ -555,11 +555,8 @@
 
       // Fetch active second language from server (non-blocking)
       fetch("/lang_config").then(r => r.json()).then(data => {
-        // Hide toggle entirely if this deployment has translation disabled
-        if (!data.enable_translation) {
-          langToggle.style.display = 'none';
-          return;
-        }
+        // Only show toggle if translation is enabled on this deployment
+        if (!data.enable_translation) return;
         if (data && data.second_lang && uiText[data.second_lang]) {
           secondLang = data.second_lang;
           secondLangDirection = data.direction || "ltr";
@@ -573,6 +570,7 @@
             localStorage.setItem(STORAGE_LANG_KEY, currentLang);
           }
           updateUILanguage(currentLang);
+          langToggle.style.display = '';
         }
       }).catch(() => {});
 
