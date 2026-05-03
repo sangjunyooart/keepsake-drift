@@ -1,0 +1,329 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Keepsake Control</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+html,body{height:100vh;display:flex;flex-direction:column;overflow:hidden;
+  background:#0c0c0c;color:#ddd;font-family:'SF Mono',Monaco,Menlo,monospace;font-size:13px}
+
+#bar{
+  flex-shrink:0;height:42px;display:flex;align-items:stretch;
+  background:#111;border-bottom:2px solid #1a1a1a;
+  overflow-x:auto;overflow-y:hidden;
+}
+#bar::-webkit-scrollbar{height:3px}
+#bar::-webkit-scrollbar-thumb{background:#222}
+
+.tab{
+  flex-shrink:0;display:flex;align-items:center;gap:6px;
+  padding:0 16px;cursor:pointer;border-right:1px solid #1a1a1a;
+  font-size:11px;color:#555;white-space:nowrap;
+  transition:background .1s,color .1s;
+  border-bottom:2px solid transparent;margin-bottom:-2px;
+}
+.tab:hover{background:#181818;color:#999}
+.tab.active{background:#0c0c0c;color:#eee;border-bottom-color:#3fb950}
+.tab.down{border-bottom-color:#f85149}
+
+.tab .dot{width:8px;height:8px;border-radius:50%;background:#2a2a2a;flex-shrink:0;transition:background .3s}
+.dot.ok{background:#3fb950}
+.dot.err{background:#f85149;box-shadow:0 0 4px #f8514988}
+.dot.wait{background:#555;animation:pulse 1.2s infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.2}}
+
+.tab-name{font-size:11px;font-weight:600;line-height:1.3}
+.tab-url{font-size:9px;color:#333;line-height:1.3;transition:color .1s}
+.tab:hover .tab-url,.tab.active .tab-url{color:#555}
+
+#strip{
+  flex-shrink:0;height:24px;display:flex;align-items:center;
+  background:#0e0e0e;border-bottom:1px solid #181818;
+  padding:0 8px;gap:0;overflow:hidden;
+}
+.chip{display:flex;align-items:center;gap:5px;padding:0 10px;height:100%;border-right:1px solid #181818;font-size:10px}
+.chip .code{font-weight:700}
+.code.ok{color:#3fb950}
+.code.err{color:#f85149}
+.code.wait{color:#333}
+#clock{margin-left:auto;font-size:9px;color:#252525}
+
+#content{flex:1;overflow:hidden;display:flex;flex-direction:column}
+
+#ov{
+  flex:1;display:grid;grid-template-columns:repeat(3,1fr);
+  gap:8px;padding:12px;overflow:auto;align-content:start;
+}
+.card{
+  background:#111;border:1px solid #1e1e1e;border-radius:8px;
+  padding:14px;display:flex;flex-direction:column;gap:8px;
+  transition:border-color .15s,background .15s;
+}
+.card:hover{background:#181818;border-color:#2a2a2a}
+.card .top{display:flex;justify-content:space-between;align-items:flex-start}
+.card .c-name{font-size:13px;font-weight:600;color:#888}
+.card .c-url{font-size:10px;color:#2a2a2a;margin-top:2px}
+.c-code{font-size:28px;font-weight:700}
+.c-code.ok{color:#3fb950}
+.c-code.err{color:#f85149}
+.c-code.wait{color:#1e1e1e}
+
+.row{display:flex;align-items:center;gap:6px;min-height:22px}
+.rl{font-size:9px;color:#333;width:60px;flex-shrink:0;text-transform:uppercase;letter-spacing:.05em}
+
+/* generic action button */
+.ab{
+  padding:2px 8px;font-size:9px;font-family:inherit;cursor:pointer;
+  border:1px solid #222;border-radius:4px;background:#181818;color:#444;
+  text-decoration:none;display:inline-block;
+  transition:all .1s;
+}
+.ab:hover{background:#222;color:#aaa;border-color:#333}
+
+/* museum link button — green tint */
+.ml{
+  padding:2px 8px;font-size:9px;font-family:inherit;cursor:pointer;
+  border:1px solid #1a3a2a;border-radius:4px;background:#0d1f16;color:#2d7a4a;
+  text-decoration:none;display:inline-block;
+  transition:all .1s;
+}
+.ml:hover{background:#1a3a2a;color:#3fb950;border-color:#2a5a3a}
+
+/* admin button — blue tint */
+.adm{
+  padding:2px 8px;font-size:9px;font-family:inherit;cursor:pointer;
+  border:1px solid #1a1a3a;border-radius:4px;background:#0d0d1f;color:#3a3a8a;
+  text-decoration:none;display:inline-block;
+  transition:all .1s;
+}
+.adm:hover{background:#1a1a3a;color:#6a6aff;border-color:#2a2a5a}
+
+.pill{display:flex;border:1px solid #222;border-radius:20px;overflow:hidden;background:#181818}
+.pb{padding:2px 10px;font-size:9px;font-family:inherit;cursor:pointer;
+    border:none;background:transparent;color:#444;transition:background .1s,color .1s}
+.pb:hover{color:#888}
+
+.card-ctrls{display:flex;flex-direction:column;gap:5px;border-top:1px solid #181818;padding-top:8px}
+.cv{font-size:9px;color:#333;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+
+#viewer{flex:1;display:none;border:none;background:#fff;width:100%}
+</style>
+</head>
+<body>
+
+<div id="bar">
+  <div class="tab active" id="tab-home" data-target="home">
+    <span style="font-size:15px">⌂</span>
+    <div><div class="tab-name">Overview</div><div class="tab-url">all services</div></div>
+  </div>
+</div>
+
+<div id="strip"><span id="clock"></span></div>
+
+<div id="content">
+  <div id="ov"></div>
+  <iframe id="viewer"></iframe>
+</div>
+
+<script>
+const SVCS = [
+  {id:'ar',  name:'drift · AR',  port:8000, adminPath:'/admin', mainPath:'/', museum:true},
+  {id:'en',  name:'drift · EN',  port:8001, adminPath:'/admin', mainPath:'/', museum:true},
+  {id:'gr',  name:'drift · GR',  port:8002, adminPath:'/admin', mainPath:'/', museum:true},
+  {id:'br',  name:'drift · BR',  port:8003, adminPath:'/admin', mainPath:'/', museum:true},
+  {id:'px',  name:'parallax',    port:8765, adminPath:'/admin', mainPath:'/'},
+  {id:'mon', name:'monitor',     port:8080, adminPath:'/monitor', mainPath:'/monitor', local:true},
+];
+
+const MUSEUM_SCREENS = [
+  {label:'human',   path:'/museum/human'},
+  {label:'liminal', path:'/museum/liminal'},
+  {label:'env',     path:'/museum/environment'},
+];
+
+const TOGGLE_RE = /toggle|auto|tick|drift|start|stop|enable|disable|run|pause/i;
+const SKIP = new Set(['/openapi.json','/docs','/redoc','/favicon.ico','/']);
+
+const bar    = document.getElementById('bar');
+const strip  = document.getElementById('strip');
+const ov     = document.getElementById('ov');
+const viewer = document.getElementById('viewer');
+const clock  = document.getElementById('clock');
+const pad    = n => String(n).padStart(2,'0');
+
+SVCS.forEach(svc => {
+  // ── Tab (click → load admin in iframe) ──────────────────────────
+  const tab = document.createElement('div');
+  tab.className = 'tab';
+  tab.id = `tab-${svc.id}`;
+  tab.dataset.target = svc.id;
+  tab.innerHTML = `
+    <span class="dot wait" id="dot-${svc.id}"></span>
+    <div>
+      <div class="tab-name">${svc.name}</div>
+      <div class="tab-url">:${svc.port}${svc.adminPath !== '/' ? svc.adminPath : ''}</div>
+    </div>`;
+  bar.appendChild(tab);
+
+  // ── Status chip ──────────────────────────────────────────────────
+  const chip = document.createElement('div');
+  chip.className = 'chip';
+  chip.innerHTML = `<span class="code wait" id="sc-${svc.id}">—</span><span style="color:#252525">${svc.name}</span>`;
+  strip.insertBefore(chip, clock);
+
+  // ── Links row (main + admin — both new window except admin → iframe) ──
+  const linksRow = `
+    <div class="row">
+      <div class="rl">links</div>
+      <a class="ab" href="http://localhost:${svc.port}${svc.mainPath}" target="_blank">main ↗</a>
+      ${svc.local ? '' : `<a class="adm" href="#" onclick="loadAdmin('${svc.id}');return false">admin ▤</a>`}
+    </div>`;
+
+  // ── Museum row (drift services only — all new window) ─────────────
+  const museumRow = svc.museum ? `
+    <div class="row">
+      <div class="rl">museum</div>
+      ${MUSEUM_SCREENS.map(m =>
+        `<a class="ml" href="http://localhost:${svc.port}${m.path}" target="_blank">${m.label} ↗</a>`
+      ).join('')}
+    </div>` : '';
+
+  // ── Card ─────────────────────────────────────────────────────────
+  const card = document.createElement('div');
+  card.className = 'card';
+  card.innerHTML = `
+    <div class="top">
+      <div>
+        <div class="c-name">${svc.name}</div>
+        <div class="c-url">localhost:${svc.port}</div>
+      </div>
+      <div class="c-code wait" id="cc-${svc.id}">—</div>
+    </div>
+    ${linksRow}
+    ${museumRow}
+    <div class="card-ctrls" id="ctrl-${svc.id}">
+      <div class="row"><div class="cv" style="color:#1e1e1e;font-size:9px">discovering api…</div></div>
+    </div>`;
+  ov.appendChild(card);
+});
+
+// ── Tab click → load admin in iframe ──────────────────────────────
+document.addEventListener('click', e => {
+  const tab = e.target.closest('[data-target]');
+  if (tab) switchToIframe(tab.dataset.target);
+});
+
+function loadAdmin(id) {
+  switchToIframe(id);
+}
+
+function switchToIframe(id) {
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+
+  if (id === 'home') {
+    ov.style.display     = 'grid';
+    viewer.style.display = 'none';
+    document.getElementById('tab-home').classList.add('active');
+    return;
+  }
+
+  const svc = SVCS.find(s => s.id === id);
+  document.getElementById(`tab-${id}`).classList.add('active');
+  ov.style.display     = 'none';
+  viewer.style.display = 'block';
+  viewer.src = `http://localhost:${svc.port}${svc.adminPath}`;
+}
+
+// ── Health poll ────────────────────────────────────────────────────
+async function poll() {
+  try {
+    const data = await fetch('/api/status').then(r => r.json());
+    const ts = new Date();
+    clock.textContent = `${pad(ts.getHours())}:${pad(ts.getMinutes())}:${pad(ts.getSeconds())}`;
+
+    SVCS.forEach(svc => {
+      const code = svc.local ? 200 : (data[svc.port] ?? 0);
+      const ok   = code >= 200 && code < 400;
+      const cls  = ok ? 'ok' : 'err';
+
+      document.getElementById(`dot-${svc.id}`).className = `dot ${cls}`;
+
+      const sc = document.getElementById(`sc-${svc.id}`);
+      sc.className   = `code ${cls}`;
+      sc.textContent = ok ? code : (code === 0 ? '✗' : code);
+
+      const cc = document.getElementById(`cc-${svc.id}`);
+      cc.className   = `c-code ${cls}`;
+      cc.textContent = ok ? code : (code === 0 ? 'DOWN' : code);
+
+      const tab = document.getElementById(`tab-${svc.id}`);
+      if (!ok) tab.classList.add('down'); else tab.classList.remove('down');
+    });
+  } catch {}
+}
+
+// ── OpenAPI control discovery ──────────────────────────────────────
+async function discover(svc) {
+  const ctrl = document.getElementById(`ctrl-${svc.id}`);
+  if (svc.local) { ctrl.innerHTML = ''; return; }
+
+  let paths = null;
+  try {
+    const r = await fetch(`http://localhost:${svc.port}/openapi.json`, {signal: AbortSignal.timeout(3000)});
+    if (r.ok) paths = (await r.json()).paths;
+  } catch {}
+
+  if (!paths) { ctrl.innerHTML = ''; return; }
+
+  const hits = Object.entries(paths).filter(([p]) => !SKIP.has(p) && TOGGLE_RE.test(p));
+  if (!hits.length) { ctrl.innerHTML = ''; return; }
+
+  ctrl.innerHTML = hits.map(([path, methods]) => {
+    const lbl      = path.replace(/^\//,'').replace(/[/_]/g,' ');
+    const isToggle = /toggle|tick|auto/i.test(path);
+    const hasPost  = 'post' in methods;
+    const hasGet   = 'get'  in methods;
+    const sid      = `${svc.id}${path.replace(/\W/g,'')}`;
+    let h = `<div class="row" style="border-top:1px solid #161616;padding-top:4px">
+               <div class="rl" title="${path}">${lbl}</div>`;
+    if (hasPost && isToggle) {
+      h += `<div class="pill">
+              <button class="pb" onclick="callApi(${svc.port},'${path}',{action:'on'})">ON</button>
+              <button class="pb" onclick="callApi(${svc.port},'${path}',{action:'off'})">OFF</button>
+            </div>`;
+    } else if (hasPost) {
+      h += `<button class="ab" onclick="callApi(${svc.port},'${path}',{})">run</button>`;
+    }
+    if (hasGet) {
+      h += `<button class="ab" onclick="getApi(${svc.port},'${path}','gv${sid}')">get</button>
+            <span class="cv" id="gv${sid}"></span>`;
+    }
+    return h + '</div>';
+  }).join('');
+}
+
+async function callApi(port, path, body) {
+  try {
+    await fetch(`http://localhost:${port}${path}`, {
+      method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(body)
+    });
+  } catch {}
+}
+
+async function getApi(port, path, spanId) {
+  const el = document.getElementById(spanId);
+  try {
+    const r = await fetch(`http://localhost:${port}${path}`, {signal: AbortSignal.timeout(3000)});
+    let val = await r.text();
+    try { val = JSON.stringify(JSON.parse(val)); } catch {}
+    if (el) el.textContent = val.slice(0,60);
+  } catch { if (el) el.textContent = 'err'; }
+}
+
+poll();
+setInterval(poll, 10000);
+SVCS.forEach(discover);
+</script>
+</body>
+</html>
