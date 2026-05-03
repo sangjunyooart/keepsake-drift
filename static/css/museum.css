@@ -93,11 +93,15 @@ body {
   display: inline;
 }
 
-/* Per-line containers — block elements, height set by JS, clipped */
+/* Per-line containers — height set by JS to the natural line-box height.
+   padding:4px creates a 4px gap between adjacent line backings via overflow
+   clipping, without adding to the total element height (box-sizing:border-box
+   keeps total = JS-measured value, so no layout shift after animation). */
 .subtitle-line {
   display: block;
   margin: 0;
-  padding: 0;
+  padding: 4px 0;
+  box-sizing: border-box;
   overflow: hidden;
 }
 .subtitle-line > span {

@@ -191,7 +191,7 @@
     void element.offsetWidth;
     lineDivs.forEach(div => {
       const span = div.querySelector(':scope > span');
-      if (span) { div.style.height = (span.getBoundingClientRect().height + 4) + 'px'; div.style.overflow = 'visible'; }
+      if (span) { div.style.height = span.getBoundingClientRect().height + 'px'; }
     });
   }
 
