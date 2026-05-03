@@ -128,13 +128,19 @@ html,body{height:100vh;display:flex;flex-direction:column;overflow:hidden;
 
 <script>
 const SVCS = [
-  {id:'ar',  name:'drift · AR',  port:8000, adminPath:'/admin', mainPath:'/', museum:true},
-  {id:'en',  name:'drift · EN',  port:8001, adminPath:'/admin', mainPath:'/', museum:true},
-  {id:'gr',  name:'drift · GR',  port:8002, adminPath:'/admin', mainPath:'/', museum:true},
-  {id:'br',  name:'drift · BR',  port:8003, adminPath:'/admin', mainPath:'/', museum:true},
-  {id:'px',  name:'parallax',    port:8765, adminPath:'/admin', mainPath:'/'},
+  {id:'ar',  name:'drift · AR',  port:8000, domain:'ar.keepsake-drift.net',  adminPath:'/admin', mainPath:'/', museum:true},
+  {id:'en',  name:'drift · EN',  port:8001, domain:'en.keepsake-drift.net',  adminPath:'/admin', mainPath:'/', museum:true},
+  {id:'gr',  name:'drift · GR',  port:8002, domain:'gr.keepsake-drift.net',  adminPath:'/admin', mainPath:'/', museum:true},
+  {id:'br',  name:'drift · BR',  port:8003, domain:'br.keepsake-drift.net',  adminPath:'/admin', mainPath:'/', museum:true},
+  {id:'px',  name:'parallax',    port:8765, domain:'px.keepsake-drift.net',  adminPath:'/admin', mainPath:'/'},
   {id:'mon', name:'monitor',     port:8080, adminPath:'/monitor', mainPath:'/monitor', local:true},
 ];
+
+// Public URL for a service path — uses domain for non-local services
+function pubUrl(svc, path) {
+  if (svc.local || !svc.domain) return `http://localhost:${svc.port}${path}`;
+  return `https://${svc.domain}${path}`;
+}
 
 const MUSEUM_SCREENS = [
   {label:'human',   path:'/museum/human'},
@@ -162,7 +168,7 @@ SVCS.forEach(svc => {
     <span class="dot wait" id="dot-${svc.id}"></span>
     <div>
       <div class="tab-name">${svc.name}</div>
-      <div class="tab-url">:${svc.port}${svc.adminPath !== '/' ? svc.adminPath : ''}</div>
+      <div class="tab-url">${svc.domain || `localhost:${svc.port}`}</div>
     </div>`;
   bar.appendChild(tab);
 
@@ -172,20 +178,20 @@ SVCS.forEach(svc => {
   chip.innerHTML = `<span class="code wait" id="sc-${svc.id}">—</span><span style="color:#252525">${svc.name}</span>`;
   strip.insertBefore(chip, clock);
 
-  // ── Links row (main + admin — both new window except admin → iframe) ──
+  // ── Links row: main opens domain in new window; admin loads localhost in iframe ──
   const linksRow = `
     <div class="row">
       <div class="rl">links</div>
-      <a class="ab" href="http://localhost:${svc.port}${svc.mainPath}" target="_blank">main ↗</a>
+      <a class="ab" href="${pubUrl(svc, svc.mainPath)}" target="_blank">main ↗</a>
       ${svc.local ? '' : `<a class="adm" href="#" onclick="loadAdmin('${svc.id}');return false">admin ▤</a>`}
     </div>`;
 
-  // ── Museum row (drift services only — all new window) ─────────────
+  // ── Museum row: domain links, all new window ──────────────────────
   const museumRow = svc.museum ? `
     <div class="row">
       <div class="rl">museum</div>
       ${MUSEUM_SCREENS.map(m =>
-        `<a class="ml" href="http://localhost:${svc.port}${m.path}" target="_blank">${m.label} ↗</a>`
+        `<a class="ml" href="${pubUrl(svc, m.path)}" target="_blank">${m.label} ↗</a>`
       ).join('')}
     </div>` : '';
 
@@ -196,7 +202,7 @@ SVCS.forEach(svc => {
     <div class="top">
       <div>
         <div class="c-name">${svc.name}</div>
-        <div class="c-url">localhost:${svc.port}</div>
+        <div class="c-url">${svc.domain || `localhost:${svc.port}`}</div>
       </div>
       <div class="c-code wait" id="cc-${svc.id}">—</div>
     </div>
