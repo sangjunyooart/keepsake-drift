@@ -202,32 +202,47 @@
         return;
       }
 
-      // Set text while element is invisible (opacity:0 from caller).
-      // Height is fully settled before any animation starts — no shift possible.
+      // Set text while element is still invisible (opacity:0 from caller).
       element.textContent = text;
-      void element.offsetWidth; // commit layout at final height
 
-      // Animate opacity only — no layout property is ever touched.
-      const anim = element.animate(
-        [{ opacity: 0 }, { opacity: 1 }],
-        { duration, easing: 'ease-in', fill: 'forwards' }
-      );
-
-      anim.onfinish = () => {
-        // Sync inline style so cancelWipe's anim.cancel() reverts to the right value.
-        element.style.opacity = '1';
-        // Keep _wipeAnim so cancelWipe can cancel the fill if needed.
-        element._wipeResolve = null;
-        resolve();
-      };
-
-      element._wipeAnim = anim;
+      // Per-call token so pending rAFs can detect a cancel that arrived
+      // before the animation even started.
+      const token = {};
+      element._wipeToken = token;
       element._wipeResolve = resolve;
+
+      // Two rAFs: the browser renders one frame with the new text (fonts may
+      // swap in here), then a second frame to commit the fully-settled layout.
+      // The element is invisible throughout, so the font-swap reflow is silent.
+      // Animation then starts from the already-settled appearance — the backing
+      // height is already at its final value, so nothing readjusts at animation end.
+      requestAnimationFrame(() => {
+        requestAnimationFrame(() => {
+          if (element._wipeToken !== token) return; // cancelled before start
+
+          void element.offsetWidth; // lock in settled layout
+
+          const anim = element.animate(
+            [{ opacity: 0 }, { opacity: 1 }],
+            { duration, easing: 'ease-in', fill: 'forwards' }
+          );
+
+          anim.onfinish = () => {
+            element.style.opacity = '1'; // sync inline so cancel() reverts cleanly
+            element._wipeResolve = null;
+            // Keep _wipeAnim so cancelWipe can cancel the fill:forwards effect.
+            resolve();
+          };
+
+          element._wipeAnim = anim;
+        });
+      });
     });
   }
 
-  // Cancel any running wipe animation
+  // Cancel any running wipe animation (or a pending pre-start rAF)
   function cancelWipe(element) {
+    element._wipeToken = null; // invalidates any rAF waiting to start
     if (element._wipeAnim) {
       element._wipeAnim.cancel(); // removes fill; reverts to inline opacity
       element._wipeAnim = null;
@@ -405,6 +420,11 @@
     if (!IS_BILINGUAL) {
       subtitleSecondary.style.display = 'none';
     }
+
+    // Wait for all declared fonts (including Noto Sans Arabic) to finish loading
+    // before any animation starts. Prevents mid-animation font-swap reflows.
+    await document.fonts.ready;
+
     console.log(`[Museum] Stream initialized for ${PERSONA} | IS_BILINGUAL: ${IS_BILINGUAL}`);
 
     // State bundle was fetching in parallel — pass it directly to avoid second fetch
