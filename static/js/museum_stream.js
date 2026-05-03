@@ -1,8 +1,9 @@
 // Museum Stream Runtime
-// Displays bilingual drift dialogue with wipe-reveal animation, 6s pauses, seamless looping
+// Sequence: L2 wipes in → English fades in after → hold → both fade out → 6s blank → loop
 
 (function() {
-  // Read persona from current page filename
+  const IS_BILINGUAL = document.documentElement.lang !== 'en';
+
   const pageMap = {
     'museum_human.html': 'human',
     'museum_human': 'human',
@@ -20,21 +21,18 @@
   const currentPage = window.location.pathname.split('/').pop();
   const PERSONA = pageMap[currentPage] || 'human';
 
-  const TICK_INTERVAL = 3600; // 1 hour in seconds
-  const WIPE_DURATION = 4000; // 4 seconds for wipe reveal
-  const PAUSE_BETWEEN_SENTENCES = 6000; // 6 seconds pause between sentences
-  const FADE_OUT_DURATION = 2000; // 2 seconds to fade out
+  const TICK_INTERVAL = 3600;
+  const WIPE_DURATION = 2000;
+  const EN_FADE_IN_DURATION = 1200;
+  const PAUSE_BETWEEN_SENTENCES = 6000;
+  const FADE_OUT_DURATION = 2000;
 
-  let config = {
-    l2_lang: 'ar',
-    l2_dir: 'rtl'
-  };
+  let config = { l2_lang: 'ar', l2_dir: 'rtl' };
 
-  // Elements
-  const subtitlePrimary = document.getElementById('subtitlePrimary');
+  const subtitlePrimary   = document.getElementById('subtitlePrimary');
   const subtitleSecondary = document.getElementById('subtitleSecondary');
-  const tempLabel = document.getElementById('tempLabel');
-  const bgImage = document.getElementById('bgImage');
+  const tempLabel         = document.getElementById('tempLabel');
+  const bgImage           = document.getElementById('bgImage');
 
   // ─── API FETCHES ───────────────────────────────────────────────
 
@@ -44,8 +42,7 @@
       const res = await fetch(`${apiBase}/lang_config`);
       const data = await res.json();
       config.l2_lang = data.second_lang || 'ar';
-      config.l2_dir = data.direction || 'rtl';
-
+      config.l2_dir  = data.direction   || 'rtl';
       if (config.l2_dir === 'rtl') {
         subtitleSecondary.classList.add('rtl');
       } else {
@@ -91,214 +88,164 @@
   }
 
   // ─── DIALOGUE BUILDER ─────────────────────────────────────────
-  // Builds a looping dialogue from state data — the temporality AI
-  // persona speaks about its own memory drift process.
 
   function buildDialogue(state, allDrifts) {
-    const pairs = []; // [{en: "...", l2: "..."}, ...]
-
+    const pairs = [];
     if (!state) return pairs;
 
-    const l2Field = `drift_${config.l2_lang}`;
+    const l2Field     = `drift_${config.l2_lang}`;
     const recapL2Field = `recap_${config.l2_lang}`;
 
-    // ── PART 1: The keepsake speaks (origin memory) ──
     if (state.keepsake_en) {
       pairs.push({
         en: state.keepsake_en,
-        l2: state[`keepsake_${config.l2_lang}`] || state.keepsake_ar || ''
+        l2: IS_BILINGUAL ? (state[`keepsake_${config.l2_lang}`] || state.keepsake_ar || '') : ''
       });
     }
-
-    // ── PART 2: How the world infiltrated ──
     if (state.justification_en) {
       pairs.push({
         en: state.justification_en,
-        l2: state.justification_l2 || ''
+        l2: IS_BILINGUAL ? (state.justification_l2 || '') : ''
       });
     }
-
-    // ── PART 3: The drift direction (persona voice) ──
     if (state.drift_direction) {
-      pairs.push({
-        en: state.drift_direction,
-        l2: '' // drift_direction is meta-text, no L2 equivalent typically
-      });
+      pairs.push({ en: state.drift_direction, l2: '' });
     }
-
-    // ── PART 4: Infiltrating imagery ──
-    const imagery = state.infiltrating_imagery || [];
-    if (imagery.length > 0) {
-      const imageryText = `New imagery emerges: ${imagery.slice(0, 4).join(', ')}.`;
-      pairs.push({
-        en: imageryText,
-        l2: ''
-      });
-    }
-
-    // ── PART 5: The current drift text (the transformed memory) ──
     if (state.drift_en) {
       pairs.push({
         en: state.drift_en,
-        l2: state[l2Field] || state.drift_ar || ''
+        l2: IS_BILINGUAL ? (state[l2Field] || state.drift_ar || '') : ''
       });
     }
-
-    // ── PART 6: Recap / summary ──
     if (state.recap_en) {
       pairs.push({
         en: state.recap_en,
-        l2: state[recapL2Field] || state.recap_ar || ''
+        l2: IS_BILINGUAL ? (state[recapL2Field] || state.recap_ar || '') : ''
       });
     }
 
-    // ── PART 7: Evolutionary context from history ──
     if (allDrifts && allDrifts.length > 1) {
-      // Origin anchor
-      const drift0 = allDrifts[0];
+      const drift0  = allDrifts[0];
       const anchors = drift0.sensory_anchors || [];
       if (anchors.length > 0) {
-        const anchorText = `This memory began with ${anchors.slice(0, 3).join(', ')}.`;
         pairs.push({
-          en: anchorText,
-          l2: drift0[recapL2Field] || drift0.recap_ar || ''
+          en: `This memory began with ${anchors.slice(0, 3).join(', ')}.`,
+          l2: IS_BILINGUAL ? (drift0[recapL2Field] || drift0.recap_ar || '') : ''
         });
       }
-
-      // Cumulative imagery from middle drifts
       if (allDrifts.length >= 4) {
-        const middleDrifts = allDrifts.slice(1, -1);
-        const allImagery = middleDrifts.flatMap(d => {
-          const img = d.infiltrating_imagery;
-          return Array.isArray(img) ? img : [];
-        });
+        const allImagery = allDrifts.slice(1, -1).flatMap(d => Array.isArray(d.infiltrating_imagery) ? d.infiltrating_imagery : []);
         const unique = [...new Set(allImagery)].slice(0, 4);
         if (unique.length > 0) {
-          pairs.push({
-            en: `Over ${allDrifts.length - 1} drifts, imagery accumulated: ${unique.join(', ')}.`,
-            l2: ''
-          });
+          pairs.push({ en: `Over ${allDrifts.length - 1} drifts, imagery accumulated: ${unique.join(', ')}.`, l2: '' });
         }
       }
-
-      // Headlines that shaped the drift
-      const headlines = [];
-      for (const d of allDrifts.slice(1)) {
-        if (d.curated_headlines && d.curated_headlines.length > 0) {
-          headlines.push(d.curated_headlines[0]);
-        }
-      }
+      const headlines = allDrifts.slice(1).map(d => d.curated_headlines?.[0]).filter(Boolean);
       if (headlines.length > 0) {
-        const headlineText = `The world brought: ${headlines.slice(-3).join(' — ')}.`;
-        pairs.push({
-          en: headlineText,
-          l2: ''
-        });
+        pairs.push({ en: `The world brought: ${headlines.slice(-3).join(' — ')}.`, l2: '' });
       }
     }
 
-    // ── PART 8: Transitional bridge (enables seamless loop) ──
-    pairs.push({
-      en: 'The memory continues to drift...',
-      l2: 'الذاكرة تستمر في الانجراف...'
-    });
+    pairs.push({ en: 'The memory continues to drift...', l2: IS_BILINGUAL ? 'الذاكرة تستمر في الانجراف...' : '' });
 
-    // Filter out pairs where both languages are empty
     return pairs.filter(p => p.en || p.l2);
   }
 
-  // Split long text into sentences for paced display
   function splitIntoSentences(text) {
     if (!text || !text.trim()) return [''];
-
-    // Split on sentence boundaries: . ! ? followed by space or end
-    // Also handle Arabic sentence endings (،)
     const sentences = text.match(/[^.!?؟]+[.!?؟]+/g) || [text];
     return sentences.map(s => s.trim()).filter(s => s.length > 0);
   }
 
-  // ─── WIPE REVEAL ANIMATION ────────────────────────────────────
-  // Characters revealed one by one via textContent on inner span.
-  // LTR: first char to last. RTL: last char to first.
-  // Speed adapts to text length to fit within WIPE_DURATION.
+  // ─── ANIMATIONS ───────────────────────────────────────────────
+  // wipeReveal: max-width grows 0→full (LTR left-anchored, RTL right-anchored)
+  // fadeIn:     opacity 0→1 (used for English after L2 wipe completes)
+  // fadeOut:    opacity 1→0
+
+  function _cancelAnims(element) {
+    element.getAnimations().forEach(a => a.cancel());
+  }
 
   function wipeReveal(text, element, isRTL = false, duration = WIPE_DURATION) {
     return new Promise((resolve) => {
-      // Cancel any active animations (e.g. fill:forwards from fadeOut) so
-      // the inline opacity = '1' below actually takes effect.
-      element.getAnimations().forEach(a => a.cancel());
+      _cancelAnims(element);
 
       if (!text || !text.trim()) {
-        element.innerHTML = '';
+        element.textContent = '';
         element.style.opacity = '1';
         resolve();
         return;
       }
 
-      const chars = [...text]; // handles multi-byte (Arabic) correctly
-      const speed = Math.max(15, Math.floor(duration / chars.length));
-      let revealed = 0;
-
-      // Create inner span for per-line background styling
-      element.innerHTML = '';
-      const span = document.createElement('span');
-      span.textContent = '';
-      element.appendChild(span);
+      element.textContent = text;
       element.style.opacity = '1';
+      element.style.display = 'inline-block';
+      element.style.overflow = 'hidden';
+      element.style.whiteSpace = 'nowrap';
+      element.style.float = isRTL ? 'right' : 'none';
+      element.style.maxWidth = 'none';
+      const fullWidth = element.scrollWidth;
+      element.style.maxWidth = '0px';
 
-      const interval = setInterval(() => {
-        revealed++;
-
-        if (revealed >= chars.length) {
-          clearInterval(interval);
-          span.textContent = text;
-          element._wipeInterval = null;
-          element._wipeResolve = null;
-          resolve();
-          return;
-        }
-
-        if (isRTL) {
-          // RTL: reveal from last character to first
-          span.textContent = chars.slice(chars.length - revealed).join('');
-        } else {
-          // LTR: reveal from first character to last
-          span.textContent = chars.slice(0, revealed).join('');
-        }
-      }, speed);
-
-      element._wipeInterval = interval;
+      const anim = element.animate(
+        [{ maxWidth: '0px' }, { maxWidth: fullWidth + 'px' }],
+        { duration, easing: 'ease-out', fill: 'forwards' }
+      );
+      anim.onfinish = () => {
+        element.style.display = 'block';
+        element.style.overflow = '';
+        element.style.whiteSpace = '';
+        element.style.maxWidth = '';
+        element.style.float = '';
+        anim.cancel();
+        element._wipeResolve = null;
+        resolve();
+      };
       element._wipeResolve = resolve;
     });
   }
 
-  // Cancel any running wipe animation
   function cancelWipe(element) {
-    if (element._wipeInterval) {
-      clearInterval(element._wipeInterval);
-      element._wipeInterval = null;
-    }
-    if (element._wipeResolve) {
-      element._wipeResolve();
-      element._wipeResolve = null;
-    }
+    _cancelAnims(element);
+    element.style.display  = 'block';
+    element.style.overflow = '';
+    element.style.whiteSpace = '';
+    element.style.maxWidth = '';
+    element.style.float    = '';
+    if (element._wipeResolve) { element._wipeResolve(); element._wipeResolve = null; }
   }
 
-  // Fade out element using Web Animations API (no CSS transition needed)
+  function fadeIn(element, duration = EN_FADE_IN_DURATION) {
+    return new Promise((resolve) => {
+      _cancelAnims(element);
+      const anim = element.animate(
+        [{ opacity: 0 }, { opacity: 1 }],
+        { duration, fill: 'forwards' }
+      );
+      anim.onfinish = () => {
+        element.style.opacity = '1';
+        anim.cancel();
+        resolve();
+      };
+    });
+  }
+
   function fadeOut(element, duration = FADE_OUT_DURATION) {
     return new Promise((resolve) => {
+      _cancelAnims(element);
       const anim = element.animate(
         [{ opacity: 1 }, { opacity: 0 }],
         { duration, fill: 'forwards' }
       );
       anim.onfinish = () => {
         element.style.opacity = '0';
+        anim.cancel();
         resolve();
       };
     });
   }
 
-  // ─── BACKGROUND IMAGE (FULL BRIGHTNESS) ───────────────────────
+  // ─── BACKGROUND IMAGE ─────────────────────────────────────────
 
   let imageHistory = [];
   let currentImageIndex = 0;
@@ -306,60 +253,38 @@
 
   function updateBackgroundImage(imageUrl) {
     if (!imageUrl) return;
-
-    // Crossfade: fade out, swap, fade in at full brightness
     bgImage.style.opacity = '0';
-
-    setTimeout(() => {
-      bgImage.src = imageUrl;
-      bgImage.style.opacity = '1'; // Full brightness
-    }, 3000);
+    setTimeout(() => { bgImage.src = imageUrl; bgImage.style.opacity = '1'; }, 3000);
   }
 
   function startImageCycling(state) {
-    if (imageCycleInterval) {
-      clearInterval(imageCycleInterval);
-    }
-
+    if (imageCycleInterval) clearInterval(imageCycleInterval);
     const apiBase = window.KD_API_CONFIG?.API_BASE_URL || '';
     imageHistory = [];
-    if (state.image_url) imageHistory.push(apiBase + state.image_url);
+    if (state.image_url)   imageHistory.push(apiBase + state.image_url);
     if (state.image_prev1) imageHistory.push(apiBase + state.image_prev1);
     if (state.image_prev2) imageHistory.push(apiBase + state.image_prev2);
-
     if (imageHistory.length === 0) return;
-
-    if (imageHistory.length === 1) {
-      updateBackgroundImage(imageHistory[0]);
-      return;
-    }
-
     currentImageIndex = 0;
     updateBackgroundImage(imageHistory[0]);
-
-    // Cycle every 2 minutes
-    imageCycleInterval = setInterval(() => {
-      currentImageIndex = (currentImageIndex + 1) % imageHistory.length;
-      updateBackgroundImage(imageHistory[currentImageIndex]);
-    }, 120000);
+    if (imageHistory.length > 1) {
+      imageCycleInterval = setInterval(() => {
+        currentImageIndex = (currentImageIndex + 1) % imageHistory.length;
+        updateBackgroundImage(imageHistory[currentImageIndex]);
+      }, 120000);
+    }
   }
 
-  // ─── MAIN DISPLAY LOOP (SEAMLESS) ─────────────────────────────
+  // ─── MAIN DISPLAY LOOP ────────────────────────────────────────
 
   async function displayLoop() {
-    // Fetch all data
-    const [state, versions] = await Promise.all([
-      fetchState(),
-      fetchVersionHistory()
-    ]);
-
+    const [state, versions] = await Promise.all([fetchState(), fetchVersionHistory()]);
     if (!state) {
       console.error('No state data');
       await new Promise(r => setTimeout(r, 30000));
       return;
     }
 
-    // Fetch historical drifts (limit to last 5 for performance)
     const recentVersions = versions.slice(-5);
     const allDrifts = [];
     for (const v of recentVersions) {
@@ -367,68 +292,69 @@
       if (d) allDrifts.push(d);
     }
 
-    // Start background image cycling at full brightness
     startImageCycling(state);
 
-    // Build dialogue from state data
     const dialoguePairs = buildDialogue(state, allDrifts);
-
     console.log(`[Museum] Built ${dialoguePairs.length} dialogue pairs for ${PERSONA}`);
-
     if (dialoguePairs.length === 0) {
       await new Promise(r => setTimeout(r, 30000));
       return;
     }
 
-    // Expand pairs into individual sentences for pacing
     const displaySequence = [];
     for (const pair of dialoguePairs) {
       const enSentences = splitIntoSentences(pair.en);
       const l2Sentences = splitIntoSentences(pair.l2);
       const maxLen = Math.max(enSentences.length, l2Sentences.length);
-
       for (let i = 0; i < maxLen; i++) {
-        displaySequence.push({
-          en: enSentences[i] || '',
-          l2: l2Sentences[i] || ''
-        });
+        displaySequence.push({ en: enSentences[i] || '', l2: l2Sentences[i] || '' });
       }
     }
 
-    // Loop through dialogue seamlessly
     while (true) {
-      for (let i = 0; i < displaySequence.length; i++) {
-        const { en, l2 } = displaySequence[i];
+      for (const { en, l2 } of displaySequence) {
 
-        // 1. Wipe reveal: LTR for English, RTL for Arabic
-        const isL2RTL = config.l2_dir === 'rtl';
-        await Promise.all([
-          wipeReveal(en, subtitlePrimary, false, WIPE_DURATION),
-          wipeReveal(l2, subtitleSecondary, isL2RTL, WIPE_DURATION)
-        ]);
+        // ── Clear ──
+        cancelWipe(subtitlePrimary);
+        cancelWipe(subtitleSecondary);
+        subtitlePrimary.textContent = '';
+        subtitleSecondary.textContent = '';
+        subtitlePrimary.style.opacity = '0';
+        subtitleSecondary.style.opacity = '0';
 
-        // 2. Hold: let viewer read (scale with text length)
+        await new Promise(r => setTimeout(r, 300));
+
+        if (IS_BILINGUAL && l2) {
+          // 1. L2 wipes in
+          const isL2RTL = config.l2_dir === 'rtl';
+          await wipeReveal(l2, subtitleSecondary, isL2RTL, WIPE_DURATION);
+
+          // 2. English fades in after L2 completes
+          if (en) {
+            subtitlePrimary.textContent = en;
+            subtitlePrimary.style.opacity = '0';
+            await fadeIn(subtitlePrimary, EN_FADE_IN_DURATION);
+          }
+        } else {
+          // EN-only: just wipe English
+          await wipeReveal(en, subtitlePrimary, false, WIPE_DURATION);
+        }
+
+        // 3. Hold
         const wordCount = (en + ' ' + l2).split(/\s+/).filter(w => w.length > 0).length;
         const readTime = Math.max(4000, Math.min(8000, wordCount * 350));
         await new Promise(r => setTimeout(r, readTime));
 
-        // 3. Fade out smoothly
+        // 4. Fade out both
         await Promise.all([
           fadeOut(subtitlePrimary),
           fadeOut(subtitleSecondary)
         ]);
 
-        // 4. Clear text after fade completes (screen is already blank)
-        cancelWipe(subtitlePrimary);
-        cancelWipe(subtitleSecondary);
-        subtitlePrimary.innerHTML = '';
-        subtitleSecondary.innerHTML = '';
-
-        // 5. Wait 6 seconds with blank screen before next sentence
+        // 5. 6s blank pause
         await new Promise(r => setTimeout(r, PAUSE_BETWEEN_SENTENCES));
       }
 
-      // After full loop, brief pause before restart
       console.log('[Museum] Dialogue loop complete, restarting...');
       await new Promise(r => setTimeout(r, 3000));
     }
@@ -437,30 +363,20 @@
   // ─── INIT ─────────────────────────────────────────────────────
 
   async function startStream() {
+    if (!IS_BILINGUAL) subtitleSecondary.style.display = 'none';
     await fetchLangConfig();
-
-    console.log(`[Museum] Stream initialized for ${PERSONA}`);
-
-    // Start the seamless display loop
+    console.log(`[Museum] Stream initialized for ${PERSONA} | bilingual: ${IS_BILINGUAL}`);
     displayLoop();
-
-    // Re-fetch fresh data every tick and restart loop
-    setInterval(async () => {
-      console.log('[Museum] Tick: refreshing data...');
-      // The loop is infinite; on next tick we'd ideally restart with fresh data.
-      // For now the loop runs until page refresh or new tick triggers reload.
-      window.location.reload();
-    }, TICK_INTERVAL * 1000);
+    setInterval(() => { window.location.reload(); }, TICK_INTERVAL * 1000);
   }
 
-  // Start on load — on Pages, wait for tunnel URL before fetching backend data
   document.addEventListener('DOMContentLoaded', () => {
     if (window.KD_API_CONFIG && window.KD_API_CONFIG.API_BASE_URL != null) {
       startStream();
     } else {
       window.addEventListener('kd-config-ready', () => startStream(), { once: true });
       setTimeout(() => {
-        if (!document.querySelector('.subtitle-primary')?.textContent) {
+        if (!subtitlePrimary?.textContent) {
           console.warn('[Museum] kd-config-ready never fired, starting with fallback');
           startStream();
         }
