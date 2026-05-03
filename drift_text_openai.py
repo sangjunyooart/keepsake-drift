@@ -593,33 +593,82 @@ def _client() -> OpenAI:
     return OpenAI()
 
 
-def _openai_json(prompt: str, model: str, timeout_seconds: float) -> Dict[str, Any]:
-    client = _client()
-    resp = client.responses.create(
+def _ollama_available() -> bool:
+    """Check if Ollama is reachable at localhost:11434."""
+    try:
+        import urllib.request
+        urllib.request.urlopen("http://localhost:11434/api/tags", timeout=3)
+        return True
+    except Exception:
+        return False
+
+
+def _ollama_json(prompt: str, timeout_seconds: float) -> Dict[str, Any]:
+    """Call Ollama's OpenAI-compatible API and return parsed JSON."""
+    import sys
+    model = os.getenv("OLLAMA_MODEL", "qwen2.5:14b")
+    client = OpenAI(
+        base_url="http://localhost:11434/v1",
+        api_key="ollama",
+    )
+    print(f"[Ollama fallback] Using model={model}", file=sys.stderr)
+    resp = client.chat.completions.create(
         model=model,
-        input=prompt,
+        messages=[{"role": "user", "content": prompt}],
         timeout=timeout_seconds,
     )
+    text = (resp.choices[0].message.content or "").strip() if resp.choices else ""
+    if not text:
+        raise RuntimeError("Ollama response had no text output.")
 
-    text = None
+    t = text
+    if t.startswith("```"):
+        t = re.sub(r"^```[a-zA-Z0-9_-]*\s*", "", t)
+        t = re.sub(r"\s*```$", "", t).strip()
+
     try:
-        text = resp.output_text
-    except Exception:
-        pass
+        return json.loads(t)
+    except json.JSONDecodeError:
+        t = re.sub(r',\s*}', '}', t)
+        t = re.sub(r',\s*]', ']', t)
+        return json.loads(t)
 
-    if not text:
+
+def _openai_json(prompt: str, model: str, timeout_seconds: float) -> Dict[str, Any]:
+    import sys
+    try:
+        client = _client()
+        resp = client.responses.create(
+            model=model,
+            input=prompt,
+            timeout=timeout_seconds,
+        )
+
+        text = None
         try:
-            parts = []
-            for item in (resp.output or []):
-                for c in getattr(item, "content", []) or []:
-                    if getattr(c, "type", None) in ("output_text", "text"):
-                        parts.append(getattr(c, "text", ""))
-            text = "\n".join(parts).strip()
+            text = resp.output_text
         except Exception:
-            text = None
+            pass
 
-    if not text:
-        raise RuntimeError("OpenAI response had no text output to parse as JSON.")
+        if not text:
+            try:
+                parts = []
+                for item in (resp.output or []):
+                    for c in getattr(item, "content", []) or []:
+                        if getattr(c, "type", None) in ("output_text", "text"):
+                            parts.append(getattr(c, "text", ""))
+                text = "\n".join(parts).strip()
+            except Exception:
+                text = None
+
+        if not text:
+            raise RuntimeError("OpenAI response had no text output to parse as JSON.")
+
+    except Exception as openai_err:
+        print(f"[OpenAI failed] {openai_err} — trying Ollama fallback", file=sys.stderr)
+        if _ollama_available():
+            return _ollama_json(prompt, timeout_seconds)
+        raise RuntimeError(f"OpenAI failed and Ollama is not available: {openai_err}") from openai_err
 
     t = text.strip()
     if t.startswith("```"):
@@ -629,18 +678,12 @@ def _openai_json(prompt: str, model: str, timeout_seconds: float) -> Dict[str, A
     try:
         return json.loads(t)
     except json.JSONDecodeError as e:
-        # Try to fix common JSON issues from OpenAI (trailing commas, unterminated strings, etc.)
         try:
             fixed = t
-            # Remove trailing commas before closing braces/brackets
             fixed = re.sub(r',\s*}', '}', fixed)
             fixed = re.sub(r',\s*]', ']', fixed)
-
-            # Try parsing the repaired JSON
             return json.loads(fixed)
         except json.JSONDecodeError as repair_err:
-            # If still failing, try to salvage what we can by using Python's ast.literal_eval
-            # or just fail with detailed error
             import sys
             print(f"[ERROR _openai_json] JSON parse failed. Error: {str(repair_err)}", file=sys.stderr)
             print(f"[ERROR _openai_json] Full response text ({len(t)} chars):", file=sys.stderr)
@@ -829,7 +872,6 @@ Return ONLY strict JSON with this structure:
       "justification_en": "...",
       "justification_ar": "...",
       "keepsake_en": "...",
-      "keepsake_ar": "...",
       "summary_en": "...",
       "summary_ar": "..."
     }},
@@ -853,19 +895,26 @@ Rules (non-negotiable):
     - The RSS headlines create pressure on the meaning. The memory doesn't absorb headline vocabulary — the headlines pressure what the existing words MEAN. Think of it as: recalling the same sentence on a day when wildfires are in the news — "the garden was quiet that afternoon" still says "quiet," but the quiet now means something drier, more fragile.
     - The DRIFT DIRECTION and INFILTRATING IMAGERY guide the emotional register and sensorial quality. Use them as atmospheric pressure on MEANING, not as vocabulary to swap in.
     - Each rewrite should feel like the SAME memory where the meaning has shifted underfoot — not a rephrased version of the same memory.
+    - LENS AXES govern the drift rewrite (see LENS AXES block per mind below):
+      * SEGMENT PRIORITY: among the selected segments, bias toward those that touch the lens's OBJECT OF ATTENTION domain. If two segments are equally eligible, rewrite the one that engages the lens's domain first.
+      * REWRITE REGISTER: the replacement text should feel measured at the lens's TEMPORAL SCALE. A geological lens does not speak in daily rhythms; a human-body lens does not speak in centuries. The pacing, scope, and weight of the rewritten sentence should match the temporal scale of the lens.
+      * CAUSALITY TRACE: when meaning shifts, the reason should trace through the lens's CAUSAL STRUCTURE, not ordinary human cause-and-effect. A digital lens traces causality through infrastructure and format constraints; a more-than-human lens traces through geological and evolutionary forces.
   C) HALLUCINATION (semantic instability — NOT visual fog):
     - Hallucination occurs when the temporality's lens does not resonate with the ingested present-moment signals. The memory becomes semantically unstable — words start pointing to things that don't quite connect to the original emotional core.
     - This is NOT about making text dreamy or foggy. It is about the meaning becoming unreliable. A hallucinating memory might say something that sounds coherent but no longer truly connects to what was felt. The structure holds but the semantic ground has shifted away from the anchor.
 - No lists, no headings, no quotes, no markdown.
 - drifted_keywords: list ONLY the specific words or short phrases (1-4 words each) in the replacement text that represent the SEMANTIC drift — the words whose meaning or emotional quality changed, not mere spelling variants. Typically 3-8 keywords per mind.
-- justification_en/ar: 1-3 sentences explaining WHY these specific segments drifted. Reference the temporality's unique perspective (its lens) and how the RSS event context pressured the drift. Write in present tense.
-- keepsake_en/ar: 1-2 SHORT sentences. First person — spoken by the temporality itself ("I") about what it just felt shift.
-  Rules:
-  - Write as "I" — the perceiver noting what changed in its own sensing. Not about "the memory" as an object.
-  - Name one concrete shift (sensory, emotional, spatial) and what present-moment signal caused it.
-  - NEVER start with "The memory", "Memory holds", "Memory feels", "My memory", or any form of "memory" as subject.
-  - NEVER use the same sentence opening across different minds. Each entry must start differently.
-  - Keep it under 30 words. Brief, direct, like a field note written mid-drift.
+- justification_en/ar: 1-3 sentences explaining WHY these specific segments drifted. Reference the temporality's unique perspective (its lens) and how the RSS event context pressured the drift. Trace the causal logic through the lens's CAUSAL STRUCTURE — not ordinary cause-and-effect. Write in present tense.
+- keepsake_en: 4–8 sentences. Deep refraction — what surfaces when this temporal lens, and only this lens, attends to the original memory right now.
+  You are NOT translating, NOT paraphrasing, NOT describing the drift text or the axis memory.
+  Six anti-paraphrase rules (non-negotiable):
+  1. Do not use the axis memory's nouns or verbs as the spine of your output. The memory is the trigger; what surfaces comes from elsewhere in this lens's domain.
+  2. Do not describe what the memory or drift text contains. The content is given; restating it has no value.
+  3. What rises must come from the world of this lens's OBJECT OF ATTENTION — not from the memory itself.
+  4. Operate at this lens's TEMPORAL SCALE. Do not narrate at human-daily scale unless this is human time.
+  5. Trace causality through this lens's CAUSAL STRUCTURE. Do not explain in ordinary cause and effect.
+  6. The DRIFT DIRECTION and PREV text show this lens's current vocabulary imprint. Go deeper — same temporality, deeper attention. You may diverge in subject from the drift direction; they share lens, not topic.
+  Additional: Do not use first person ("I"). Do not address the memory's holder. Do not use "memory", "remembers", or "recalls" anywhere in your output. 4 to 8 sentences, specific and grounded, not generalizing.
 Tick: {tick_id}
 Event IDs (may be empty): {event_ids}
 """.strip()
@@ -916,6 +965,25 @@ Event IDs (may be empty): {event_ids}
         else:
             imagery_block = ""
 
+        # Lens definition governs both drift rewriting and keepsake_en
+        try:
+            import lens as _lens_mod
+            ldef = _lens_mod.LENS_DEFINITIONS.get(m.mind_key, _lens_mod.LENS_DEFINITIONS.get("human", {}))
+        except Exception:
+            ldef = {}
+        if ldef:
+            lens_def_block = (
+                f"\nLENS AXES (governs segment selection, rewrite register, causality, AND keepsake_en):\n"
+                f"  Object of attention: {ldef.get('object_of_attention', '')}\n"
+                f"    → Prioritize rewriting segments that engage this domain.\n"
+                f"  Temporal scale: {ldef.get('temporal_scale', '')}\n"
+                f"    → Replacement sentences must feel measured at this scale — not human-daily unless this IS human.\n"
+                f"  Causal structure: {ldef.get('causal_structure', '')}\n"
+                f"    → When meaning shifts, trace causality through this structure, not ordinary cause-effect.\n"
+            )
+        else:
+            lens_def_block = ""
+
         # Resonance-based hallucination pressure
         resonance_val = getattr(m, "resonance", 0.5)
         if resonance_val < 0.3:
@@ -955,7 +1023,7 @@ AXIS (the ORIGINAL memory — drift 0 — the emotional anchor everything drifts
 
 INVARIABLES (emotional anchors — [sensory] ones must survive VERBATIM as exact words; [proper_noun] and [temporal] can lose resolution but must remain recognizable):
 {inv_lines}
-
+{lens_def_block}
 EVENT CONTEXT (RSS headlines this mind resonates with):
 {evt_lines}
 {resonance_block}{direction_block}{imagery_block}

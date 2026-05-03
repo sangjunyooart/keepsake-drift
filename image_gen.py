@@ -909,6 +909,7 @@ def _build_image_prompt(
     invariables: Optional[List[dict]] = None,
     blended_scene: Optional[str] = None,
     visual_atmosphere: Optional[Dict[str, str]] = None,
+    keepsake_en: Optional[str] = None,
 ) -> str:
     """
     Build an image prompt from drift state.
@@ -928,6 +929,13 @@ def _build_image_prompt(
     # Rotate through lens qualities based on version
     perspectives = LENS_VISUAL.get(mind_key, LENS_VISUAL["human"])
     lens_visual = perspectives[version % len(perspectives)]
+
+    # Load lens axes for visual deep-refraction
+    try:
+        import lens as _lens_mod
+        ldef = _lens_mod.LENS_DEFINITIONS.get(mind_key, _lens_mod.LENS_DEFINITIONS.get("human", {}))
+    except Exception:
+        ldef = {}
 
     # Format invariables into subject anchors
     inv_lines = []
@@ -1043,12 +1051,34 @@ def _build_image_prompt(
             "",
         ])
 
-    # ── 4. TEMPORAL LENS — quality of photographic attention ──
-    parts.extend([
-        f"TEMPORAL LENS: {lens_visual}",
-        "Apply as photographic quality — depth of field, focus behaviour, light character.",
-        "",
-    ])
+    # ── 4. TEMPORAL LENS + LENS AXES ──
+    if ldef:
+        parts.extend([
+            "LENS AXES (govern what the camera attends to, compositional weight, and implied forces):",
+            f"  Object of attention: {ldef.get('object_of_attention', '')}",
+            f"    → The camera is drawn to subjects from this world. Let the image be OF this domain.",
+            f"  Temporal scale: {ldef.get('temporal_scale', '')}",
+            f"    → The composition should carry the weight of this duration.",
+            f"  Causal structure: {ldef.get('causal_structure', '')}",
+            f"    → The relationship between elements should imply this kind of force at work.",
+            f"  Scene framing: {lens_visual}",
+            "Apply as photographic quality — depth of field, focus behaviour, light character.",
+            "",
+        ])
+    else:
+        parts.extend([
+            f"TEMPORAL LENS: {lens_visual}",
+            "Apply as photographic quality — depth of field, focus behaviour, light character.",
+            "",
+        ])
+
+    # ── Museum narration alignment ──
+    if keepsake_en and keepsake_en.strip():
+        parts.extend([
+            "MUSEUM NARRATION (text displayed alongside this image — the image should belong to the same visual world):",
+            keepsake_en.strip()[:400],
+            "",
+        ])
 
     # ── 5. VISUAL STYLE ──
     parts.extend([
@@ -1136,6 +1166,7 @@ def generate_drift_image(
     invariables: Optional[List[dict]] = None,
     blended_scene: Optional[str] = None,
     visual_atmosphere: Optional[Dict[str, str]] = None,
+    keepsake_en: Optional[str] = None,
 ) -> Optional[str]:
     """
     Generate an image for a temporality's current drift state.
@@ -1203,6 +1234,7 @@ def generate_drift_image(
         headline_scene_subjects=headline_scene_subjects,
         blended_scene=blended_scene,
         visual_atmosphere=visual_atmosphere,
+        keepsake_en=keepsake_en,
     )
 
     log.info("Generating image for %s v%d (model=%s, size=%s)", mind_key, version, IMAGE_MODEL, IMAGE_SIZE)
