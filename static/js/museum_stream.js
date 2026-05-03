@@ -224,6 +224,10 @@
 
   function wipeReveal(text, element, isRTL = false, duration = WIPE_DURATION) {
     return new Promise((resolve) => {
+      // Cancel any active animations (e.g. fill:forwards from fadeOut) so
+      // the inline opacity = '1' below actually takes effect.
+      element.getAnimations().forEach(a => a.cancel());
+
       if (!text || !text.trim()) {
         element.innerHTML = '';
         element.style.opacity = '1';
