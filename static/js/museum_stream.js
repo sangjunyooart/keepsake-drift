@@ -332,9 +332,8 @@
 
   // ─── MAIN DISPLAY LOOP (SEAMLESS) ─────────────────────────────
 
-  async function displayLoop() {
-    // Single round-trip replaces 3–7 sequential fetches
-    const bundle = await fetchStateWithHistory();
+  async function displayLoop(prefetchedBundle) {
+    const bundle = prefetchedBundle ?? await fetchStateWithHistory();
 
     if (!bundle || !bundle.state) {
       console.error('No state data');
@@ -430,17 +429,17 @@
   // ─── INIT ─────────────────────────────────────────────────────
 
   async function startStream() {
-    // Fetch lang config first — sets IS_BILINGUAL before display loop starts
-    await fetchLangConfig();
+    // Both network requests start simultaneously
+    const bundlePromise = fetchStateWithHistory();
+    await fetchLangConfig(); // fast (small JSON) — sets IS_BILINGUAL
 
     if (!IS_BILINGUAL) {
       subtitleSecondary.style.display = 'none';
     }
-
     console.log(`[Museum] Stream initialized for ${PERSONA} | IS_BILINGUAL: ${IS_BILINGUAL}`);
 
-    // Start the seamless display loop
-    displayLoop();
+    // State bundle was fetching in parallel — pass it directly to avoid second fetch
+    displayLoop(await bundlePromise);
 
     // Re-fetch fresh data every tick and restart loop
     setInterval(async () => {
