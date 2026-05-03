@@ -84,7 +84,7 @@
     }
     const narrationEn = state.museum_narration_en || state.drift_en || '';
     const narrationL2 = useL2 ? (state.museum_narration_en
-      ? (state[`museum_narration_${config.l2_lang}`] || state.museum_narration_ar || '')
+      ? (state[`museum_narration_${config.l2_lang}`] || state.museum_narration_ar || state[l2Field] || state.drift_ar || '')
       : (state[l2Field] || state.drift_ar || '')) : '';
     if (narrationEn) pairs.push({ en: narrationEn, l2: narrationL2 });
 
@@ -294,10 +294,11 @@
     const state   = prefetchedState || await fetchStateAt(version);
     if (!state) return false;
 
-    if (config.l2_enabled) {
-      const l2Text = state[`drift_${config.l2_lang}`] || state.drift_ar || '';
-      const hasArabic = /[؀-ۿ]/.test(l2Text);
-      if (!l2Text || (config.l2_dir === 'rtl' && !hasArabic)) return false;
+    if (config.l2_enabled && config.l2_dir === 'rtl') {
+      const l2Text = state[`museum_narration_${config.l2_lang}`] || state.museum_narration_ar ||
+                     state[`keepsake_${config.l2_lang}`] || state.keepsake_ar ||
+                     state[`drift_${config.l2_lang}`] || state.drift_ar || '';
+      if (!l2Text || !/[؀-ۿ]/.test(l2Text)) return false;
     }
 
     resetSubtitles();
@@ -326,11 +327,9 @@
       const hasL2 = l2 && l2.trim();
       if (hasL2) {
         await wipeReveal(l2, subtitleSecondary, config.l2_dir === 'rtl', WIPE_DURATION);
-        splitIntoLines(subtitleSecondary);
         await fadeIn(en, subtitlePrimary);
       } else {
         await wipeReveal(en, subtitleSecondary, false, WIPE_DURATION);
-        splitIntoLines(subtitleSecondary);
       }
 
       const textLen  = Math.max((en || '').length, (l2 || '').length);
