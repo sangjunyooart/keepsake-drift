@@ -198,32 +198,25 @@
     return new Promise((resolve) => {
       if (!text || !text.trim()) {
         element.textContent = '';
-        element.style.opacity = '1';
-        element.style.clipPath = '';
         resolve();
         return;
       }
 
-      // Set text and let it wrap naturally in block display — no display change.
-      // clip-path does the wipe without touching layout, so no height shift at end.
+      // Set text while element is invisible (opacity:0 from caller).
+      // Height is fully settled before any animation starts — no shift possible.
       element.textContent = text;
-      element.style.opacity = '1';
+      void element.offsetWidth; // commit layout at final height
 
-      // LTR: reveal left→right (clip right side, shrink right inset to 0)
-      // RTL: reveal right→left (clip left side, shrink left inset to 0)
-      const startClip = isRTL ? 'inset(0 100% 0 0)' : 'inset(0 0 0 100%)';
-
+      // Animate opacity only — no layout property is ever touched.
       const anim = element.animate(
-        [
-          { clipPath: isRTL ? 'inset(0 100% 0 0)' : 'inset(0 0 0 100%)' },
-          { clipPath: 'inset(0 0 0 0)' }
-        ],
-        { duration, easing: 'ease-out', fill: 'forwards' }
+        [{ opacity: 0 }, { opacity: 1 }],
+        { duration, easing: 'ease-in', fill: 'forwards' }
       );
 
       anim.onfinish = () => {
-        element.style.clipPath = '';
-        element._wipeAnim = null;
+        // Sync inline style so cancelWipe's anim.cancel() reverts to the right value.
+        element.style.opacity = '1';
+        // Keep _wipeAnim so cancelWipe can cancel the fill if needed.
         element._wipeResolve = null;
         resolve();
       };
@@ -236,10 +229,10 @@
   // Cancel any running wipe animation
   function cancelWipe(element) {
     if (element._wipeAnim) {
-      element._wipeAnim.cancel();
+      element._wipeAnim.cancel(); // removes fill; reverts to inline opacity
       element._wipeAnim = null;
     }
-    element.style.clipPath = '';
+    element.style.opacity = '0';
     if (element._wipeResolve) {
       element._wipeResolve();
       element._wipeResolve = null;
