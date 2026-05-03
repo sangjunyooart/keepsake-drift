@@ -159,7 +159,7 @@
         <div class="header-title" id="headerTitle">Keepsakes ~ Drift</div>
       </div>
 
-      <div class="lang-toggle" id="langToggle" role="button" tabindex="0">
+      <div class="lang-toggle" id="langToggle" role="button" tabindex="0" style="display:none">
         <span id="langLabel"></span>
       </div>
     </div>
@@ -551,19 +551,19 @@
 
       // Fetch active second language from server (non-blocking)
       fetch("/lang_config").then(r => r.json()).then(data => {
+        if (!data.enable_translation) return;
         if (data && data.second_lang && uiText[data.second_lang]) {
           secondLang = data.second_lang;
           secondLangDirection = data.direction || "ltr";
-          // Update EN's toggle button label to show the active L2 toggle label
           if (data.toggle_label) {
             uiText.en.langButton = data.toggle_label;
           }
-          // If user had a stale L2 stored, reset to "en"
           if (currentLang !== "en" && currentLang !== secondLang) {
             currentLang = "en";
             localStorage.setItem(STORAGE_LANG_KEY, currentLang);
           }
           updateUILanguage(currentLang);
+          langToggle.style.display = '';
         }
       }).catch(() => {});
 
