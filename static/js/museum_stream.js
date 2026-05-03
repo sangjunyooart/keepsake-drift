@@ -334,9 +334,11 @@
       const hasL2 = l2 && l2.trim();
       if (hasL2) {
         await wipeReveal(l2, subtitleSecondary, config.l2_dir === 'rtl', WIPE_DURATION);
+        splitIntoLines(subtitleSecondary);
         await fadeIn(en, subtitlePrimary);
       } else {
         await wipeReveal(en, subtitleSecondary, false, WIPE_DURATION);
+        splitIntoLines(subtitleSecondary);
       }
 
       const textLen  = Math.max((en || '').length, (l2 || '').length);

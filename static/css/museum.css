@@ -76,25 +76,19 @@ body {
   padding: 0;
 }
 
-/* English outer span — line-height:1.1 makes backing shorter than line spacing (1.6),
-   creating a gap between lines without affecting text flow */
+/* English outer span — subtle translucent backing */
 .subtitle-primary > span {
   background: rgba(0, 0, 0, 0.35);
   box-decoration-break: clone;
   -webkit-box-decoration-break: clone;
   padding: 0 0.8vw;
   display: inline;
-  line-height: 0.75;
 }
 
-/* Each character — translucent backing that fades with each letter.
-   line-height:1.1 makes the backing smaller than line spacing so adjacent
-   lines have a visible gap (secondary: 22px backing / 34px spacing;
-   primary: 11px backing / 16px spacing). */
+/* Each character — translucent backing that fades with each letter */
 .subtitle-secondary span span,
 .subtitle-primary span span {
   background: rgba(0, 0, 0, 0.35);
-  line-height: 0.75;
   padding: 0;
   display: inline;
 }
